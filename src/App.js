@@ -120,6 +120,19 @@ function App() {
   return (
     <div className="app">
       <h1>MB-800: Microsoft Dynamics 365 Business Central Functional Consultant Practice Test</h1>
+      {/* Score Display */}
+      <div style={{ marginBottom: '1rem', fontWeight: 'bold' }}>
+        Score: {score} / {
+          questions.reduce((sum, q) => {
+            if (q.question_type?.toLowerCase() === 'multiple choice') {
+              return sum + q.correct_answer.split(',').length;
+            } else if (q.question_type?.toLowerCase() === 'hotspot') {
+              return sum + q.correct_answer.split(/\r?\n/).filter(Boolean).length;
+            }
+            return sum + 1;
+          }, 0)
+        }
+      </div>
       <div style={{ marginBottom: '1rem' }}>
         <button
           onClick={() => {
