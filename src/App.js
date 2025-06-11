@@ -58,17 +58,27 @@ function App() {
 
   const checkAnswer = () => {
     setChecked(true);
-    let isCorrect = false;
+
+    let points = 0;
+    let total = 0;
 
     if (q.question_type?.toLowerCase() === 'multiple choice') {
-      isCorrect = userAnswer === q.correct_answer.trim();
+      // Support multiple correct answers, comma-separated
+      const correct = q.correct_answer.split(',').map(s => s.trim());
+      total = correct.length;
+
+      // If userAnswer is a string (single select), convert to array
+      const user = Array.isArray(userAnswer) ? userAnswer : [userAnswer];
+      points = user.filter(ans => correct.includes(ans)).length;
     } else if (q.question_type?.toLowerCase() === 'hotspot') {
-      isCorrect = Object.entries(correctHotspotAnswers).every(
+      const correctEntries = Object.entries(correctHotspotAnswers);
+      total = correctEntries.length;
+      points = correctEntries.filter(
         ([label, correct]) => userAnswer[label] === correct
-      );
+      ).length;
     }
 
-    if (isCorrect) setScore(prev => prev + 1);
+    setScore(prev => prev + points);
   };
 
   const nextQuestion = () => {
@@ -158,11 +168,21 @@ function App() {
             {choices.map((choice, idx) => (
               <label key={idx}>
                 <input
-                  type="radio"
+                  type="checkbox"
                   name="answer"
                   value={choice}
-                  checked={userAnswer === choice}
-                  onChange={() => setUserAnswer(choice)}
+                  checked={Array.isArray(userAnswer) ? userAnswer.includes(choice) : false}
+                  onChange={e => {
+                    setUserAnswer(prev => {
+                      const arr = Array.isArray(prev) ? [...prev] : [];
+                      if (e.target.checked) {
+                        arr.push(choice);
+                      } else {
+                        return arr.filter(c => c !== choice);
+                      }
+                      return arr;
+                    });
+                  }}
                   disabled={checked}
                 />
                 {choice}
@@ -200,7 +220,7 @@ function App() {
           {!checked && (
             <button onClick={checkAnswer} disabled={
               q.question_type?.toLowerCase() === 'multiple choice'
-                ? !userAnswer
+                ? !userAnswer.length
                 : Object.keys(hotspotOptions).some(label => !userAnswer[label])
             }>
               Check Answer
@@ -209,32 +229,46 @@ function App() {
 
           {checked && (
             <>
-              <p>
-                {(() => {
-                  if (q.question_type?.toLowerCase() === 'multiple choice') {
-                    return userAnswer === q.correct_answer.trim()
-                      ? '✅ Correct!'
-                      : `❌ Incorrect. Correct answer: ${q.correct_answer}`;
-                  } else if (q.question_type?.toLowerCase() === 'hotspot') {
-                    const missed = Object.entries(correctHotspotAnswers).filter(
-                      ([label, correct]) => userAnswer[label] !== correct
-                    );
-                    if (missed.length === 0) return '✅ All selections correct!';
-                    return (
-                      <>
-                        ❌ Some selections incorrect:
-                        <ul>
-                          {missed.map(([label, correct], i) => (
-                            <li key={i}>
-                              <strong>{label}:</strong> Correct answer is <em>{correct}</em>
-                            </li>
-                          ))}
-                        </ul>
-                      </>
-                    );
-                  }
+              <div>
+                {q.question_type?.toLowerCase() === 'multiple choice' && (() => {
+                  const correct = q.correct_answer.split(',').map(s => s.trim());
+                  const user = Array.isArray(userAnswer) ? userAnswer : [userAnswer];
+                  return (
+                    <ul>
+                      {choices.map((choice, idx) => (
+                        <li key={idx} style={{
+                          color: correct.includes(choice)
+                            ? (user.includes(choice) ? 'green' : 'orange')
+                            : (user.includes(choice) ? 'red' : undefined)
+                        }}>
+                          {choice}
+                          {correct.includes(choice) && user.includes(choice) && ' ✅'}
+                          {correct.includes(choice) && !user.includes(choice) && ' (missed)'}
+                          {!correct.includes(choice) && user.includes(choice) && ' ❌'}
+                        </li>
+                      ))}
+                    </ul>
+                  );
                 })()}
-              </p>
+                {q.question_type?.toLowerCase() === 'hotspot' && (() => {
+                  return (
+                    <ul>
+                      {Object.entries(hotspotOptions).map(([label, options], idx) => {
+                        const correct = correctHotspotAnswers[label];
+                        const user = userAnswer[label];
+                        return (
+                          <li key={idx} style={{
+                            color: user === correct ? 'green' : 'red'
+                          }}>
+                            <strong>{label}:</strong> {user || '(no answer)'}
+                            {user === correct ? ' ✅' : ` ❌ (Correct: ${correct})`}
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  );
+                })()}
+              </div>
               <button onClick={() => setShowExplanation(prev => !prev)}>
                 {showExplanation ? 'Hide' : 'Show'} Explanation
               </button>
@@ -256,7 +290,16 @@ function App() {
 
         {isLast && checked && (
           <p style={{ marginTop: '1rem' }}>
-            🎉 You’ve completed the test! Final Score: {score} / {questions.length}
+            🎉 You’ve completed the test! Final Score: {score} / {
+              questions.reduce((sum, q) => {
+                if (q.question_type?.toLowerCase() === 'multiple choice') {
+                  return sum + q.correct_answer.split(',').length;
+                } else if (q.question_type?.toLowerCase() === 'hotspot') {
+                  return sum + q.correct_answer.split(/\r?\n/).filter(Boolean).length;
+                }
+                return sum + 1;
+              }, 0)
+            }
           </p>
         )}
       </div>
