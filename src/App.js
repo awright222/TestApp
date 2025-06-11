@@ -280,7 +280,11 @@ function App() {
                       } else {
                         let arr = Array.isArray(userAnswers[current]) ? [...userAnswers[current]] : [];
                         if (e.target.checked) {
-                          if (!arr.includes(choice)) arr.push(choice);
+                          // Limit selection to the number of correct answers
+                          const maxSelections = correctLabels.length;
+                          if (arr.length < maxSelections) {
+                            if (!arr.includes(choice)) arr.push(choice);
+                          }
                         } else {
                           arr = arr.filter(c => c !== choice);
                         }
