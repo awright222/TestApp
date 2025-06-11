@@ -83,14 +83,14 @@ function App() {
 
   const nextQuestion = () => {
     setCurrent(prev => prev + 1);
-    setUserAnswer({});
+    setUserAnswer(getInitialUserAnswer(questions[current + 1]));
     setChecked(false);
     setShowExplanation(false);
   };
 
   const prevQuestion = () => {
     setCurrent(prev => Math.max(0, prev - 1));
-    setUserAnswer({});
+    setUserAnswer(getInitialUserAnswer(questions[Math.max(0, current - 1)]));
     setChecked(false);
     setShowExplanation(false);
   };
@@ -104,6 +104,15 @@ function App() {
     return arr;
   }
 
+  function getInitialUserAnswer(q) {
+    if (q?.question_type?.toLowerCase() === 'multiple choice') {
+      return [];
+    } else if (q?.question_type?.toLowerCase() === 'hotspot') {
+      return {};
+    }
+    return '';
+  }
+
   return (
     <div className="app">
       <h1>MB-800: Microsoft Dynamics 365 Business Central Functional Consultant Practice Test</h1>
@@ -112,7 +121,7 @@ function App() {
           onClick={() => {
             setQuestions(shuffleArray(originalQuestions));
             setCurrent(0);
-            setUserAnswer({});
+            setUserAnswer(getInitialUserAnswer(originalQuestions[0]));
             setChecked(false);
             setShowExplanation(false);
             setScore(0);
@@ -125,7 +134,7 @@ function App() {
           onClick={() => {
             setQuestions(originalQuestions);
             setCurrent(0);
-            setUserAnswer({});
+            setUserAnswer(getInitialUserAnswer(originalQuestions[0]));
             setChecked(false);
             setShowExplanation(false);
             setScore(0);
@@ -147,7 +156,7 @@ function App() {
               const val = Number(e.target.value);
               if (val >= 1 && val <= questions.length) {
                 setCurrent(val - 1);
-                setUserAnswer({});
+                setUserAnswer(getInitialUserAnswer(questions[val - 1]));
                 setChecked(false);
                 setShowExplanation(false);
               }
