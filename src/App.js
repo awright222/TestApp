@@ -239,21 +239,43 @@ function App() {
           <div className="choices">
             {choices.map((choice, idx) => {
               const isSingle = q.correct_answer.split(',').length === 1;
+              const correctLabels = q.correct_answer.split(',').map(s => s.trim());
+              const choiceLabel = getChoiceLabel(choice);
+              const userSelected = isSingle
+                ? userAnswers[current]?.[0] === choice
+                : Array.isArray(userAnswers[current]) && userAnswers[current].includes(choice);
+
+              // Determine feedback after question is submitted
+              let feedbackIcon = null;
+              let feedbackStyle = {};
+              if (questionSubmitted[current]) {
+                if (correctLabels.includes(choiceLabel)) {
+                  // Correct answer
+                  if (userSelected) {
+                    feedbackIcon = <span style={{ color: 'green', marginLeft: 8 }}>✅</span>;
+                    feedbackStyle = { color: 'green', fontWeight: 'bold' };
+                  } else {
+                    // Missed correct answer
+                    feedbackIcon = <span style={{ color: 'green', marginLeft: 8 }}>✅</span>;
+                    feedbackStyle = { color: 'green' };
+                  }
+                } else if (userSelected) {
+                  // Incorrect selection
+                  feedbackIcon = <span style={{ color: 'red', marginLeft: 8 }}>❌</span>;
+                  feedbackStyle = { color: 'red', fontWeight: 'bold' };
+                }
+              }
+
               return (
-                <label key={idx}>
+                <label key={idx} style={feedbackStyle}>
                   <input
                     type={isSingle ? "radio" : "checkbox"}
                     name={`answer-${current}`}
                     value={choice}
-                    checked={
-                      isSingle
-                        ? userAnswers[current]?.[0] === choice
-                        : Array.isArray(userAnswers[current]) && userAnswers[current].includes(choice)
-                    }
+                    checked={userSelected}
                     onChange={e => {
                       if (submitted) return;
                       if (isSingle) {
-                        // Only one can be selected
                         updateUserAnswer([choice]);
                       } else {
                         let arr = Array.isArray(userAnswers[current]) ? [...userAnswers[current]] : [];
@@ -268,6 +290,7 @@ function App() {
                     disabled={submitted}
                   />
                   {choice}
+                  {feedbackIcon}
                 </label>
               );
             })}
