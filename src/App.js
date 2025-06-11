@@ -237,28 +237,40 @@ function App() {
         {/* Multiple Choice Rendering */}
         {q.question_type?.toLowerCase() === 'multiple choice' && (
           <div className="choices">
-            {choices.map((choice, idx) => (
-              <label key={idx}>
-                <input
-                  type="checkbox"
-                  name="answer"
-                  value={choice}
-                  checked={Array.isArray(userAnswers[current]) ? userAnswers[current].includes(choice) : false}
-                  onChange={e => {
-                    if (submitted) return;
-                    let arr = Array.isArray(userAnswers[current]) ? [...userAnswers[current]] : [];
-                    if (e.target.checked) {
-                      if (!arr.includes(choice)) arr.push(choice);
-                    } else {
-                      arr = arr.filter(c => c !== choice);
+            {choices.map((choice, idx) => {
+              const isSingle = q.correct_answer.split(',').length === 1;
+              return (
+                <label key={idx}>
+                  <input
+                    type={isSingle ? "radio" : "checkbox"}
+                    name={`answer-${current}`}
+                    value={choice}
+                    checked={
+                      isSingle
+                        ? userAnswers[current]?.[0] === choice
+                        : Array.isArray(userAnswers[current]) && userAnswers[current].includes(choice)
                     }
-                    updateUserAnswer(arr);
-                  }}
-                  disabled={submitted}
-                />
-                {choice}
-              </label>
-            ))}
+                    onChange={e => {
+                      if (submitted) return;
+                      if (isSingle) {
+                        // Only one can be selected
+                        updateUserAnswer([choice]);
+                      } else {
+                        let arr = Array.isArray(userAnswers[current]) ? [...userAnswers[current]] : [];
+                        if (e.target.checked) {
+                          if (!arr.includes(choice)) arr.push(choice);
+                        } else {
+                          arr = arr.filter(c => c !== choice);
+                        }
+                        updateUserAnswer(arr);
+                      }
+                    }}
+                    disabled={submitted}
+                  />
+                  {choice}
+                </label>
+              );
+            })}
           </div>
         )}
 
@@ -272,10 +284,11 @@ function App() {
                   value={userAnswers[current]?.[label] || ''}
                   onChange={(e) => {
                     if (submitted) return;
-                    updateUserAnswer(prev => ({
+                    const prev = userAnswers[current] || {};
+                    updateUserAnswer({
                       ...prev,
                       [label]: e.target.value
-                    }));
+                    });
                   }}
                   disabled={submitted}
                 >
