@@ -31,7 +31,7 @@ function App() {
   const isLast = current >= questions.length - 1;
 
   // Multiple Choice
-  const choices = q.choices?.split(/\r?\n|\\n|•|–|-/g).map(s => s.trim()).filter(Boolean) || [];
+  const choices = q.choices?.match(/^[A-Z]\..+?(?=\n[A-Z]\.|$)/gms)?.map(s => s.trim()) || [];
 
   // Hotspot: parse as label: option1, option2, ...
   const hotspotOptions = {};
