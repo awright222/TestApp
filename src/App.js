@@ -56,6 +56,11 @@ function App() {
     }
   }
 
+  function getChoiceLabel(choice) {
+    const match = choice.match(/^([A-Z])\./);
+    return match ? match[1] : null;
+  }
+
   const checkAnswer = () => {
     setChecked(true);
 
@@ -63,13 +68,12 @@ function App() {
     let total = 0;
 
     if (q.question_type?.toLowerCase() === 'multiple choice') {
-      // Support multiple correct answers, comma-separated
-      const correct = q.correct_answer.split(',').map(s => s.trim());
-      total = correct.length;
+      const correct = q.correct_answer.split(',').map(s => s.trim()); // ["A", "C", "E"]
+      const user = Array.isArray(userAnswer) ? userAnswer : [userAnswer]; // ["A. ...", "C. ..."]
+      const userLabels = user.map(getChoiceLabel);
 
-      // If userAnswer is a string (single select), convert to array
-      const user = Array.isArray(userAnswer) ? userAnswer : [userAnswer];
-      points = user.filter(ans => correct.includes(ans)).length;
+      points = userLabels.filter(label => correct.includes(label)).length;
+      total = correct.length;
     } else if (q.question_type?.toLowerCase() === 'hotspot') {
       const correctEntries = Object.entries(correctHotspotAnswers);
       total = correctEntries.length;
@@ -242,20 +246,25 @@ function App() {
                 {q.question_type?.toLowerCase() === 'multiple choice' && (() => {
                   const correct = q.correct_answer.split(',').map(s => s.trim());
                   const user = Array.isArray(userAnswer) ? userAnswer : [userAnswer];
+                  const userLabels = user.map(getChoiceLabel);
+
                   return (
                     <ul>
-                      {choices.map((choice, idx) => (
-                        <li key={idx} style={{
-                          color: correct.includes(choice)
-                            ? (user.includes(choice) ? 'green' : 'orange')
-                            : (user.includes(choice) ? 'red' : undefined)
-                        }}>
-                          {choice}
-                          {correct.includes(choice) && user.includes(choice) && ' ✅'}
-                          {correct.includes(choice) && !user.includes(choice) && ' (missed)'}
-                          {!correct.includes(choice) && user.includes(choice) && ' ❌'}
-                        </li>
-                      ))}
+                      {choices.map((choice, idx) => {
+                        const label = getChoiceLabel(choice);
+                        return (
+                          <li key={idx} style={{
+                            color: correct.includes(label)
+                              ? (userLabels.includes(label) ? 'green' : 'orange')
+                              : (userLabels.includes(label) ? 'red' : undefined)
+                          }}>
+                            {choice}
+                            {correct.includes(label) && userLabels.includes(label) && ' ✅'}
+                            {correct.includes(label) && !userLabels.includes(label) && ' (missed)'}
+                            {!correct.includes(label) && userLabels.includes(label) && ' ❌'}
+                          </li>
+                        );
+                      })}
                     </ul>
                   );
                 })()}
