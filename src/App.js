@@ -12,6 +12,8 @@ function App() {
   const [showExplanation, setShowExplanation] = useState(false);
   const [userAnswers, setUserAnswers] = useState([]); // Store answers for all questions
   const [submitted, setSubmitted] = useState(false);
+  const [questionScore, setQuestionScore] = useState(Array(questions.length).fill(null)); // Track per-question score
+  const [questionSubmitted, setQuestionSubmitted] = useState(Array(questions.length).fill(false)); // Track if question was submitted
 
   useEffect(() => {
     Papa.parse(SHEET_CSV_URL, {
@@ -126,22 +128,58 @@ function App() {
     return '';
   }
 
+  // Add this function to check and score the current question
+  const submitCurrentQuestion = () => {
+    let points = 0;
+    if (q.question_type?.toLowerCase() === 'multiple choice') {
+      const correct = q.correct_answer.split(',').map(s => s.trim());
+      const user = Array.isArray(userAnswers[current]) ? userAnswers[current] : [userAnswers[current]];
+      const userLabels = user.map(getChoiceLabel);
+      // Count how many correct answers the user selected
+      points = userLabels.filter(label => correct.includes(label)).length;
+    } else if (q.question_type?.toLowerCase() === 'hotspot') {
+      const correctHotspotAnswers = {};
+      const lines = q.correct_answer.split(/\r?\n/).filter(Boolean);
+      for (const line of lines) {
+        const [label, answer] = line.split(':');
+        if (label && answer) {
+          correctHotspotAnswers[label.trim()] = answer.trim();
+        }
+      }
+      // Count how many dropdowns are correct
+      points = Object.entries(correctHotspotAnswers).filter(
+        ([label, correct]) => userAnswers[current][label] === correct
+      ).length;
+    }
+    setShowExplanation(true);
+    setQuestionSubmitted(prev => {
+      const updated = [...prev];
+      updated[current] = true;
+      return updated;
+    });
+    setQuestionScore(prev => {
+      const updated = [...prev];
+      updated[current] = points;
+      return updated;
+    });
+  };
+
+  // Calculate running score
+  const runningScore = questionScore.reduce((sum, val) => sum + (val || 0), 0);
+
   return (
     <div className="app">
       <h1>MB-800: Microsoft Dynamics 365 Business Central Functional Consultant Practice Test</h1>
       <div style={{ marginBottom: '1rem', fontWeight: 'bold' }}>
-        {submitted
-          ? <>Final Score: {calculateScore()} / {
-            questions.reduce((sum, q) => {
-              if (q.question_type?.toLowerCase() === 'multiple choice') {
-                return sum + q.correct_answer.split(',').length;
-              } else if (q.question_type?.toLowerCase() === 'hotspot') {
-                return sum + q.correct_answer.split(/\r?\n/).filter(Boolean).length;
-              }
-              return sum + 1;
-            }, 0)
-          }</>
-          : <>Score: -- / --</>
+        Score: {runningScore} / {
+          questions.reduce((sum, q) => {
+            if (q.question_type?.toLowerCase() === 'multiple choice') {
+              return sum + q.correct_answer.split(',').length;
+            } else if (q.question_type?.toLowerCase() === 'hotspot') {
+              return sum + q.correct_answer.split(/\r?\n/).filter(Boolean).length;
+            }
+            return sum + 1;
+          }, 0)
         }
       </div>
       <div style={{ marginBottom: '1rem' }}>
@@ -161,7 +199,10 @@ function App() {
             setQuestions(originalQuestions);
             setCurrent(0);
             setShowExplanation(false);
-            setScore(0);
+            setSubmitted(false);
+            setUserAnswers(originalQuestions.map(getInitialUserAnswer));
+            setQuestionScore(Array(originalQuestions.length).fill(null));
+            setQuestionSubmitted(Array(originalQuestions.length).fill(false));
           }}
         >
           Reset
@@ -205,15 +246,13 @@ function App() {
                   checked={Array.isArray(userAnswers[current]) ? userAnswers[current].includes(choice) : false}
                   onChange={e => {
                     if (submitted) return;
-                    updateUserAnswer(prev => {
-                      let arr = Array.isArray(prev) ? [...prev] : [];
-                      if (e.target.checked) {
-                        if (!arr.includes(choice)) arr.push(choice);
-                      } else {
-                        arr = arr.filter(c => c !== choice);
-                      }
-                      return arr;
-                    });
+                    let arr = Array.isArray(userAnswers[current]) ? [...userAnswers[current]] : [];
+                    if (e.target.checked) {
+                      if (!arr.includes(choice)) arr.push(choice);
+                    } else {
+                      arr = arr.filter(c => c !== choice);
+                    }
+                    updateUserAnswer(arr);
                   }}
                   disabled={submitted}
                 />
@@ -283,6 +322,36 @@ function App() {
               }, 0)
             }
           </p>
+        )}
+
+        {/* Explanation Section */}
+        {!submitted && (
+          <div style={{ marginTop: '1rem' }}>
+            <button onClick={() => setShowExplanation(true)}>Check Answer</button>
+          </div>
+        )}
+        {showExplanation && (
+          <div style={{ marginTop: '1rem', backgroundColor: '#f0f0f0', color: '#003049', padding: '1rem', borderRadius: 8 }}>
+            <strong>Explanation:</strong>
+            <p>{q.explanation || 'No explanation provided.'}</p>
+            <p><strong>Correct Answer:</strong> {q.correct_answer}</p>
+          </div>
+        )}
+
+        {/* Submit Question Button */}
+        {!submitted && !questionSubmitted[current] && (
+          <div style={{ marginTop: '1rem' }}>
+            <button onClick={submitCurrentQuestion}>Submit Question</button>
+          </div>
+        )}
+        {questionSubmitted[current] && (
+          <div style={{ marginTop: '1rem', backgroundColor: '#f0f0f0', color: '#003049', padding: '1rem', borderRadius: 8 }}>
+            <strong>
+              {questionScore[current] === 1 ? "✅ Correct!" : "❌ Incorrect."}
+            </strong>
+            <p><strong>Explanation:</strong> {q.explanation || 'No explanation provided.'}</p>
+            <p><strong>Correct Answer:</strong> {q.correct_answer}</p>
+          </div>
         )}
       </div>
     </div>
