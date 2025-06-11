@@ -174,11 +174,11 @@ function App() {
                   checked={Array.isArray(userAnswer) ? userAnswer.includes(choice) : false}
                   onChange={e => {
                     setUserAnswer(prev => {
-                      const arr = Array.isArray(prev) ? [...prev] : [];
+                      let arr = Array.isArray(prev) ? [...prev] : [];
                       if (e.target.checked) {
-                        arr.push(choice);
+                        if (!arr.includes(choice)) arr.push(choice);
                       } else {
-                        return arr.filter(c => c !== choice);
+                        arr = arr.filter(c => c !== choice);
                       }
                       return arr;
                     });
