@@ -10,8 +10,8 @@ function App() {
   const [current, setCurrent] = useState(0);
   const [score, setScore] = useState(0);
   const [showExplanation, setShowExplanation] = useState(false);
-  const [userAnswer, setUserAnswer] = useState({});
-  const [checked, setChecked] = useState(false);
+  const [userAnswers, setUserAnswers] = useState([]); // Store answers for all questions
+  const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
     Papa.parse(SHEET_CSV_URL, {
@@ -20,7 +20,8 @@ function App() {
       complete: (result) => {
         const filtered = result.data.filter(q => q.question_text);
         setQuestions(filtered);
-        setOriginalQuestions(filtered); // Save the original questions
+        setOriginalQuestions(filtered);
+        setUserAnswers(filtered.map(getInitialUserAnswer)); // Initialize answers
       },
     });
   }, []);
@@ -61,41 +62,49 @@ function App() {
     return match ? match[1] : null;
   }
 
-  const checkAnswer = () => {
-    setChecked(true);
+  // Update answer for current question
+  const updateUserAnswer = (answer) => {
+    setUserAnswers(prev => {
+      const updated = [...prev];
+      updated[current] = answer;
+      return updated;
+    });
+  };
 
-    let points = 0;
-    let total = 0;
-
-    if (q.question_type?.toLowerCase() === 'multiple choice') {
-      const correct = q.correct_answer.split(',').map(s => s.trim()); // ["A", "C", "E"]
-      const user = Array.isArray(userAnswer) ? userAnswer : [userAnswer]; // ["A. ...", "C. ..."]
-      const userLabels = user.map(getChoiceLabel);
-
-      points = userLabels.filter(label => correct.includes(label)).length;
-      total = correct.length;
-    } else if (q.question_type?.toLowerCase() === 'hotspot') {
-      const correctEntries = Object.entries(correctHotspotAnswers);
-      total = correctEntries.length;
-      points = correctEntries.filter(
-        ([label, correct]) => userAnswer[label] === correct
-      ).length;
-    }
-
-    setScore(prev => prev + points);
+  // Calculate score on submit
+  const calculateScore = () => {
+    let totalScore = 0;
+    questions.forEach((q, idx) => {
+      if (q.question_type?.toLowerCase() === 'multiple choice') {
+        const correct = q.correct_answer.split(',').map(s => s.trim());
+        const user = Array.isArray(userAnswers[idx]) ? userAnswers[idx] : [userAnswers[idx]];
+        const userLabels = user.map(getChoiceLabel);
+        totalScore += userLabels.filter(label => correct.includes(label)).length;
+      } else if (q.question_type?.toLowerCase() === 'hotspot') {
+        const correctHotspotAnswers = {};
+        const lines = q.correct_answer.split(/\r?\n/).filter(Boolean);
+        for (const line of lines) {
+          const [label, answer] = line.split(':');
+          if (label && answer) {
+            correctHotspotAnswers[label.trim()] = answer.trim();
+          }
+        }
+        const correctEntries = Object.entries(correctHotspotAnswers);
+        totalScore += correctEntries.filter(
+          ([label, correct]) => userAnswers[idx][label] === correct
+        ).length;
+      }
+    });
+    return totalScore;
   };
 
   const nextQuestion = () => {
     setCurrent(prev => prev + 1);
-    setUserAnswer(getInitialUserAnswer(questions[current + 1]));
-    setChecked(false);
     setShowExplanation(false);
   };
 
   const prevQuestion = () => {
     setCurrent(prev => Math.max(0, prev - 1));
-    setUserAnswer(getInitialUserAnswer(questions[Math.max(0, current - 1)]));
-    setChecked(false);
     setShowExplanation(false);
   };
 
@@ -120,17 +129,19 @@ function App() {
   return (
     <div className="app">
       <h1>MB-800: Microsoft Dynamics 365 Business Central Functional Consultant Practice Test</h1>
-      {/* Score Display */}
       <div style={{ marginBottom: '1rem', fontWeight: 'bold' }}>
-        Score: {score} / {
-          questions.reduce((sum, q) => {
-            if (q.question_type?.toLowerCase() === 'multiple choice') {
-              return sum + q.correct_answer.split(',').length;
-            } else if (q.question_type?.toLowerCase() === 'hotspot') {
-              return sum + q.correct_answer.split(/\r?\n/).filter(Boolean).length;
-            }
-            return sum + 1;
-          }, 0)
+        {submitted
+          ? <>Final Score: {calculateScore()} / {
+            questions.reduce((sum, q) => {
+              if (q.question_type?.toLowerCase() === 'multiple choice') {
+                return sum + q.correct_answer.split(',').length;
+              } else if (q.question_type?.toLowerCase() === 'hotspot') {
+                return sum + q.correct_answer.split(/\r?\n/).filter(Boolean).length;
+              }
+              return sum + 1;
+            }, 0)
+          }</>
+          : <>Score: -- / --</>
         }
       </div>
       <div style={{ marginBottom: '1rem' }}>
@@ -138,8 +149,6 @@ function App() {
           onClick={() => {
             setQuestions(shuffleArray(originalQuestions));
             setCurrent(0);
-            setUserAnswer(getInitialUserAnswer(originalQuestions[0]));
-            setChecked(false);
             setShowExplanation(false);
             setScore(0);
           }}
@@ -151,8 +160,6 @@ function App() {
           onClick={() => {
             setQuestions(originalQuestions);
             setCurrent(0);
-            setUserAnswer(getInitialUserAnswer(originalQuestions[0]));
-            setChecked(false);
             setShowExplanation(false);
             setScore(0);
           }}
@@ -173,8 +180,6 @@ function App() {
               const val = Number(e.target.value);
               if (val >= 1 && val <= questions.length) {
                 setCurrent(val - 1);
-                setUserAnswer(getInitialUserAnswer(questions[val - 1]));
-                setChecked(false);
                 setShowExplanation(false);
               }
             }}
@@ -197,9 +202,10 @@ function App() {
                   type="checkbox"
                   name="answer"
                   value={choice}
-                  checked={Array.isArray(userAnswer) ? userAnswer.includes(choice) : false}
+                  checked={Array.isArray(userAnswers[current]) ? userAnswers[current].includes(choice) : false}
                   onChange={e => {
-                    setUserAnswer(prev => {
+                    if (submitted) return;
+                    updateUserAnswer(prev => {
                       let arr = Array.isArray(prev) ? [...prev] : [];
                       if (e.target.checked) {
                         if (!arr.includes(choice)) arr.push(choice);
@@ -209,7 +215,7 @@ function App() {
                       return arr;
                     });
                   }}
-                  disabled={checked}
+                  disabled={submitted}
                 />
                 {choice}
               </label>
@@ -224,12 +230,15 @@ function App() {
               <div key={idx} style={{ marginBottom: '1rem' }}>
                 <strong>{label}</strong>
                 <select
-                  value={userAnswer[label] || ''}
-                  onChange={(e) => setUserAnswer(prev => ({
-                    ...prev,
-                    [label]: e.target.value
-                  }))}
-                  disabled={checked}
+                  value={userAnswers[current]?.[label] || ''}
+                  onChange={(e) => {
+                    if (submitted) return;
+                    updateUserAnswer(prev => ({
+                      ...prev,
+                      [label]: e.target.value
+                    }));
+                  }}
+                  disabled={submitted}
                 >
                   <option value="">-- Select an option --</option>
                   {options.map((opt, i) => (
@@ -241,87 +250,29 @@ function App() {
           </div>
         )}
 
-        {/* Answer Feedback */}
         <div style={{ marginTop: '1rem' }}>
-          {!checked && (
-            <button onClick={checkAnswer} disabled={
-              q.question_type?.toLowerCase() === 'multiple choice'
-                ? !userAnswer.length
-                : Object.keys(hotspotOptions).some(label => !userAnswer[label])
-            }>
-              Check Answer
-            </button>
-          )}
-
-          {checked && (
-            <>
-              <div>
-                {q.question_type?.toLowerCase() === 'multiple choice' && (() => {
-                  const correct = q.correct_answer.split(',').map(s => s.trim());
-                  const user = Array.isArray(userAnswer) ? userAnswer : [userAnswer];
-                  const userLabels = user.map(getChoiceLabel);
-
-                  return (
-                    <ul>
-                      {choices.map((choice, idx) => {
-                        const label = getChoiceLabel(choice);
-                        return (
-                          <li key={idx} style={{
-                            color: correct.includes(label)
-                              ? (userLabels.includes(label) ? 'green' : 'orange')
-                              : (userLabels.includes(label) ? 'red' : undefined)
-                          }}>
-                            {choice}
-                            {correct.includes(label) && userLabels.includes(label) && ' ✅'}
-                            {correct.includes(label) && !userLabels.includes(label) && ' (missed)'}
-                            {!correct.includes(label) && userLabels.includes(label) && ' ❌'}
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  );
-                })()}
-                {q.question_type?.toLowerCase() === 'hotspot' && (() => {
-                  return (
-                    <ul>
-                      {Object.entries(hotspotOptions).map(([label, options], idx) => {
-                        const correct = correctHotspotAnswers[label];
-                        const user = userAnswer[label];
-                        return (
-                          <li key={idx} style={{
-                            color: user === correct ? 'green' : 'red'
-                          }}>
-                            <strong>{label}:</strong> {user || '(no answer)'}
-                            {user === correct ? ' ✅' : ` ❌ (Correct: ${correct})`}
-                          </li>
-                        );
-                      })}
-                    </ul>
-                  );
-                })()}
-              </div>
-              <button onClick={() => setShowExplanation(prev => !prev)}>
-                {showExplanation ? 'Hide' : 'Show'} Explanation
-              </button>
-              {showExplanation && (
-                <p className="explanation">💡 {q.explanation}</p>
-              )}
-            </>
-          )}
-        </div>
-
-        <div style={{ marginTop: '1rem' }}>
-          <button onClick={prevQuestion} disabled={current === 0}>⬅ Back</button>
+          <button onClick={prevQuestion} disabled={current === 0 || submitted}>⬅ Back</button>
           {!isLast && (
-            <button onClick={nextQuestion} style={{ marginLeft: '1rem' }}>
+            <button onClick={nextQuestion} style={{ marginLeft: '1rem' }} disabled={submitted}>
               Next ➡
             </button>
           )}
         </div>
 
-        {isLast && checked && (
-          <p style={{ marginTop: '1rem' }}>
-            🎉 You’ve completed the test! Final Score: {score} / {
+        {/* Submit Button */}
+        {isLast && !submitted && (
+          <button
+            style={{ marginTop: '2rem', fontWeight: 'bold' }}
+            onClick={() => setSubmitted(true)}
+          >
+            Submit Test
+          </button>
+        )}
+
+        {/* Show score after submit */}
+        {submitted && (
+          <p style={{ marginTop: '2rem', fontWeight: 'bold' }}>
+            🎉 You’ve completed the test! Final Score: {calculateScore()} / {
               questions.reduce((sum, q) => {
                 if (q.question_type?.toLowerCase() === 'multiple choice') {
                   return sum + q.correct_answer.split(',').length;
