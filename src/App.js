@@ -392,7 +392,18 @@ function App() {
         {questionSubmitted[current] && (
           <div style={{ marginTop: '1rem', backgroundColor: '#f0f0f0', color: '#003049', padding: '1rem', borderRadius: 8 }}>
             <strong>
-              {questionScore[current] === 1 ? "✅ Correct!" : "❌ Incorrect."}
+              {
+                // Calculate max possible points for this question
+                (() => {
+                  let maxPoints = 1;
+                  if (q.question_type?.toLowerCase() === 'multiple choice') {
+                    maxPoints = q.correct_answer.split(',').length;
+                  } else if (q.question_type?.toLowerCase() === 'hotspot') {
+                    maxPoints = q.correct_answer.split(/\r?\n/).filter(Boolean).length;
+                  }
+                  return questionScore[current] === maxPoints ? "✅ Correct!" : "❌ Incorrect.";
+                })()
+              }
             </strong>
             <p><strong>Explanation:</strong> {q.explanation || 'No explanation provided.'}</p>
             <p><strong>Correct Answer:</strong> {q.correct_answer}</p>
