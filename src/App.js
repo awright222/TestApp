@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react';
 import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import Papa from 'papaparse';
 import './App.css';
-import CaseStudies from './CaseStudies';
+import { CaseStudies, CaseStudyDetail } from './CaseStudies';
 
-const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTDO68GqAelFKS2G6SwiUWdPs2tw5Gt62D5xLiB_9zyLyBPLSZm5gTthaQz9yCpmDKuymWMc83PV5a2/pub?output=csv';
+const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTDO68GqAelFKS2G6SwiUWdPs2tw5Gt62D5xLiB_9zyLyBPLSZm5gTthaQz9yCpmDKuymWMc83PV5a2/pub?gid=0&single=true&output=csv';
 
 function App() {
   const [questions, setQuestions] = useState([]);
@@ -487,6 +487,7 @@ function App() {
             </div>
           } />
           <Route path="/case-studies" element={<CaseStudies />} />
+          <Route path="/case-studies/:id" element={<CaseStudyDetail />} />
         </Routes>
       </div>
     </div>
