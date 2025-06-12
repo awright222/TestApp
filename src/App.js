@@ -398,17 +398,7 @@ function App() {
           </div>
         )}
 
-        {/* Info Button and Modal */}
-        {!submitted && (
-          <button
-            className="info-btn"
-            onClick={openModal}
-            aria-label="Show explanation"
-            title="Show explanation"
-          >
-            <span className="info-circle">i</span>
-          </button>
-        )}
+
         {showModal && (
           <div className="modal-overlay" onClick={closeModal}>
             <div className="modal-content" onClick={e => e.stopPropagation()}>
