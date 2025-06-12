@@ -14,6 +14,7 @@ function App() {
   const [submitted, setSubmitted] = useState(false);
   const [questionScore, setQuestionScore] = useState(Array(questions.length).fill(null)); // Track per-question score
   const [questionSubmitted, setQuestionSubmitted] = useState(Array(questions.length).fill(false)); // Track if question was submitted
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
     Papa.parse(SHEET_CSV_URL, {
@@ -167,6 +168,9 @@ function App() {
   // Calculate running score
   const runningScore = questionScore.reduce((sum, val) => sum + (val || 0), 0);
 
+  const openModal = () => setShowModal(true);
+  const closeModal = () => setShowModal(false);
+
   return (
     <div className="app">
       <h1>MB-800: Microsoft Dynamics 365 Business Central Functional Consultant Practice Test</h1>
@@ -231,7 +235,21 @@ function App() {
       </div>
 
       <div className="question-box">
-        <h2>Question {current + 1} of {questions.length}</h2>
+        <div className="question-header">
+          <h2>
+            Question {current + 1} of {questions.length}
+          </h2>
+          {!submitted && (
+            <button
+              className="info-btn"
+              onClick={openModal}
+              aria-label="Show explanation"
+              title="Show explanation"
+            >
+              <span className="info-circle">i</span>
+            </button>
+          )}
+        </div>
         <p>{q.question_text}</p>
 
         {/* Multiple Choice Rendering */}
@@ -364,20 +382,6 @@ function App() {
           </p>
         )}
 
-        {/* Explanation Section */}
-        {!submitted && (
-          <div style={{ marginTop: '1rem' }}>
-            <button onClick={() => setShowExplanation(true)}>Check Answer</button>
-          </div>
-        )}
-        {showExplanation && (
-          <div style={{ marginTop: '1rem', backgroundColor: '#f0f0f0', color: '#003049', padding: '1rem', borderRadius: 8 }}>
-            <strong>Explanation:</strong>
-            <p>{q.explanation || 'No explanation provided.'}</p>
-            <p><strong>Correct Answer:</strong> {q.correct_answer}</p>
-          </div>
-        )}
-
         {/* Submit Question Button */}
         {!submitted && !questionSubmitted[current] && (
           <div style={{ marginTop: '1rem' }}>
@@ -391,6 +395,28 @@ function App() {
             </strong>
             <p><strong>Explanation:</strong> {q.explanation || 'No explanation provided.'}</p>
             <p><strong>Correct Answer:</strong> {q.correct_answer}</p>
+          </div>
+        )}
+
+        {/* Info Button and Modal */}
+        {!submitted && (
+          <button
+            className="info-btn"
+            onClick={openModal}
+            aria-label="Show explanation"
+            title="Show explanation"
+          >
+            <span className="info-circle">i</span>
+          </button>
+        )}
+        {showModal && (
+          <div className="modal-overlay" onClick={closeModal}>
+            <div className="modal-content" onClick={e => e.stopPropagation()}>
+              <button className="modal-close" onClick={closeModal} aria-label="Close">&times;</button>
+              <strong>Explanation</strong>
+              <p style={{ marginTop: '1rem' }}>{q.explanation || 'No explanation provided.'}</p>
+              {/* <p><strong>Correct Answer:</strong> {q.correct_answer}</p> */}
+            </div>
           </div>
         )}
       </div>

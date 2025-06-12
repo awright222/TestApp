@@ -27,6 +27,13 @@ body {
   color: #FDF0D5;
 }
 
+.question-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
 .choices label {
   display: block;
   margin-bottom: 0.75rem;
@@ -73,4 +80,67 @@ button {
 button:hover {
   background: #669BBC;
   color: #003049;
+}
+
+.info-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  margin-top: 1rem;
+  margin-left: 0.5rem;
+  vertical-align: middle;
+  padding: 0;
+}
+
+.info-circle {
+  display: inline-block;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid #669BBC;
+  text-align: center;
+  line-height: 24px;
+  font-weight: bold;
+  font-family: inherit;
+  background: #00243a;
+  color: #669BBC;
+  font-size: 1.3rem;
+  transition: background 0.2s, color 0.2s;
+}
+
+.info-btn:hover .info-circle {
+  background: #669BBC;
+  color: #003049;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content {
+  background: #fff;
+  color: #003049;
+  border-radius: 10px;
+  padding: 2rem;
+  min-width: 320px;
+  max-width: 400px;
+  position: relative;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+}
+
+.modal-close {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 1.3rem;
+  color: #003049;
+  cursor: pointer;
 }
