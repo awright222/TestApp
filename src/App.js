@@ -385,7 +385,7 @@ function App() {
 
         {/* Submit Question Button */}
         {!submitted && !questionSubmitted[current] && (
-          <div style={{ marginTop: '1rem' }}>
+          <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'center' }}>
             <button onClick={submitCurrentQuestion}>Submit Question</button>
           </div>
         )}
