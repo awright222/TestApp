@@ -369,18 +369,50 @@ function App() {
 
         {/* Show score after submit */}
         {submitted && (
-          <p style={{ marginTop: '2rem', fontWeight: 'bold' }}>
-            🎉 You’ve completed the test! Final Score: {calculateScore()} / {
-              questions.reduce((sum, q) => {
-                if (q.question_type?.toLowerCase() === 'multiple choice') {
-                  return sum + q.correct_answer.split(',').length;
-                } else if (q.question_type?.toLowerCase() === 'hotspot') {
-                  return sum + q.correct_answer.split(/\r?\n/).filter(Boolean).length;
-                }
-                return sum + 1;
-              }, 0)
-            }
-          </p>
+          <div className="final-page" style={{ textAlign: 'center', marginTop: '2rem' }}>
+            <p style={{ fontWeight: 'bold', fontSize: '1.3rem' }}>
+              🎉 You’ve completed the test!<br />
+              Final Score: {calculateScore()} / {
+                questions.reduce((sum, q) => {
+                  if (q.question_type?.toLowerCase() === 'multiple choice') {
+                    return sum + q.correct_answer.split(',').length;
+                  } else if (q.question_type?.toLowerCase() === 'hotspot') {
+                    return sum + q.correct_answer.split(/\r?\n/).filter(Boolean).length;
+                  }
+                  return sum + 1;
+                }, 0)
+              }
+              <br />
+              {
+                (() => {
+                  const total = questions.reduce((sum, q) => {
+                    if (q.question_type?.toLowerCase() === 'multiple choice') {
+                      return sum + q.correct_answer.split(',').length;
+                    } else if (q.question_type?.toLowerCase() === 'hotspot') {
+                      return sum + q.correct_answer.split(/\r?\n/).filter(Boolean).length;
+                    }
+                    return sum + 1;
+                  }, 0);
+                  const percent = total === 0 ? 0 : Math.round((calculateScore() / total) * 100);
+                  return `You got ${percent}% correct.`;
+                })()
+              }
+            </p>
+            <button
+              style={{ marginTop: '1.5rem' }}
+              onClick={() => {
+                setQuestions(originalQuestions);
+                setCurrent(0);
+                setShowExplanation(false);
+                setSubmitted(false);
+                setUserAnswers(originalQuestions.map(getInitialUserAnswer));
+                setQuestionScore(Array(originalQuestions.length).fill(null));
+                setQuestionSubmitted(Array(originalQuestions.length).fill(false));
+              }}
+            >
+              Reset
+            </button>
+          </div>
         )}
 
         {/* Submit Question Button */}
