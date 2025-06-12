@@ -347,10 +347,10 @@ function App() {
           </div>
         )}
 
-        <div style={{ marginTop: '1rem' }}>
+        <div className="nav-row">
           <button onClick={prevQuestion} disabled={current === 0 || submitted}>⬅ Back</button>
           {!isLast && (
-            <button onClick={nextQuestion} style={{ marginLeft: '1rem' }} disabled={submitted}>
+            <button onClick={nextQuestion} disabled={submitted}>
               Next ➡
             </button>
           )}
@@ -358,12 +358,13 @@ function App() {
 
         {/* Submit Button */}
         {isLast && !submitted && (
-          <button
-            style={{ marginTop: '2rem', fontWeight: 'bold' }}
-            onClick={() => setSubmitted(true)}
-          >
-            Submit Test
-          </button>
+          <div className="submit-row">
+            <button
+              onClick={() => setSubmitted(true)}
+            >
+              Submit Test
+            </button>
+          </div>
         )}
 
         {/* Show score after submit */}

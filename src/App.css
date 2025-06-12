@@ -144,3 +144,16 @@ button:hover {
   color: #003049;
   cursor: pointer;
 }
+
+.nav-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+}
+
+.submit-row {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+}
