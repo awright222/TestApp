@@ -17,7 +17,10 @@ function App() {
   const [questionScore, setQuestionScore] = useState(Array(questions.length).fill(null)); // Track per-question score
   const [questionSubmitted, setQuestionSubmitted] = useState(Array(questions.length).fill(false)); // Track if question was submitted
   const [showModal, setShowModal] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
 
+  // ✅ All hooks (including useEffect) go here, before any return or if
   useEffect(() => {
     Papa.parse(SHEET_CSV_URL, {
       download: true,
@@ -31,9 +34,26 @@ function App() {
     });
   }, []);
 
-  const location = useLocation();
+  // Filter questions by search term
+  useEffect(() => {
+    if (searchTerm.trim() === '') {
+      setSearchResults([]);
+    } else {
+      const term = searchTerm.toLowerCase();
+      setSearchResults(
+        questions.filter(q =>
+          (q.question_text && q.question_text.toLowerCase().includes(term)) ||
+          (q.choices && q.choices.toLowerCase().includes(term)) ||
+          (q.explanation && q.explanation.toLowerCase().includes(term))
+        )
+      );
+    }
+  }, [searchTerm, questions]);
 
-  if (questions.length === 0) return <p>Loading questions...</p>;
+  const location = useLocation(); // <-- Moved here
+
+  // ❌ Never put hooks below this line if you have an early return
+  if (!questions.length) return <div>Loading...</div>;
 
   const q = questions[current];
   const isLast = current >= questions.length - 1;
@@ -177,22 +197,44 @@ function App() {
 
   return (
     <div style={{ display: 'flex' }}>
-      {/* Side Panel */}
-      <nav style={{
-        width: 180,
-        background: '#00243a',
-        padding: '2rem 1rem',
-        minHeight: '100vh',
-        borderRight: '2px solid #669BBC'
-      }}>
+      {/* Sidebar */}
+      <nav className="sidebar">
+        {/* Search Bar in Sidebar */}
+        <div className="sidebar-search">
+          <input
+            type="text"
+            placeholder="Search questions..."
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+          />
+          {searchTerm && (
+            <button onClick={() => setSearchTerm('')}>
+              Clear
+            </button>
+          )}
+        </div>
         <ul style={{ listStyle: 'none', padding: 0 }}>
           <li>
-            <Link to="/" style={{ color: location.pathname === '/' ? '#FDF0D5' : '#669BBC', fontWeight: 'bold', textDecoration: 'none' }}>
+            <Link
+              to="/"
+              style={{
+                color: location.pathname === '/' ? '#FDF0D5' : '#669BBC',
+                fontWeight: 'bold',
+                textDecoration: 'none'
+              }}
+            >
               Practice Test
             </Link>
           </li>
           <li style={{ marginTop: '1.5rem' }}>
-            <Link to="/case-studies" style={{ color: location.pathname === '/case-studies' ? '#FDF0D5' : '#669BBC', fontWeight: 'bold', textDecoration: 'none' }}>
+            <Link
+              to="/case-studies"
+              style={{
+                color: location.pathname === '/case-studies' ? '#FDF0D5' : '#669BBC',
+                fontWeight: 'bold',
+                textDecoration: 'none'
+              }}
+            >
               Case Studies
             </Link>
           </li>
@@ -264,226 +306,253 @@ function App() {
                 </label>
               </div>
 
-              <div className="question-box">
-                <div className="question-header">
-                  <h2>
-                    Question {current + 1} of {questions.length}
-                  </h2>
-                  {!submitted && (
-                    <button
-                      className="info-btn"
-                      onClick={openModal}
-                      aria-label="Show explanation"
-                      title="Show explanation"
-                    >
-                      <span className="info-circle">i</span>
-                    </button>
-                  )}
+              {/* If searching, show results */}
+              {searchTerm && (
+                <div className="search-results-container">
+                  <h3>Search Results ({searchResults.length})</h3>
+                  {searchResults.length === 0 && <p>No questions found.</p>}
+                  <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                    {searchResults.map((q, idx) => (
+                      <li key={idx} className="search-result-item">
+                        <strong>Q:</strong> {q.question_text}
+                        <br />
+                        <strong>Type:</strong> {q.question_type}
+                        <br />
+                        <strong>Choices:</strong>
+                        <pre>{q.choices}</pre>
+                        <br />
+                        <strong>Answer:</strong> {q.correct_answer}
+                        <br />
+                        <strong>Explanation:</strong> {q.explanation}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-                <p>{q.question_text}</p>
+              )}
 
-                {/* Multiple Choice Rendering */}
-                {q.question_type?.toLowerCase() === 'multiple choice' && (
-                  <div className="choices">
-                    {choices.map((choice, idx) => {
-                      const isSingle = q.correct_answer.split(',').length === 1;
-                      const correctLabels = q.correct_answer.split(',').map(s => s.trim());
-                      const choiceLabel = getChoiceLabel(choice);
-                      const userSelected = isSingle
-                        ? userAnswers[current]?.[0] === choice
-                        : Array.isArray(userAnswers[current]) && userAnswers[current].includes(choice);
+              {/* Only show quiz if not searching */}
+              {!searchTerm && (
+                <div className="question-box">
+                  <div className="question-header">
+                    <h2>
+                      Question {current + 1} of {questions.length}
+                    </h2>
+                    {!submitted && (
+                      <button
+                        className="info-btn"
+                        onClick={openModal}
+                        aria-label="Show explanation"
+                        title="Show explanation"
+                      >
+                        <span className="info-circle">i</span>
+                      </button>
+                    )}
+                  </div>
+                  <p>{q.question_text}</p>
 
-                      // Determine feedback after question is submitted
-                      let feedbackIcon = null;
-                      let feedbackStyle = {};
-                      if (questionSubmitted[current]) {
-                        if (correctLabels.includes(choiceLabel)) {
-                          // Correct answer
-                          if (userSelected) {
-                            feedbackIcon = <span style={{ color: 'green', marginLeft: 8 }}>✅</span>;
-                            feedbackStyle = { color: 'green', fontWeight: 'bold' };
-                          } else {
-                            // Missed correct answer
-                            feedbackIcon = <span style={{ color: 'green', marginLeft: 8 }}>✅</span>;
-                            feedbackStyle = { color: 'green' };
+                  {/* Multiple Choice Rendering */}
+                  {q.question_type?.toLowerCase() === 'multiple choice' && (
+                    <div className="choices">
+                      {choices.map((choice, idx) => {
+                        const isSingle = q.correct_answer.split(',').length === 1;
+                        const correctLabels = q.correct_answer.split(',').map(s => s.trim());
+                        const choiceLabel = getChoiceLabel(choice);
+                        const userSelected = isSingle
+                          ? userAnswers[current]?.[0] === choice
+                          : Array.isArray(userAnswers[current]) && userAnswers[current].includes(choice);
+
+                        // Determine feedback after question is submitted
+                        let feedbackIcon = null;
+                        let feedbackStyle = {};
+                        if (questionSubmitted[current]) {
+                          if (correctLabels.includes(choiceLabel)) {
+                            // Correct answer
+                            if (userSelected) {
+                              feedbackIcon = <span style={{ color: 'green', marginLeft: 8 }}>✅</span>;
+                              feedbackStyle = { color: 'green', fontWeight: 'bold' };
+                            } else {
+                              // Missed correct answer
+                              feedbackIcon = <span style={{ color: 'green', marginLeft: 8 }}>✅</span>;
+                              feedbackStyle = { color: 'green' };
+                            }
+                          } else if (userSelected) {
+                            // Incorrect selection
+                            feedbackIcon = <span style={{ color: 'red', marginLeft: 8 }}>❌</span>;
+                            feedbackStyle = { color: 'red', fontWeight: 'bold' };
                           }
-                        } else if (userSelected) {
-                          // Incorrect selection
-                          feedbackIcon = <span style={{ color: 'red', marginLeft: 8 }}>❌</span>;
-                          feedbackStyle = { color: 'red', fontWeight: 'bold' };
                         }
-                      }
 
-                      return (
-                        <label key={idx} style={feedbackStyle}>
-                          <input
-                            type={isSingle ? "radio" : "checkbox"}
-                            name={`answer-${current}`}
-                            value={choice}
-                            checked={userSelected}
-                            onChange={e => {
-                              if (submitted) return;
-                              if (isSingle) {
-                                updateUserAnswer([choice]);
-                              } else {
-                                let arr = Array.isArray(userAnswers[current]) ? [...userAnswers[current]] : [];
-                                if (e.target.checked) {
-                                  // Limit selection to the number of correct answers
-                                  const maxSelections = correctLabels.length;
-                                  if (arr.length < maxSelections) {
-                                    if (!arr.includes(choice)) arr.push(choice);
-                                  }
+                        return (
+                          <label key={idx} style={feedbackStyle}>
+                            <input
+                              type={isSingle ? "radio" : "checkbox"}
+                              name={`answer-${current}`}
+                              value={choice}
+                              checked={userSelected}
+                              onChange={e => {
+                                if (submitted) return;
+                                if (isSingle) {
+                                  updateUserAnswer([choice]);
                                 } else {
-                                  arr = arr.filter(c => c !== choice);
+                                  let arr = Array.isArray(userAnswers[current]) ? [...userAnswers[current]] : [];
+                                  if (e.target.checked) {
+                                    // Limit selection to the number of correct answers
+                                    const maxSelections = correctLabels.length;
+                                    if (arr.length < maxSelections) {
+                                      if (!arr.includes(choice)) arr.push(choice);
+                                    }
+                                  } else {
+                                    arr = arr.filter(c => c !== choice);
+                                  }
+                                  updateUserAnswer(arr);
                                 }
-                                updateUserAnswer(arr);
-                              }
+                              }}
+                              disabled={submitted}
+                            />
+                            {choice}
+                            {feedbackIcon}
+                          </label>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {/* Hotspot with Multiple Dropdowns */}
+                  {q.question_type?.toLowerCase() === 'hotspot' && (
+                    <div className="hotspot-dropdowns">
+                      {Object.entries(hotspotOptions).map(([label, options], idx) => (
+                        <div key={idx} style={{ marginBottom: '1rem' }}>
+                          <strong>{label}</strong>
+                          <select
+                            value={userAnswers[current]?.[label] || ''}
+                            onChange={(e) => {
+                              if (submitted) return;
+                              const prev = userAnswers[current] || {};
+                              updateUserAnswer({
+                                ...prev,
+                                [label]: e.target.value
+                              });
                             }}
                             disabled={submitted}
-                          />
-                          {choice}
-                          {feedbackIcon}
-                        </label>
-                      );
-                    })}
-                  </div>
-                )}
-
-                {/* Hotspot with Multiple Dropdowns */}
-                {q.question_type?.toLowerCase() === 'hotspot' && (
-                  <div className="hotspot-dropdowns">
-                    {Object.entries(hotspotOptions).map(([label, options], idx) => (
-                      <div key={idx} style={{ marginBottom: '1rem' }}>
-                        <strong>{label}</strong>
-                        <select
-                          value={userAnswers[current]?.[label] || ''}
-                          onChange={(e) => {
-                            if (submitted) return;
-                            const prev = userAnswers[current] || {};
-                            updateUserAnswer({
-                              ...prev,
-                              [label]: e.target.value
-                            });
-                          }}
-                          disabled={submitted}
-                        >
-                          <option value="">-- Select an option --</option>
-                          {options.map((opt, i) => (
-                            <option key={i} value={opt}>{opt}</option>
-                          ))}
-                        </select>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                <div className="nav-row">
-                  <button onClick={prevQuestion} disabled={current === 0 || submitted}>⬅ Back</button>
-                  {!isLast && (
-                    <button onClick={nextQuestion} disabled={submitted}>
-                      Next ➡
-                    </button>
+                          >
+                            <option value="">-- Select an option --</option>
+                            {options.map((opt, i) => (
+                              <option key={i} value={opt}>{opt}</option>
+                            ))}
+                          </select>
+                        </div>
+                      ))}
+                    </div>
                   )}
-                </div>
 
-                {/* Submit Button */}
-                {isLast && !submitted && (
-                  <div className="submit-row">
-                    <button
-                      onClick={() => setSubmitted(true)}
-                    >
-                      Submit Test
-                    </button>
+                  <div className="nav-row">
+                    <button onClick={prevQuestion} disabled={current === 0 || submitted}>⬅ Back</button>
+                    {!isLast && (
+                      <button onClick={nextQuestion} disabled={submitted}>
+                        Next ➡
+                      </button>
+                    )}
                   </div>
-                )}
 
-                {/* Show score after submit */}
-                {submitted && (
-                  <div className="final-page" style={{ textAlign: 'center', marginTop: '2rem' }}>
-                    <p style={{ fontWeight: 'bold', fontSize: '1.3rem' }}>
-                      🎉 You’ve completed the test!<br />
-                      Final Score: {calculateScore()} / {
-                        questions.reduce((sum, q) => {
-                          if (q.question_type?.toLowerCase() === 'multiple choice') {
-                            return sum + q.correct_answer.split(',').length;
-                          } else if (q.question_type?.toLowerCase() === 'hotspot') {
-                            return sum + q.correct_answer.split(/\r?\n/).filter(Boolean).length;
-                          }
-                          return sum + 1;
-                        }, 0)
-                      }
-                      <br />
-                      {
-                        (() => {
-                          const total = questions.reduce((sum, q) => {
+                  {/* Submit Button */}
+                  {isLast && !submitted && (
+                    <div className="submit-row">
+                      <button
+                        onClick={() => setSubmitted(true)}
+                      >
+                        Submit Test
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Show score after submit */}
+                  {submitted && (
+                    <div className="final-page" style={{ textAlign: 'center', marginTop: '2rem' }}>
+                      <p style={{ fontWeight: 'bold', fontSize: '1.3rem' }}>
+                        🎉 You’ve completed the test!<br />
+                        Final Score: {calculateScore()} / {
+                          questions.reduce((sum, q) => {
                             if (q.question_type?.toLowerCase() === 'multiple choice') {
                               return sum + q.correct_answer.split(',').length;
                             } else if (q.question_type?.toLowerCase() === 'hotspot') {
                               return sum + q.correct_answer.split(/\r?\n/).filter(Boolean).length;
                             }
                             return sum + 1;
-                          }, 0);
-                          const percent = total === 0 ? 0 : Math.round((calculateScore() / total) * 100);
-                          return `You got ${percent}% correct.`;
-                        })()
-                      }
-                    </p>
-                    <button
-                      style={{ marginTop: '1.5rem' }}
-                      onClick={() => {
-                        setQuestions(originalQuestions);
-                        setCurrent(0);
-                        setShowExplanation(false);
-                        setSubmitted(false);
-                        setUserAnswers(originalQuestions.map(getInitialUserAnswer));
-                        setQuestionScore(Array(originalQuestions.length).fill(null));
-                        setQuestionSubmitted(Array(originalQuestions.length).fill(false));
-                      }}
-                    >
-                      Reset
-                    </button>
-                  </div>
-                )}
-
-                {/* Submit Question Button */}
-                {!submitted && !questionSubmitted[current] && (
-                  <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'center' }}>
-                    <button onClick={submitCurrentQuestion}>Submit Question</button>
-                  </div>
-                )}
-                {questionSubmitted[current] && (
-                  <div style={{ marginTop: '1rem', backgroundColor: '#f0f0f0', color: '#003049', padding: '1rem', borderRadius: 8 }}>
-                    <strong>
-                      {
-                        // Calculate max possible points for this question
-                        (() => {
-                          let maxPoints = 1;
-                          if (q.question_type?.toLowerCase() === 'multiple choice') {
-                            maxPoints = q.correct_answer.split(',').length;
-                          } else if (q.question_type?.toLowerCase() === 'hotspot') {
-                            maxPoints = q.correct_answer.split(/\r?\n/).filter(Boolean).length;
-                          }
-                          return questionScore[current] === maxPoints ? "✅ Correct!" : "❌ Incorrect.";
-                        })()
-                      }
-                    </strong>
-                    <p><strong>Explanation:</strong> {q.explanation || 'No explanation provided.'}</p>
-                    <p><strong>Correct Answer:</strong> {q.correct_answer}</p>
-                  </div>
-                )}
-
-
-                {showModal && (
-                  <div className="modal-overlay" onClick={closeModal}>
-                    <div className="modal-content" onClick={e => e.stopPropagation()}>
-                      <button className="modal-close" onClick={closeModal} aria-label="Close">&times;</button>
-                      <strong>Explanation</strong>
-                      <p style={{ marginTop: '1rem' }}>{q.explanation || 'No explanation provided.'}</p>
-                      {/* <p><strong>Correct Answer:</strong> {q.correct_answer}</p> */}
+                          }, 0)
+                        }
+                        <br />
+                        {
+                          (() => {
+                            const total = questions.reduce((sum, q) => {
+                              if (q.question_type?.toLowerCase() === 'multiple choice') {
+                                return sum + q.correct_answer.split(',').length;
+                              } else if (q.question_type?.toLowerCase() === 'hotspot') {
+                                return sum + q.correct_answer.split(/\r?\n/).filter(Boolean).length;
+                              }
+                              return sum + 1;
+                            }, 0);
+                            const percent = total === 0 ? 0 : Math.round((calculateScore() / total) * 100);
+                            return `You got ${percent}% correct.`;
+                          })()
+                        }
+                      </p>
+                      <button
+                        style={{ marginTop: '1.5rem' }}
+                        onClick={() => {
+                          setQuestions(originalQuestions);
+                          setCurrent(0);
+                          setShowExplanation(false);
+                          setSubmitted(false);
+                          setUserAnswers(originalQuestions.map(getInitialUserAnswer));
+                          setQuestionScore(Array(originalQuestions.length).fill(null));
+                          setQuestionSubmitted(Array(originalQuestions.length).fill(false));
+                        }}
+                      >
+                        Reset
+                      </button>
                     </div>
-                  </div>
-                )}
-              </div>
+                  )}
+
+                  {/* Submit Question Button */}
+                  {!submitted && !questionSubmitted[current] && (
+                    <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'center' }}>
+                      <button onClick={submitCurrentQuestion}>Submit Question</button>
+                    </div>
+                  )}
+                  {questionSubmitted[current] && (
+                    <div style={{ marginTop: '1rem', backgroundColor: '#f0f0f0', color: '#003049', padding: '1rem', borderRadius: 8 }}>
+                      <strong>
+                        {
+                          // Calculate max possible points for this question
+                          (() => {
+                            let maxPoints = 1;
+                            if (q.question_type?.toLowerCase() === 'multiple choice') {
+                              maxPoints = q.correct_answer.split(',').length;
+                            } else if (q.question_type?.toLowerCase() === 'hotspot') {
+                              maxPoints = q.correct_answer.split(/\r?\n/).filter(Boolean).length;
+                            }
+                            return questionScore[current] === maxPoints ? "✅ Correct!" : "❌ Incorrect.";
+                          })()
+                        }
+                      </strong>
+                      <p><strong>Explanation:</strong> {q.explanation || 'No explanation provided.'}</p>
+                      <p><strong>Correct Answer:</strong> {q.correct_answer}</p>
+                    </div>
+                  )}
+
+
+                  {showModal && (
+                    <div className="modal-overlay" onClick={closeModal}>
+                      <div className="modal-content" onClick={e => e.stopPropagation()}>
+                        <button className="modal-close" onClick={closeModal} aria-label="Close">&times;</button>
+                        <strong>Explanation</strong>
+                        <p style={{ marginTop: '1rem' }}>{q.explanation || 'No explanation provided.'}</p>
+                        {/* <p><strong>Correct Answer:</strong> {q.correct_answer}</p> */}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           } />
           <Route path="/case-studies" element={<CaseStudies />} />
