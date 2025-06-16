@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import Papa from 'papaparse';
 import { useParams, Link } from 'react-router-dom';
-import QuestionQuiz from './QuestionQuiz';
+import QuestionQuizWithSave from './QuestionQuizWithSave';
+import { SavedTestsService } from './SavedTestsService';
 
 const META_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTDO68GqAelFKS2G6SwiUWdPs2tw5Gt62D5xLiB_9zyLyBPLSZm5gTthaQz9yCpmDKuymWMc83PV5a2/pub?gid=2042421471&single=true&output=csv';
 const SECTIONS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTDO68GqAelFKS2G6SwiUWdPs2tw5Gt62D5xLiB_9zyLyBPLSZm5gTthaQz9yCpmDKuymWMc83PV5a2/pub?gid=905416087&single=true&output=csv';
@@ -61,6 +62,41 @@ export function CaseStudyDetail() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState(null);
   const [modalSection, setModalSection] = useState(null);
+  const [savedProgress, setSavedProgress] = useState(null);
+
+  // Check for saved progress for this case study
+  useEffect(() => {
+    if (id) {
+      const savedTests = SavedTestsService.getSavedTests();
+      const caseStudyProgress = savedTests.find(test => 
+        test.type === 'case-study' && 
+        String(test.caseStudyId) === String(id)
+      );
+      if (caseStudyProgress) {
+        setSavedProgress(caseStudyProgress);
+      }
+    }
+  }, [id]);
+
+  // Save progress function
+  const handleSaveProgress = (saveData) => {
+    try {
+      // Add case study specific information
+      const caseStudySaveData = {
+        ...saveData,
+        type: 'case-study',
+        caseStudyId: id,
+        caseStudyTitle: meta?.title || 'Case Study',
+        title: `${meta?.title || 'Case Study'} - ${saveData.title}`
+      };
+      
+      SavedTestsService.saveTest(caseStudySaveData);
+      alert('Case study progress saved successfully!');
+    } catch (error) {
+      console.error('Error saving case study:', error);
+      throw error;
+    }
+  };
 
   useEffect(() => {
     setLoading(true);
@@ -202,10 +238,33 @@ export function CaseStudyDetail() {
         </div>
       )}
 
+      {/* Show saved progress notification */}
+      {savedProgress && (
+        <div style={{
+          background: '#669BBC',
+          color: '#003049',
+          padding: '1rem',
+          borderRadius: '8px',
+          marginBottom: '1rem',
+          textAlign: 'center'
+        }}>
+          <strong>📚 Saved Progress Found!</strong>
+          <p style={{ margin: '0.5rem 0 0 0' }}>
+            You have saved progress for this case study. 
+            Your answers and current position have been restored.
+          </p>
+        </div>
+      )}
+
       {/* Questions */}
       <h3>Questions</h3>
       {questions.length > 0 ? (
-        <QuestionQuiz questions={questions} />
+        <QuestionQuizWithSave 
+          questions={questions} 
+          onSaveProgress={handleSaveProgress}
+          caseStudyTitle={meta?.title}
+          initialProgress={savedProgress?.progress}
+        />
       ) : (
         <p>No questions for this case study.</p>
       )}

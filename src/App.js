@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react';
-import { Routes, Route, Link, useLocation } from 'react-router-dom';
+import { Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
 import Papa from 'papaparse';
 import './App.css';
 import { CaseStudies, CaseStudyDetail } from './CaseStudies';
 import Timer from "./Timer";
+import SaveModal from './SaveModal';
+import SavedTests from './SavedTests';
+import { SavedTestsService } from './SavedTestsService';
 
 const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTDO68GqAelFKS2G6SwiUWdPs2tw5Gt62D5xLiB_9zyLyBPLSZm5gTthaQz9yCpmDKuymWMc83PV5a2/pub?gid=0&single=true&output=csv';
 
@@ -22,6 +25,10 @@ function App() {
   const [searchResults, setSearchResults] = useState([]);
   const [showTimer, setShowTimer] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showSaveModal, setShowSaveModal] = useState(false);
+  const [currentSavedTest, setCurrentSavedTest] = useState(null);
+
+  const navigate = useNavigate();
 
   // ✅ All hooks (including useEffect) go here, before any return or if
   useEffect(() => {
@@ -54,6 +61,43 @@ function App() {
   }, [searchTerm, questions]);
 
   const location = useLocation(); // <-- Moved here
+
+  // Save progress function
+  const handleSaveProgress = (saveData) => {
+    try {
+      SavedTestsService.saveTest(saveData);
+      setCurrentSavedTest(saveData);
+      alert('Test saved successfully!');
+    } catch (error) {
+      console.error('Error saving test:', error);
+      throw error;
+    }
+  };
+
+  // Load saved test function
+  const handleLoadTest = (savedTest) => {
+    if (!savedTest || !savedTest.progress) {
+      alert('Invalid saved test data');
+      return;
+    }
+
+    try {
+      const { progress } = savedTest;
+      setCurrent(progress.current || 0);
+      setUserAnswers(progress.userAnswers || []);
+      setQuestionScore(progress.questionScore || []);
+      setQuestionSubmitted(progress.questionSubmitted || []);
+      setCurrentSavedTest(savedTest);
+      
+      // Navigate to the main test page
+      navigate('/');
+      
+      alert(`Loaded saved test: ${savedTest.title}`);
+    } catch (error) {
+      console.error('Error loading test:', error);
+      alert('Failed to load saved test');
+    }
+  };
 
   // ❌ Never put hooks below this line if you have an early return
   if (!questions.length) return <div>Loading...</div>;
@@ -252,6 +296,15 @@ function App() {
                 </Link>
               </li>
               <li>
+                <Link
+                  to="/saved-tests"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={location.pathname === '/saved-tests' ? 'active' : ''}
+                >
+                  Saved Tests
+                </Link>
+              </li>
+              <li>
                 <button
                   className="timer-toggle-btn mobile"
                   onClick={() => {
@@ -321,6 +374,18 @@ function App() {
               Case Studies
             </Link>
           </li>
+          <li style={{ marginTop: '1.5rem' }}>
+            <Link
+              to="/saved-tests"
+              style={{
+                color: location.pathname === '/saved-tests' ? '#FDF0D5' : '#669BBC',
+                fontWeight: 'bold',
+                textDecoration: 'none'
+              }}
+            >
+              Saved Tests
+            </Link>
+          </li>
         </ul>
       </nav>
       {/* Timer Toggle Button (desktop only) */}
@@ -376,8 +441,18 @@ function App() {
                     setQuestionScore(Array(originalQuestions.length).fill(null));
                     setQuestionSubmitted(Array(originalQuestions.length).fill(false));
                   }}
+                  style={{ marginRight: 8 }}
                 >
                   Reset
+                </button>
+                <button
+                  onClick={() => setShowSaveModal(true)}
+                  style={{ 
+                    background: '#669BBC',
+                    color: '#003049'
+                  }}
+                >
+                  Save Progress
                 </button>
               </div>
               {/* Jump to Question */}
@@ -788,7 +863,20 @@ function App() {
           } />
           <Route path="/case-studies" element={<CaseStudies />} />
           <Route path="/case-studies/:id" element={<CaseStudyDetail />} />
+          <Route path="/saved-tests" element={<SavedTests onLoadTest={handleLoadTest} />} />
         </Routes>
+        
+        {/* Save Modal */}
+        <SaveModal
+          isOpen={showSaveModal}
+          onClose={() => setShowSaveModal(false)}
+          onSave={handleSaveProgress}
+          current={current}
+          userAnswers={userAnswers}
+          questionScore={questionScore}
+          questionSubmitted={questionSubmitted}
+          questions={questions}
+        />
       </div>
     </div>
   );
