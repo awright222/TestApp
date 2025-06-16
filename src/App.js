@@ -21,6 +21,7 @@ function App() {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [showTimer, setShowTimer] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // ✅ All hooks (including useEffect) go here, before any return or if
   useEffect(() => {
@@ -199,19 +200,69 @@ function App() {
 
   return (
     <div style={{ display: 'flex' }}>
-      {/* Timer Toggle Button */}
-      {!showTimer && (
-        <button
-          className="timer-toggle-btn"
-          onClick={() => setShowTimer(true)}
-        >
-          Timer
-        </button>
-      )}
-      {showTimer && (
-        <Timer onClose={() => setShowTimer(false)} />
-      )}
-      {/* Sidebar */}
+      {/* Mobile Hamburger Menu Button */}
+      <button
+        className="mobile-menu-btn"
+        onClick={() => setMobileMenuOpen(open => !open)}
+        aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+      >
+        {/* Hamburger icon */}
+        <span className="hamburger-icon">{mobileMenuOpen ? "✕" : "☰"}</span>
+      </button>
+
+      {/* Mobile Dropdown Menu */}
+      <div className={`mobile-dropdown-menu${mobileMenuOpen ? " open" : ""}`}>
+        <div className="mobile-menu-content">
+          <nav>
+            <ul>
+              <li>
+                <Link
+                  to="/"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={location.pathname === '/' ? 'active' : ''}
+                >
+                  Practice Test
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/case-studies"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={location.pathname === '/case-studies' ? 'active' : ''}
+                >
+                  Case Studies
+                </Link>
+              </li>
+              <li>
+                <button
+                  className="timer-toggle-btn mobile"
+                  onClick={() => {
+                    setShowTimer(true);
+                    setMobileMenuOpen(false);
+                  }}
+                >
+                  Timer
+                </button>
+              </li>
+            </ul>
+          </nav>
+          <div className="sidebar-search mobile">
+            <input
+              type="text"
+              placeholder="Search questions..."
+              value={searchTerm}
+              onChange={e => setSearchTerm(e.target.value)}
+            />
+            {searchTerm && (
+              <button onClick={() => setSearchTerm('')}>
+                Clear
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Desktop Sidebar */}
       <nav className="sidebar">
         {/* Search Bar in Sidebar */}
         <div className="sidebar-search">
@@ -254,6 +305,19 @@ function App() {
           </li>
         </ul>
       </nav>
+      {/* Timer Toggle Button (desktop only) */}
+      {!showTimer && (
+        <button
+          className="timer-toggle-btn desktop"
+          onClick={() => setShowTimer(true)}
+        >
+          Timer
+        </button>
+      )}
+      {showTimer && (
+        <Timer onClose={() => setShowTimer(false)} />
+      )}
+
       {/* Main Content */}
       <div style={{ flex: 1, marginLeft: 40 }}>
         <Routes>
