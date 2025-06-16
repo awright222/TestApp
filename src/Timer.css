@@ -139,3 +139,45 @@
   background: #669BBC;
   color: #003049;
 }
+
+/* Mobile styles for Timer */
+@media (max-width: 600px) {
+  .timer-container {
+    min-width: 90vw;
+    max-width: 98vw;
+    left: 5vw !important;
+    right: auto !important;
+    top: 16px !important;
+    padding: 0.7rem 0.5rem;
+    font-size: 1rem;
+    border-radius: 10px;
+  }
+  .timer-controls {
+    flex-direction: column;
+    gap: 4px;
+    margin: 36px 0 6px 0;
+  }
+  .timer-actions {
+    top: 4px;
+    right: 4px;
+    gap: 2px;
+  }
+  .timer-time {
+    font-size: 1.3rem;
+  }
+  .timer-buttons button {
+    padding: 0.3rem 0.7rem;
+    font-size: 0.95rem;
+  }
+  .timer-minimized-content {
+    margin-top: 24px;
+    font-size: 1rem;
+    min-height: 24px;
+  }
+  .timer-toggle-btn {
+    top: 12px;
+    right: 10px;
+    padding: 0.5rem 1rem;
+    font-size: 0.95rem;
+  }
+}
