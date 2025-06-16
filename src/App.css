@@ -34,14 +34,18 @@ body {
 }
 
 .choices label {
-  display: block;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem; /* space between input and text */
   margin-bottom: 0.75rem;
   padding: 0.5rem 0.75rem;
   border-radius: 6px;
   transition: background 0.2s, color 0.2s;
   cursor: pointer;
-  color: #FDF0D5; /* Changed from #000000 */
+  color: #FDF0D5;
   border: 1px solid transparent;
+  line-height: 1.5;
+  word-break: break-word;
 }
 
 .choices label:hover {
@@ -49,10 +53,10 @@ body {
   color: #003049;
 }
 
-.choices input[type="radio"],
-.choices input[type="checkbox"] {
-  margin-right: 1rem; /* Increased spacing */
-  vertical-align: middle;
+.choices label input[type="radio"],
+.choices label input[type="checkbox"] {
+  margin-top: 0.2em;
+  flex-shrink: 0;
 }
 
 input[type="radio"] {
@@ -452,4 +456,16 @@ button:hover {
   .sidebar-search.mobile {
     display: none !important;
   }
+}
+
+.hotspot-dropdowns > div {
+  display: flex;
+  align-items: center;
+  gap: .2rem; 
+  margin-bottom: 1.2rem;
+}
+
+.hotspot-dropdowns strong {
+  min-width: 90px;
+  display: inline-block;
 }
