@@ -4,8 +4,6 @@ import Papa from 'papaparse';
 import './App.css';
 import { CaseStudies, CaseStudyDetail } from './CaseStudies';
 import Timer from "./Timer";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faClock } from '@fortawesome/free-regular-svg-icons';
 
 const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTDO68GqAelFKS2G6SwiUWdPs2tw5Gt62D5xLiB_9zyLyBPLSZm5gTthaQz9yCpmDKuymWMc83PV5a2/pub?gid=0&single=true&output=csv';
 
@@ -201,25 +199,16 @@ function App() {
   const closeModal = () => setShowModal(false);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column' }}>
-      {/* Mobile Top Bar */}
-      <div className="mobile-top-bar">
-        <button
-          className="mobile-menu-btn"
-          onClick={() => setMobileMenuOpen(open => !open)}
-          aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
-        >
-          <span className="hamburger-icon">{mobileMenuOpen ? "✕" : "☰"}</span>
-        </button>
-        <div style={{ flex: 1 }} />
-        <button
-          className="mobile-timer-btn"
-          onClick={() => setShowTimer(true)}
-          aria-label="Show timer"
-        >
-          <FontAwesomeIcon icon={faClock} />
-        </button>
-      </div>
+    <div style={{ display: 'flex' }}>
+      {/* Mobile Hamburger Menu Button */}
+      <button
+        className="mobile-menu-btn"
+        onClick={() => setMobileMenuOpen(open => !open)}
+        aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+      >
+        {/* Hamburger icon */}
+        <span className="hamburger-icon">{mobileMenuOpen ? "✕" : "☰"}</span>
+      </button>
 
       {/* Mobile Dropdown Menu */}
       <div className={`mobile-dropdown-menu${mobileMenuOpen ? " open" : ""}`}>
@@ -253,6 +242,17 @@ function App() {
                   Case Studies
                 </Link>
               </li>
+              <li>
+                <button
+                  className="timer-toggle-btn mobile"
+                  onClick={() => {
+                    setShowTimer(true);
+                    setMobileMenuOpen(false);
+                  }}
+                >
+                  Timer
+                </button>
+              </li>
             </ul>
           </nav>
           <div className="sidebar-search mobile">
@@ -271,8 +271,64 @@ function App() {
         </div>
       </div>
 
+      {/* Desktop Sidebar */}
+      <nav className="sidebar">
+        {/* Search Bar in Sidebar */}
+        <div className="sidebar-search">
+          <input
+            type="text"
+            placeholder="Search questions..."
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+          />
+          {searchTerm && (
+            <button onClick={() => setSearchTerm('')}>
+              Clear
+            </button>
+          )}
+        </div>
+        <ul style={{ listStyle: 'none', padding: 0 }}>
+          <li>
+            <Link
+              to="/"
+              style={{
+                color: location.pathname === '/' ? '#FDF0D5' : '#669BBC',
+                fontWeight: 'bold',
+                textDecoration: 'none'
+              }}
+            >
+              Practice Test
+            </Link>
+          </li>
+          <li style={{ marginTop: '1.5rem' }}>
+            <Link
+              to="/case-studies"
+              style={{
+                color: location.pathname === '/case-studies' ? '#FDF0D5' : '#669BBC',
+                fontWeight: 'bold',
+                textDecoration: 'none'
+              }}
+            >
+              Case Studies
+            </Link>
+          </li>
+        </ul>
+      </nav>
+      {/* Timer Toggle Button (desktop only) */}
+      {!showTimer && (
+        <button
+          className="timer-toggle-btn desktop"
+          onClick={() => setShowTimer(true)}
+        >
+          Timer
+        </button>
+      )}
+      {showTimer && (
+        <Timer onClose={() => setShowTimer(false)} />
+      )}
+
       {/* Main Content */}
-      <div className="main-content-mobile">
+      <div style={{ flex: 1, marginLeft: 40 }}>
         <Routes>
           <Route path="/" element={
             <div className="app">

@@ -318,53 +318,6 @@ button:hover {
     max-width: 98vw;
     padding: 1rem 0.5rem;
   }
-  .mobile-top-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    background: #00243a;
-    z-index: 4100;
-    padding: 0.5rem 0.7rem;
-    border-bottom: 2px solid #669BBC;
-    box-sizing: border-box;
-    height: 54px;
-  }
-  .mobile-menu-btn {
-    position: static;
-    margin-right: 0.5rem;
-    z-index: 4200;
-  }
-  .mobile-timer-btn {
-    background: #00243a;
-    color: #FDF0D5;
-    border: 2px solid #669BBC;
-    border-radius: 8px;
-    padding: 0.3rem 0.7rem;
-    font-size: 1.3rem;
-    cursor: pointer;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
-    z-index: 4200;
-  }
-  .mobile-timer-btn:hover {
-    background: #669BBC;
-    color: #003049;
-  }
-  .main-content-mobile {
-    margin-top: 64px; /* Push content below the top bar */
-    padding: 0 0.2rem;
-  }
-  .app {
-    margin-top: 0;
-    padding-top: 0;
-  }
-  .mobile-dropdown-menu {
-    top: 54px; /* Below the top bar */
-    border-radius: 0 0 16px 0;
-  }
 }
 
 /* Hide sidebar and timer toggle on mobile, show hamburger */
