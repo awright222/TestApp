@@ -2,18 +2,18 @@
   background: #00243a;
   color: #FDF0D5;
   padding: 1rem 1.5rem;
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.13);
+  border-radius: 12px;
   min-width: 220px;
   user-select: none;
   text-align: center;
   z-index: 2000;
   cursor: grab;
   transition: box-shadow 0.2s;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.35); /* Stronger shadow */
 }
 
 .timer-container.dragging {
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 12px 36px rgba(0,0,0,0.45);
   opacity: 0.95;
   cursor: grabbing;
 }
@@ -23,38 +23,37 @@
   padding: 0.3rem 0.7rem;
 }
 
-.timer-header {
+.timer-actions {
+  position: absolute;
+  top: 8px;
+  right: 10px;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #003049;
-  border-radius: 6px;
-  padding: 4px 8px;
-  font-weight: bold;
-  font-size: 1.1rem;
-  letter-spacing: 1px;
-}
-
-.timer-header-buttons {
-  display: flex;
-  align-items: center;
   gap: 6px;
+  z-index: 1;
 }
 
 .icon-button {
   background: none;
   border: none;
   color: #FDF0D5;
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: background 0.15s;
+}
+
+.icon-button:hover {
+  background: #669BBC;
+  color: #003049;
 }
 
 .timer-controls {
+  margin: 48px 0 8px 0; /* Increased top margin for button clearance */
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 8px;
-  margin: 8px 0;
 }
 
 .timer-controls select,
@@ -110,11 +109,13 @@
 }
 
 .timer-minimized-content {
+  margin-top: 40px; /* Add space below the floating buttons when minimized */
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   font-weight: bold;
   font-size: 1.1rem;
+  min-height: 32px;
 }
 
 .timer-toggle-btn {

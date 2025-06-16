@@ -119,18 +119,25 @@ export default function Timer({ onClose }) {
 
   return (
     <div
-      className={`timer-container ${dragging ? "dragging" : ""} ${minimized ? "minimized" : ""}`}
+      className={`timer-container${dragging ? " dragging" : ""}${minimized ? " minimized" : ""}`}
       style={{ position: "fixed", left: pos.x, top: pos.y }}
       onPointerDown={onMouseDown}
     >
-      <div className="timer-header">
-        <span>Timer</span>
-        <div className="timer-header-buttons">
-          <button onClick={e => { e.stopPropagation(); setMinimized(m => !m); }} className="icon-button">
-            {minimized ? "▣" : "—"}
-          </button>
-          <button onClick={onClose} className="icon-button">×</button>
-        </div>
+      <div className="timer-actions">
+        <button
+          onClick={e => { e.stopPropagation(); setMinimized(m => !m); }}
+          className="icon-button"
+          aria-label={minimized ? "Restore timer" : "Minimize timer"}
+        >
+          {minimized ? "▣" : "—"}
+        </button>
+        <button
+          onClick={onClose}
+          className="icon-button"
+          aria-label="Close timer"
+        >
+          ×
+        </button>
       </div>
       {!minimized && (
         <>
@@ -167,7 +174,7 @@ export default function Timer({ onClose }) {
         </>
       )}
       {minimized && (
-        <div style={{ fontWeight: "bold", fontSize: "1.1rem", letterSpacing: 1, margin: "0 auto" }}>
+        <div className="timer-minimized-content">
           {formatTime(time)}
         </div>
       )}
