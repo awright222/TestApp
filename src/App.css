@@ -331,13 +331,13 @@ button:hover {
     position: fixed;
     top: 12px;
     left: 12px;
-    z-index: 3000;
+    z-index: 4000; /* Increased to always be on top */
     background: #00243a;
     color: #FDF0D5;
     border: 2px solid #669BBC;
     border-radius: 8px;
-    padding: 0.5rem 1rem;
-    font-size: 1.5rem;
+    padding: 0.3rem 0.7rem;
+    font-size: 1.3rem;
     cursor: pointer;
     box-shadow: 0 2px 8px rgba(0,0,0,0.07);
   }
@@ -426,14 +426,15 @@ button:hover {
   .timer-toggle-btn.mobile {
     display: block;
     width: 100%;
-    margin: 0.5rem 0 0 0;
-    padding: 0.7rem 0;
-    font-size: 1.1rem;
+    margin: 0.2rem 0 0 0;
+    padding: 0.4rem 0.5rem;
+    font-size: 1rem;
     border-radius: 6px;
     background: #780000;
     color: #FDF0D5;
     border: none;
     font-weight: bold;
+    box-sizing: border-box;
   }
 }
 

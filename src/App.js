@@ -221,6 +221,15 @@ function App() {
                   onClick={() => setMobileMenuOpen(false)}
                   className={location.pathname === '/' ? 'active' : ''}
                 >
+                  🏠 Home
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={location.pathname === '/' ? 'active' : ''}
+                >
                   Practice Test
                 </Link>
               </li>
