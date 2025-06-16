@@ -40,13 +40,19 @@ body {
   border-radius: 6px;
   transition: background 0.2s, color 0.2s;
   cursor: pointer;
-  color: #000000;
+  color: #FDF0D5; /* Changed from #000000 */
   border: 1px solid transparent;
 }
 
 .choices label:hover {
   background: #669BBC;
   color: #003049;
+}
+
+.choices input[type="radio"],
+.choices input[type="checkbox"] {
+  margin-right: 1rem; /* Increased spacing */
+  vertical-align: middle;
 }
 
 input[type="radio"] {

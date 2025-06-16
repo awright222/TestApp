@@ -198,6 +198,15 @@ function App() {
   const openModal = () => setShowModal(true);
   const closeModal = () => setShowModal(false);
 
+  // Add this function above your return statement
+  function handleHotspotChange(label, val) {
+    setUserAnswers(prev => {
+      const updated = [...prev];
+      updated[current] = { ...updated[current], [label]: val };
+      return updated;
+    });
+  }
+
   return (
     <div style={{ display: 'flex' }}>
       {/* Mobile Hamburger Menu Button */}
@@ -608,28 +617,62 @@ function App() {
                   {/* Hotspot with Multiple Dropdowns */}
                   {q.question_type?.toLowerCase() === 'hotspot' && (
                     <div className="hotspot-dropdowns">
-                      {Object.entries(hotspotOptions).map(([label, options], idx) => (
-                        <div key={idx} style={{ marginBottom: '1rem' }}>
-                          <strong>{label}</strong>
-                          <select
-                            value={userAnswers[current]?.[label] || ''}
-                            onChange={(e) => {
-                              if (submitted) return;
-                              const prev = userAnswers[current] || {};
-                              updateUserAnswer({
-                                ...prev,
-                                [label]: e.target.value
-                              });
-                            }}
-                            disabled={submitted}
-                          >
-                            <option value="">-- Select an option --</option>
-                            {options.map((opt, i) => (
-                              <option key={i} value={opt}>{opt}</option>
-                            ))}
-                          </select>
-                        </div>
-                      ))}
+                      {Object.entries(hotspotOptions).map(([label, options], idx) => {
+                        const userValue = userAnswers[current]?.[label] || '';
+                        const correctValue = correctHotspotAnswers[label];
+                        const isSubmitted = questionSubmitted ? questionSubmitted[current] : submitted;
+                        const isCorrect = userValue && userValue === correctValue;
+                        const showFeedback = isSubmitted && userValue;
+
+                        return (
+                          <div key={idx} style={{ marginBottom: '1rem' }}>
+                            <strong>{label}</strong>
+                            <select
+                              value={userValue}
+                              onChange={e => {
+                                if (isSubmitted) return;
+                                // ...existing update logic...
+                                if (typeof updateUserAnswer === "function") {
+                                  // For QuestionQuiz.js
+                                  handleHotspotChange(label, e.target.value);
+                                } else {
+                                  // For App.js
+                                  const prev = userAnswers[current] || {};
+                                  updateUserAnswer({
+                                    ...prev,
+                                    [label]: e.target.value
+                                  });
+                                }
+                              }}
+                              disabled={isSubmitted}
+                              style={
+                                showFeedback
+                                  ? isCorrect
+                                    ? { borderColor: 'green', color: 'green', fontWeight: 'bold' }
+                                    : { borderColor: 'red', color: 'red', fontWeight: 'bold' }
+                                  : {}
+                              }
+                            >
+                              <option value="">-- Select an option --</option>
+                              {options.map((opt, i) => (
+                                <option key={i} value={opt}>{opt}</option>
+                              ))}
+                            </select>
+                            {showFeedback && (
+                              isCorrect
+                                ? <span style={{ color: 'green', marginLeft: 8 }}>✅</span>
+                                : (
+                                  <>
+                                    <span style={{ color: 'red', marginLeft: 8 }}>❌</span>
+                                    <span style={{ color: 'green', marginLeft: 8, fontWeight: 'bold' }}>
+                                      Correct: {correctValue}
+                                    </span>
+                                  </>
+                                )
+                            )}
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
 
