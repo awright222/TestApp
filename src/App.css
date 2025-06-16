@@ -235,3 +235,128 @@ button:hover {
   margin: 0.5rem 0;
   font-size: 0.95rem;
 }
+
+.timer-container {
+  background: #00243a;
+  color: #FDF0D5;
+  padding: 1rem 1.5rem;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.13);
+  min-width: 220px;
+  text-align: center;
+  user-select: none;
+  transition: box-shadow 0.2s;
+}
+
+.timer-container.dragging {
+  box-shadow: 0 4px 24px rgba(0,0,0,0.25);
+  opacity: 0.95;
+}
+
+.timer-container.minimized {
+  min-width: 0 !important;
+  width: 120px !important;
+  padding: 0.3rem 0.7rem !important;
+  background: #00243a;
+  color: #FDF0D5;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.13);
+  border-radius: 10px;
+  text-align: center;
+}
+
+.timer-container.minimized .timer-controls,
+.timer-container.minimized .timer-buttons {
+  display: none !important;
+}
+
+.timer-header {
+  margin-bottom: 8px;
+  font-weight: bold;
+  font-size: 1.1rem;
+  cursor: grab;
+  background: #003049;
+  border-radius: 6px;
+  padding: 4px 0;
+  letter-spacing: 1px;
+}
+
+.timer-controls {
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.timer-controls select,
+.timer-controls input[type="number"] {
+  border-radius: 4px;
+  border: 1px solid #669BBC;
+  padding: 2px 6px;
+  font-size: 1rem;
+}
+
+.timer-controls input[type="number"] {
+  width: 60px;
+}
+
+.timer-time {
+  font-size: 2rem;
+  font-weight: bold;
+  letter-spacing: 2px;
+  margin-bottom: 8px;
+}
+
+.timer-buttons button {
+  margin: 0 4px;
+  padding: 0.4rem 1rem;
+  font-size: 1rem;
+  border-radius: 6px;
+  border: none;
+  background: #780000;
+  color: #FDF0D5;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.timer-buttons button:hover {
+  background: #669BBC;
+  color: #003049;
+}
+
+.timer-close-btn {
+  float: right;
+  background: none;
+  border: none;
+  color: #FDF0D5;
+  font-size: 1.3rem;
+  cursor: pointer;
+  margin-left: 12px;
+}
+
+.timer-toggle-btn {
+  position: fixed;
+  top: 24px;
+  right: 32px;
+  z-index: 2100;
+  background: #669BBC;
+  color: #003049;
+  border: none;
+  border-radius: 8px;
+  padding: 0.5rem 1.2rem;
+  font-weight: bold;
+  font-size: 1.1rem;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.13);
+  transition: background 0.2s, color 0.2s;
+}
+
+.timer-toggle-btn:hover {
+  background: #003049;
+  color: #FDF0D5;
+}
+
+.timer-toggle-btn.hidden {
+  display: none;
+}

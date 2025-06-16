@@ -3,6 +3,7 @@ import { Routes, Route, Link, useLocation } from 'react-router-dom';
 import Papa from 'papaparse';
 import './App.css';
 import { CaseStudies, CaseStudyDetail } from './CaseStudies';
+import Timer from "./Timer";
 
 const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTDO68GqAelFKS2G6SwiUWdPs2tw5Gt62D5xLiB_9zyLyBPLSZm5gTthaQz9yCpmDKuymWMc83PV5a2/pub?gid=0&single=true&output=csv';
 
@@ -19,6 +20,7 @@ function App() {
   const [showModal, setShowModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState([]);
+  const [showTimer, setShowTimer] = useState(false);
 
   // ✅ All hooks (including useEffect) go here, before any return or if
   useEffect(() => {
@@ -197,6 +199,16 @@ function App() {
 
   return (
     <div style={{ display: 'flex' }}>
+      {/* Timer Toggle Button */}
+      <button
+        className={`timer-toggle-btn${showTimer ? " hidden" : ""}`}
+        onClick={() => setShowTimer(true)}
+      >
+        Timer
+      </button>
+      {showTimer && (
+        <Timer onClose={() => setShowTimer(false)} />
+      )}
       {/* Sidebar */}
       <nav className="sidebar">
         {/* Search Bar in Sidebar */}
@@ -241,7 +253,7 @@ function App() {
         </ul>
       </nav>
       {/* Main Content */}
-      <div style={{ flex: 1 }}>
+      <div style={{ flex: 1, marginLeft: 40 }}>
         <Routes>
           <Route path="/" element={
             <div className="app">
@@ -312,20 +324,121 @@ function App() {
                   <h3>Search Results ({searchResults.length})</h3>
                   {searchResults.length === 0 && <p>No questions found.</p>}
                   <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                    {searchResults.map((q, idx) => (
-                      <li key={idx} className="search-result-item">
-                        <strong>Q:</strong> {q.question_text}
-                        <br />
-                        <strong>Type:</strong> {q.question_type}
-                        <br />
-                        <strong>Choices:</strong>
-                        <pre>{q.choices}</pre>
-                        <br />
-                        <strong>Answer:</strong> {q.correct_answer}
-                        <br />
-                        <strong>Explanation:</strong> {q.explanation}
-                      </li>
-                    ))}
+                    {searchResults.map((q, idx) => {
+                      // Parse choices for multiple choice
+                      const choices = q.choices?.match(/^[A-Z]\..+?(?=\n[A-Z]\.|$)/gms)?.map(s => s.trim()) || [];
+                      const correctLabels = q.correct_answer?.split(',').map(s => s.trim()) || [];
+                      function getChoiceLabel(choice) {
+                        const match = choice.match(/^([A-Z])\./);
+                        return match ? match[1] : null;
+                      }
+                      // Hotspot parsing
+                      const hotspotOptions = {};
+                      if (q.question_type?.toLowerCase() === 'hotspot') {
+                        const lines = q.choices?.split(/\r?\n/).filter(Boolean) || [];
+                        for (const line of lines) {
+                          const [label, rest] = line.split(':');
+                          if (label && rest) {
+                            hotspotOptions[label.trim()] = rest.split(',').map(opt => opt.trim()).filter(Boolean);
+                          }
+                        }
+                      }
+                      const correctHotspotAnswers = {};
+                      if (q.question_type?.toLowerCase() === 'hotspot') {
+                        const lines = q.correct_answer?.split(/\r?\n/).filter(Boolean) || [];
+                        for (const line of lines) {
+                          const [label, answer] = line.split(':');
+                          if (label && answer) {
+                            correctHotspotAnswers[label.trim()] = answer.trim();
+                          }
+                        }
+                      }
+                      return (
+                        <li key={idx} className="search-result-item">
+                          <strong>Q:</strong> {q.question_text}
+                          <br />
+                          <strong>Type:</strong> {q.question_type}
+                          <br />
+                          <strong>Choices:</strong>
+                          <div>
+                            {q.question_type?.toLowerCase() === 'multiple choice' && (
+                              <div className="choices">
+                                {choices.map((choice, i) => {
+                                  const label = getChoiceLabel(choice);
+                                  const isCorrect = correctLabels.includes(label);
+                                  return (
+                                    <label
+                                      key={i}
+                                      style={{
+                                        display: 'block',
+                                        marginBottom: '0.5rem',
+                                        color: isCorrect ? 'green' : undefined,
+                                        fontWeight: isCorrect ? 'bold' : undefined,
+                                      }}
+                                    >
+                                      <input
+                                        type={correctLabels.length === 1 ? "radio" : "checkbox"}
+                                        checked={isCorrect}
+                                        readOnly
+                                        style={{ accentColor: isCorrect ? 'green' : undefined, marginRight: 8 }}
+                                      />
+                                      {choice}
+                                      {isCorrect && <span style={{ color: 'green', marginLeft: 8 }}>✅</span>}
+                                    </label>
+                                  );
+                                })}
+                              </div>
+                            )}
+                            {q.question_type?.toLowerCase() === 'hotspot' && (
+                              <div>
+                                {Object.entries(hotspotOptions).map(([label, options], i) => (
+                                  <div key={i} style={{ marginBottom: '0.5rem' }}>
+                                    <strong>{label}:</strong>{" "}
+                                    <select disabled value={correctHotspotAnswers[label] || ''}>
+                                      <option value="">-- Select an option --</option>
+                                      {options.map((opt, j) => (
+                                        <option key={j} value={opt}>
+                                          {opt}
+                                        </option>
+                                      ))}
+                                    </select>
+                                    {correctHotspotAnswers[label] && (
+                                      <span style={{ color: 'green', marginLeft: 8 }}>✅</span>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                          <br />
+                          <strong>Answer:</strong>
+                          <div>
+                            {q.question_type?.toLowerCase() === 'multiple choice' && (
+                              <div>
+                                {choices
+                                  .filter(choice => correctLabels.includes(getChoiceLabel(choice)))
+                                  .map((choice, i) => (
+                                    <div key={i} style={{ color: 'green', fontWeight: 'bold' }}>
+                                      {choice}
+                                    </div>
+                                  ))}
+                              </div>
+                            )}
+                            {q.question_type?.toLowerCase() === 'hotspot' && (
+                              <div>
+                                {Object.entries(correctHotspotAnswers).map(([label, answer], i) => (
+                                  <div key={i} style={{ color: 'green', fontWeight: 'bold' }}>
+                                    {label}: {answer}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                          <br />
+                          <strong>Explanation:</strong> {q.explanation}
+                        </li>
+                      );
+                    })}
                   </ul>
                 </div>
               )}
