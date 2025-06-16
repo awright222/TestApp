@@ -200,12 +200,14 @@ function App() {
   return (
     <div style={{ display: 'flex' }}>
       {/* Timer Toggle Button */}
-      <button
-        className={`timer-toggle-btn${showTimer ? " hidden" : ""}`}
-        onClick={() => setShowTimer(true)}
-      >
-        Timer
-      </button>
+      {!showTimer && (
+        <button
+          className="timer-toggle-btn"
+          onClick={() => setShowTimer(true)}
+        >
+          Timer
+        </button>
+      )}
       {showTimer && (
         <Timer onClose={() => setShowTimer(false)} />
       )}

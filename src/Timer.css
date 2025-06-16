@@ -1,0 +1,140 @@
+.timer-container {
+  background: #00243a;
+  color: #FDF0D5;
+  padding: 1rem 1.5rem;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.13);
+  min-width: 220px;
+  user-select: none;
+  text-align: center;
+  z-index: 2000;
+  cursor: grab;
+  transition: box-shadow 0.2s;
+}
+
+.timer-container.dragging {
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
+  opacity: 0.95;
+  cursor: grabbing;
+}
+
+.timer-container.minimized {
+  width: 120px;
+  padding: 0.3rem 0.7rem;
+}
+
+.timer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #003049;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-weight: bold;
+  font-size: 1.1rem;
+  letter-spacing: 1px;
+}
+
+.timer-header-buttons {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.icon-button {
+  background: none;
+  border: none;
+  color: #FDF0D5;
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+.timer-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0;
+}
+
+.timer-controls select,
+.timer-controls input[type="number"] {
+  border-radius: 4px;
+  border: 1px solid #669BBC;
+  padding: 2px 6px;
+  font-size: 1rem;
+}
+
+.timer-controls input[type="number"] {
+  width: 60px;
+}
+
+.timer-time {
+  font-size: 2rem;
+  font-weight: bold;
+  letter-spacing: 2px;
+  margin-bottom: 8px;
+}
+
+.timer-time.running {
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.6; }
+  100% { opacity: 1; }
+}
+
+.timer-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.timer-buttons button {
+  padding: 0.4rem 1rem;
+  font-size: 1rem;
+  border-radius: 6px;
+  border: none;
+  background: #780000;
+  color: #FDF0D5;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.timer-buttons button:hover {
+  background: #669BBC;
+  color: #003049;
+}
+
+.timer-minimized-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.timer-toggle-btn {
+  position: fixed;
+  top: 24px;
+  right: 32px;
+  z-index: 2100;
+  background: #00243a;
+  color: #FDF0D5;
+  border: 2px solid #669BBC;
+  border-radius: 10px;
+  padding: 0.7rem 1.5rem;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  transition: background 0.2s, color 0.2s;
+}
+
+.timer-toggle-btn:hover {
+  background: #669BBC;
+  color: #003049;
+}

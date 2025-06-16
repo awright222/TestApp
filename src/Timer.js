@@ -1,4 +1,5 @@
 import React, { useState, useRef } from "react";
+import "./Timer.css";
 
 function pad(n) {
   return n.toString().padStart(2, "0");
@@ -118,44 +119,17 @@ export default function Timer({ onClose }) {
 
   return (
     <div
-      className={`timer-container${dragging ? " dragging" : ""}${minimized ? " minimized" : ""}`}
-      style={{
-        left: pos.x,
-        top: pos.y,
-        position: "fixed",
-        cursor: dragging ? "grabbing" : "grab",
-        zIndex: 2000,
-        minWidth: minimized ? 0 : 220,
-        width: minimized ? 120 : undefined,
-        padding: minimized ? "0.3rem 0.7rem" : undefined,
-        textAlign: "center",
-      }}
+      className={`timer-container ${dragging ? "dragging" : ""} ${minimized ? "minimized" : ""}`}
+      style={{ position: "fixed", left: pos.x, top: pos.y }}
+      onPointerDown={onMouseDown}
     >
-      <div className="timer-header" onMouseDown={onMouseDown} style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      <div className="timer-header">
         <span>Timer</span>
-        <div>
-          <button
-            className="timer-min-btn"
-            onClick={e => { e.stopPropagation(); setMinimized(m => !m); }}
-            aria-label={minimized ? "Restore timer" : "Minimize timer"}
-            style={{
-              background: "none",
-              border: "none",
-              color: "#FDF0D5",
-              fontSize: "1.1rem",
-              cursor: "pointer",
-              marginRight: 8,
-            }}
-          >
+        <div className="timer-header-buttons">
+          <button onClick={e => { e.stopPropagation(); setMinimized(m => !m); }} className="icon-button">
             {minimized ? "▣" : "—"}
           </button>
-          <button
-            className="timer-close-btn"
-            onClick={onClose}
-            aria-label="Close timer"
-          >
-            ×
-          </button>
+          <button onClick={onClose} className="icon-button">×</button>
         </div>
       </div>
       {!minimized && (
