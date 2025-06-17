@@ -264,6 +264,7 @@ export function CaseStudyDetail() {
           onSaveProgress={handleSaveProgress}
           caseStudyTitle={meta?.title}
           initialProgress={savedProgress?.progress}
+          existingSavedTest={savedProgress}
         />
       ) : (
         <p>No questions for this case study.</p>

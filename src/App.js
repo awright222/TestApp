@@ -878,6 +878,7 @@ function App() {
           questionScore={questionScore}
           questionSubmitted={questionSubmitted}
           questions={questions}
+          existingSavedTest={currentSavedTest}
         />
       </div>
     </div>
