@@ -591,12 +591,81 @@ button:hover {
 
 .hotspot-dropdowns > div {
   display: flex;
-  align-items: center;
-  gap: .2rem; 
+  align-items: flex-start;
+  gap: 0.5rem; 
   margin-bottom: 1.2rem;
+  flex-wrap: wrap;
 }
 
 .hotspot-dropdowns strong {
   min-width: 90px;
+  max-width: 150px;
   display: inline-block;
+  flex-shrink: 0;
+  padding-top: 0.5rem;
+  word-wrap: break-word;
+}
+
+.hotspot-dropdowns .dropdown-container {
+  flex: 1;
+  min-width: 200px;
+  max-width: 100%;
+}
+
+/* Hotspot dropdown styles to prevent overflow */
+.hotspot-dropdowns select {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  padding: 0.5rem;
+  border: 1px solid #669BBC;
+  border-radius: 4px;
+  background: #FDF0D5;
+  color: #003049;
+  font-size: 0.9rem;
+  box-sizing: border-box;
+  word-wrap: break-word;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hotspot-dropdowns select:focus {
+  outline: none;
+  border-color: #780000;
+  box-shadow: 0 0 0 2px rgba(120, 0, 0, 0.2);
+}
+
+.hotspot-dropdowns select option {
+  padding: 0.25rem 0.5rem;
+  background: #FDF0D5;
+  color: #003049;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+/* Mobile styles for hotspot dropdowns */
+@media (max-width: 600px) {
+  .hotspot-dropdowns > div {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.25rem;
+  }
+  
+  .hotspot-dropdowns strong {
+    min-width: unset;
+    max-width: unset;
+    padding-top: 0;
+    margin-bottom: 0.25rem;
+  }
+  
+  .hotspot-dropdowns .dropdown-container {
+    min-width: unset;
+  }
+  
+  .hotspot-dropdowns select {
+    font-size: 1rem;
+    padding: 0.75rem;
+  }
 }

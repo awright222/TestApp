@@ -203,35 +203,39 @@ export default function QuestionQuizWithSave({
               return (
                 <div key={idx} style={{ marginBottom: '1rem' }}>
                   <strong>{label}</strong>
-                  <select
-                    value={userValue}
-                    onChange={e => handleHotspotChange(label, e.target.value)}
-                    disabled={isSubmitted}
-                    style={
-                      showFeedback
-                        ? isCorrect
-                          ? { borderColor: 'green', color: 'green', fontWeight: 'bold' }
-                          : { borderColor: 'red', color: 'red', fontWeight: 'bold' }
-                        : {}
-                    }
-                  >
-                    <option value="">-- Select an option --</option>
-                    {options.map((opt, i) => (
-                      <option key={i} value={opt}>{opt}</option>
-                    ))}
-                  </select>
-                  {showFeedback && (
-                    isCorrect
-                      ? <span style={{ color: 'green', marginLeft: 8 }}>✅</span>
-                      : (
-                        <>
-                          <span style={{ color: 'red', marginLeft: 8 }}>❌</span>
-                          <span style={{ color: 'green', marginLeft: 8, fontWeight: 'bold' }}>
-                            Correct: {correctValue}
-                          </span>
-                        </>
-                      )
-                  )}
+                  <div className="dropdown-container">
+                    <select
+                      value={userValue}
+                      onChange={e => handleHotspotChange(label, e.target.value)}
+                      disabled={isSubmitted}
+                      style={
+                        showFeedback
+                          ? isCorrect
+                            ? { borderColor: 'green', color: 'green', fontWeight: 'bold' }
+                            : { borderColor: 'red', color: 'red', fontWeight: 'bold' }
+                          : {}
+                      }
+                    >
+                      <option value="">-- Select an option --</option>
+                      {options.map((opt, i) => (
+                        <option key={i} value={opt} title={opt}>{opt}</option>
+                      ))}
+                    </select>
+                    {showFeedback && (
+                      <div style={{ marginTop: '0.25rem' }}>
+                        {isCorrect
+                          ? <span style={{ color: 'green' }}>✅</span>
+                          : (
+                            <>
+                              <span style={{ color: 'red' }}>❌</span>
+                              <span style={{ color: 'green', marginLeft: 8, fontWeight: 'bold' }}>
+                                Correct: {correctValue}
+                              </span>
+                            </>
+                          )}
+                      </div>
+                    )}
+                  </div>
                 </div>
               );
             })}
