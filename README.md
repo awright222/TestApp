@@ -68,3 +68,43 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+
+Firebase Configuration - Your app is connected to your Firebase project (test-builder-app)
+
+User Authentication
+
+Sign in/Sign up with email and password
+Google Sign-in integration
+User profile management
+Auth state management with React Context
+Cloud Data Storage
+
+Tests are automatically saved to Firestore when users are logged in
+Falls back to localStorage for anonymous users
+Data migration: When users log in, their localStorage tests are automatically migrated to Firebase
+UI Integration
+
+Sign In button in both desktop and mobile sidebars
+User profile display with welcome message
+Sign Out functionality
+🚀 How It Works:
+For Anonymous Users: Tests are saved to localStorage (existing behavior)
+For Logged-in Users: Tests are saved to Firebase Firestore in the cloud
+Migration: When a user signs in, any existing localStorage tests are automatically moved to Firebase
+🔧 Key Files Created/Updated:
+config.js - Firebase configuration with your project credentials
+testsService.js - Firebase Firestore operations
+AuthContext.js - React authentication context
+AuthModal.js - Login/registration modal
+SavedTestsService.js - Updated to use Firebase when logged in
+App.js - Added authentication UI to sidebar
+index.js - Wrapped app with AuthProvider
+
+
+🔮 Future Enhancements Ready to Build:
+The foundation is now in place for:
+
+User settings/preferences storage
+Test sharing between users
+Social features like public test libraries
+Advanced analytics and user insights

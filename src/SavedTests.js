@@ -175,9 +175,9 @@ export default function SavedTests({ onLoadTest }) {
     loadSavedTests();
   }, []);
 
-  const loadSavedTests = () => {
+  const loadSavedTests = async () => {
     try {
-      const tests = SavedTestsService.getSavedTests();
+      const tests = await SavedTestsService.getSavedTests();
       // Sort by date created (newest first)
       tests.sort((a, b) => new Date(b.dateCreated) - new Date(a.dateCreated));
       setSavedTests(tests);
@@ -196,10 +196,10 @@ export default function SavedTests({ onLoadTest }) {
     return acc;
   }, {});
 
-  const handleDeleteTest = (testId) => {
+  const handleDeleteTest = async (testId) => {
     if (window.confirm('Are you sure you want to delete this saved test?')) {
       try {
-        SavedTestsService.deleteTest(testId);
+        await SavedTestsService.deleteTest(testId);
         loadSavedTests(); // Refresh the list
       } catch (error) {
         alert('Failed to delete test. Please try again.');

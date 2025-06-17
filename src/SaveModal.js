@@ -57,7 +57,7 @@ export default function SaveModal({
     };
 
     try {
-      onSave(saveData);
+      await onSave(saveData);
       setTitle('');
       setShowOverwriteConfirm(false);
       onClose();

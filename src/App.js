@@ -9,6 +9,8 @@ import SavedTests from './SavedTests';
 import { SavedTestsService } from './SavedTestsService';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faClock } from '@fortawesome/free-regular-svg-icons';
+import { useAuth } from './firebase/AuthContext';
+import AuthModal from './components/AuthModal';
 
 const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTDO68GqAelFKS2G6SwiUWdPs2tw5Gt62D5xLiB_9zyLyBPLSZm5gTthaQz9yCpmDKuymWMc83PV5a2/pub?gid=0&single=true&output=csv';
 
@@ -29,8 +31,10 @@ function App() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [currentSavedTest, setCurrentSavedTest] = useState(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   const navigate = useNavigate();
+  const { user, loading, logout } = useAuth();
 
   // ✅ All hooks (including useEffect) go here, before any return or if
   useEffect(() => {
@@ -65,9 +69,9 @@ function App() {
   const location = useLocation(); // <-- Moved here
 
   // Save progress function
-  const handleSaveProgress = (saveData) => {
+  const handleSaveProgress = async (saveData) => {
     try {
-      SavedTestsService.saveTest(saveData);
+      await SavedTestsService.saveTest(saveData);
       setCurrentSavedTest(saveData);
       alert('Test saved successfully!');
     } catch (error) {
@@ -317,6 +321,55 @@ function App() {
                   <FontAwesomeIcon icon={faClock} /> Timer
                 </button>
               </li>
+              <li style={{ marginTop: '1rem', borderTop: '1px solid #669BBC', paddingTop: '1rem' }}>
+                {loading ? (
+                  <div style={{ color: '#669BBC', fontSize: '0.9rem' }}>Loading...</div>
+                ) : user ? (
+                  <div>
+                    <div style={{ color: '#FDF0D5', fontSize: '0.9rem', marginBottom: '0.5rem' }}>
+                      Welcome, {user.displayName || user.email}
+                    </div>
+                    <button
+                      onClick={() => {
+                        logout();
+                        setMobileMenuOpen(false);
+                      }}
+                      style={{
+                        background: 'transparent',
+                        border: '1px solid #669BBC',
+                        color: '#669BBC',
+                        padding: '0.25rem 0.5rem',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        fontSize: '0.8rem',
+                        width: '100%'
+                      }}
+                    >
+                      Sign Out
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => {
+                      setShowAuthModal(true);
+                      setMobileMenuOpen(false);
+                    }}
+                    style={{
+                      background: '#669BBC',
+                      border: 'none',
+                      color: '#FDF0D5',
+                      padding: '0.5rem 1rem',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      fontWeight: 'bold',
+                      fontSize: '0.9rem',
+                      width: '100%'
+                    }}
+                  >
+                    Sign In
+                  </button>
+                )}
+              </li>
             </ul>
           </nav>
           <div className="sidebar-search mobile">
@@ -389,6 +442,49 @@ function App() {
             </Link>
           </li>
         </ul>
+        
+        {/* Auth Section */}
+        <div style={{ marginTop: '2rem', borderTop: '1px solid #669BBC', paddingTop: '1rem' }}>
+          {loading ? (
+            <div style={{ color: '#669BBC', fontSize: '0.9rem' }}>Loading...</div>
+          ) : user ? (
+            <div>
+              <div style={{ color: '#FDF0D5', fontSize: '0.9rem', marginBottom: '0.5rem' }}>
+                Welcome, {user.displayName || user.email}
+              </div>
+              <button
+                onClick={logout}
+                style={{
+                  background: 'transparent',
+                  border: '1px solid #669BBC',
+                  color: '#669BBC',
+                  padding: '0.25rem 0.5rem',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '0.8rem'
+                }}
+              >
+                Sign Out
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setShowAuthModal(true)}
+              style={{
+                background: '#669BBC',
+                border: 'none',
+                color: '#FDF0D5',
+                padding: '0.5rem 1rem',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                fontWeight: 'bold',
+                fontSize: '0.9rem'
+              }}
+            >
+              Sign In
+            </button>
+          )}
+        </div>
       </nav>
       {/* Timer Toggle Button (desktop only) */}
       {!showTimer && (
@@ -883,6 +979,12 @@ function App() {
           questionSubmitted={questionSubmitted}
           questions={questions}
           existingSavedTest={currentSavedTest}
+        />
+        
+        {/* Auth Modal */}
+        <AuthModal
+          isOpen={showAuthModal}
+          onClose={() => setShowAuthModal(false)}
         />
       </div>
     </div>
