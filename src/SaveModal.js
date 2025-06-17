@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import './SaveModal.css';
 
 export default function SaveModal({ 
   isOpen, 
@@ -88,50 +89,26 @@ export default function SaveModal({
   // Show overwrite confirmation dialog
   if (showOverwriteConfirm) {
     return (
-      <div className="modal-overlay" onClick={handleOverwriteCancel}>
-        <div className="modal-content" onClick={e => e.stopPropagation()}>
-          <button 
-            className="modal-close" 
-            onClick={handleOverwriteCancel} 
-            aria-label="Close"
-          >
-            &times;
-          </button>
+      <div className="save-modal-overlay" onClick={handleOverwriteCancel}>
+        <div className="save-modal-content" onClick={e => e.stopPropagation()}>
+          <h3 className="save-modal-header">Overwrite Existing Save?</h3>
           
-          <h3 style={{ marginTop: 0, color: '#003049' }}>Overwrite Existing Save?</h3>
-          
-          <p style={{ color: '#666', marginBottom: '1.5rem' }}>
+          <p className="overwrite-warning">
             A saved test with the name "{title}" already exists. Do you want to overwrite it with your current progress?
           </p>
 
-          <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+          <div className="save-modal-buttons">
             <button
               onClick={handleOverwriteCancel}
               disabled={isSaving}
-              style={{
-                background: '#ccc',
-                color: '#666',
-                border: 'none',
-                padding: '0.75rem 1.5rem',
-                borderRadius: '6px',
-                cursor: isSaving ? 'not-allowed' : 'pointer',
-                fontWeight: 'bold'
-              }}
+              className="save-modal-btn save-modal-btn-secondary"
             >
               No, Cancel
             </button>
             <button
               onClick={handleOverwriteConfirm}
               disabled={isSaving}
-              style={{
-                background: '#780000',
-                color: '#FDF0D5',
-                border: 'none',
-                padding: '0.75rem 1.5rem',
-                borderRadius: '6px',
-                cursor: isSaving ? 'not-allowed' : 'pointer',
-                fontWeight: 'bold'
-              }}
+              className="save-modal-btn save-modal-btn-danger"
             >
               {isSaving ? 'Saving...' : 'Yes, Overwrite'}
             </button>
@@ -142,52 +119,33 @@ export default function SaveModal({
   }
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={e => e.stopPropagation()}>
-        <button 
-          className="modal-close" 
-          onClick={onClose} 
-          aria-label="Close"
-        >
-          &times;
-        </button>
-        
-        <h3 style={{ marginTop: 0, color: '#003049' }}>
+    <div className="save-modal-overlay" onClick={onClose}>
+      <div className="save-modal-content" onClick={e => e.stopPropagation()}>
+        <h3 className="save-modal-header">
           {existingSavedTest ? 'Update Saved Test' : 'Save Test Progress'}
         </h3>
         
         {existingSavedTest && (
-          <div style={{ 
-            background: '#e7f3ff', 
-            padding: '0.75rem', 
-            borderRadius: '6px', 
-            marginBottom: '1rem',
-            border: '1px solid #669BBC'
-          }}>
-            <p style={{ color: '#003049', fontSize: '0.9rem', margin: 0 }}>
+          <div className="save-progress-info">
+            <p className="save-progress-title">
               📝 Updating existing save: "{existingSavedTest.title}"
             </p>
           </div>
         )}
         
-        <div style={{ marginBottom: '1rem' }}>
-          <p style={{ color: '#666', fontSize: '0.9rem', margin: '0 0 0.5rem 0' }}>
+        <div className="save-progress-stats">
+          <p>
             Progress: {questionSubmitted.filter(Boolean).length} of {questions.length} questions completed
           </p>
-          <p style={{ color: '#666', fontSize: '0.9rem', margin: '0 0 1rem 0' }}>
+          <p>
             Current question: {current + 1}
           </p>
         </div>
 
-        <div style={{ marginBottom: '1.5rem' }}>
+        <div className="save-title-section">
           <label 
             htmlFor="save-title" 
-            style={{ 
-              display: 'block', 
-              marginBottom: '0.5rem', 
-              fontWeight: 'bold',
-              color: '#003049'
-            }}
+            className="save-title-label"
           >
             Test Title:
           </label>
@@ -198,49 +156,27 @@ export default function SaveModal({
             onChange={(e) => setTitle(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder={existingSavedTest ? existingSavedTest.title : "Enter a name for this saved test..."}
-            style={{
-              width: '100%',
-              padding: '0.75rem',
-              border: '2px solid #669BBC',
-              borderRadius: '6px',
-              fontSize: '1rem',
-              color: '#003049',
-              backgroundColor: '#FDF0D5',
-              boxSizing: 'border-box'
-            }}
+            className="save-title-input"
             autoFocus
             disabled={isSaving}
           />
+          <p className="save-title-hint">
+            Choose a descriptive name to help you identify this test later
+          </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+        <div className="save-modal-buttons">
           <button
             onClick={onClose}
             disabled={isSaving}
-            style={{
-              background: '#ccc',
-              color: '#666',
-              border: 'none',
-              padding: '0.75rem 1.5rem',
-              borderRadius: '6px',
-              cursor: isSaving ? 'not-allowed' : 'pointer',
-              fontWeight: 'bold'
-            }}
+            className="save-modal-btn save-modal-btn-secondary"
           >
             Cancel
           </button>
           <button
             onClick={handleSave}
             disabled={isSaving || !title.trim()}
-            style={{
-              background: isSaving || !title.trim() ? '#ccc' : '#780000',
-              color: '#FDF0D5',
-              border: 'none',
-              padding: '0.75rem 1.5rem',
-              borderRadius: '6px',
-              cursor: isSaving || !title.trim() ? 'not-allowed' : 'pointer',
-              fontWeight: 'bold'
-            }}
+            className="save-modal-btn save-modal-btn-primary"
           >
             {isSaving ? 'Saving...' : existingSavedTest ? 'Update Test' : 'Save Test'}
           </button>

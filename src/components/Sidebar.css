@@ -1,0 +1,231 @@
+/* Sidebar.css */
+
+/* Mobile Menu Button */
+.mobile-menu-btn {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: 4000;
+  background: #00243a;
+  color: #FDF0D5;
+  border: 2px solid #669BBC;
+  border-radius: 8px;
+  padding: 0.3rem 0.7rem;
+  font-size: 1.3rem;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  display: none; /* Hidden by default, shown on mobile */
+}
+
+.hamburger-icon {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+/* Mobile Dropdown Menu */
+.mobile-dropdown-menu {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 92vw;
+  max-width: 340px;
+  background: #00243a;
+  color: #FDF0D5;
+  z-index: 3100;
+  border-radius: 0 0 16px 0;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+  animation: slideDown 0.2s;
+}
+
+.mobile-dropdown-menu.open {
+  display: block;
+}
+
+@keyframes slideDown {
+  from { transform: translateY(-40px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.mobile-menu-content {
+  padding: 1.2rem 1rem 1rem 1rem;
+}
+
+.mobile-dropdown-menu nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1rem 0;
+}
+
+.mobile-dropdown-menu nav ul li {
+  margin-bottom: 1rem;
+}
+
+.mobile-dropdown-menu nav ul li a,
+.mobile-dropdown-menu nav ul li button {
+  color: #FDF0D5;
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  font-weight: bold;
+  text-decoration: none;
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0.5rem 0;
+  border-radius: 6px;
+  transition: background 0.15s, color 0.15s;
+  cursor: pointer;
+}
+
+.mobile-dropdown-menu nav ul li a.active,
+.mobile-dropdown-menu nav ul li a:hover,
+.mobile-dropdown-menu nav ul li button:hover {
+  background: #669BBC;
+  color: #003049;
+}
+
+.mobile-auth-section {
+  margin-top: 1rem;
+  border-top: 1px solid #669BBC;
+  padding-top: 1rem;
+}
+
+.timer-toggle-btn.mobile {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  margin: 0.2rem 0 0 0;
+  padding: 0.4rem 0.5rem;
+  font-size: 1rem;
+  border-radius: 6px;
+  background: #780000;
+  color: #FDF0D5;
+  border: none;
+  font-weight: bold;
+  box-sizing: border-box;
+}
+
+/* Desktop Sidebar */
+.sidebar {
+  width: 220px;
+  background: #00243a;
+  padding: 2rem 1rem;
+  min-height: 100vh;
+  border-right: 2px solid #669BBC;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+/* Sidebar search bar */
+.sidebar-search {
+  margin-bottom: 2rem;
+}
+
+.sidebar-search input[type="text"] {
+  width: 100%;
+  padding: 0.6rem 0.8rem;
+  font-size: 16px;
+  border-radius: 6px;
+  border: 1.5px solid #669BBC;
+  background: #FDF0D5;
+  color: #003049;
+  outline: none;
+  margin-bottom: 8px;
+  box-sizing: border-box;
+}
+
+.sidebar-search button {
+  width: 100%;
+  background: #669BBC;
+  color: #003049;
+  border: none;
+  border-radius: 6px;
+  padding: 0.5rem 0;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+/* Navigation */
+.sidebar-nav {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar-nav li {
+  margin-bottom: 1.5rem;
+}
+
+.sidebar-nav li a {
+  color: #669BBC;
+  font-weight: bold;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.sidebar-nav li a.active {
+  color: #FDF0D5;
+}
+
+.sidebar-nav li a:hover {
+  color: #FDF0D5;
+}
+
+/* Auth Section */
+.sidebar-auth {
+  margin-top: 2rem;
+  border-top: 1px solid #669BBC;
+  padding-top: 1rem;
+}
+
+.welcome-text {
+  color: #FDF0D5;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+.sign-out-btn {
+  background: transparent;
+  border: 1px solid #669BBC;
+  color: #669BBC;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all 0.2s ease;
+}
+
+.sign-out-btn:hover {
+  background: #669BBC;
+  color: white;
+}
+
+.sign-out-btn.mobile {
+  width: 100%;
+  font-size: 0.8rem;
+}
+
+/* Mobile styles */
+@media (max-width: 600px) {
+  .sidebar {
+    display: none !important;
+  }
+  
+  .mobile-menu-btn,
+  .mobile-dropdown-menu,
+  .timer-toggle-btn.mobile {
+    display: block;
+  }
+}
+
+/* Hide mobile menu on desktop */
+@media (min-width: 601px) {
+  .mobile-menu-btn,
+  .mobile-dropdown-menu,
+  .timer-toggle-btn.mobile {
+    display: none !important;
+  }
+}

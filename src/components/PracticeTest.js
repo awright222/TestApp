@@ -1,0 +1,363 @@
+import React, { useState, useEffect } from 'react';
+import Papa from 'papaparse';
+import { SavedTestsService } from '../SavedTestsService';
+import SaveModal from '../SaveModal';
+import './PracticeTest.css';
+
+function PracticeTest({ selectedTest, onBackToSelection }) {
+  const [questions, setQuestions] = useState([]);
+  const [originalQuestions, setOriginalQuestions] = useState([]);
+  const [current, setCurrent] = useState(0);
+  const [userAnswers, setUserAnswers] = useState([]);
+  const [questionScore, setQuestionScore] = useState([]);
+  const [questionSubmitted, setQuestionSubmitted] = useState([]);
+  const [showExplanation, setShowExplanation] = useState(false);
+  const [showSaveModal, setShowSaveModal] = useState(false);
+  const [currentSavedTest] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (selectedTest) {
+      setLoading(true);
+      Papa.parse(selectedTest.csvUrl, {
+        download: true,
+        header: true,
+        complete: (result) => {
+          const filtered = result.data.filter(q => q.question_text);
+          setQuestions(filtered);
+          setOriginalQuestions(filtered);
+          setUserAnswers(filtered.map(getInitialUserAnswer));
+          setQuestionScore(Array(filtered.length).fill(null));
+          setQuestionSubmitted(Array(filtered.length).fill(false));
+          setLoading(false);
+        },
+        error: (error) => {
+          console.error('Error loading test:', error);
+          setLoading(false);
+          alert('Failed to load test questions. Please try again.');
+        }
+      });
+    }
+  }, [selectedTest]);
+
+  // Show loading screen while questions are being loaded
+  if (loading) {
+    return (
+      <div className="practice-test-loading">
+        <div className="loading-icon">⚡</div>
+        <div className="loading-title">Loading {selectedTest.title}...</div>
+        <div className="loading-subtitle">Please wait while we prepare your questions</div>
+      </div>
+    );
+  }
+
+  if (!questions.length) {
+    return (
+      <div className="practice-test-error">
+        <div className="error-icon">📚</div>
+        <div className="error-title">No questions found for this test.</div>
+        <button onClick={onBackToSelection} className="back-btn">
+          Back to Test Selection
+        </button>
+      </div>
+    );
+  }
+
+  function getInitialUserAnswer(q) {
+    if (q?.question_type?.toLowerCase() === 'multiple choice') {
+      return [];
+    } else if (q?.question_type?.toLowerCase() === 'hotspot') {
+      return {};
+    }
+    return '';
+  }
+
+  const handleSaveProgress = async (saveData) => {
+    try {
+      const progressData = {
+        current,
+        userAnswers,
+        questionScore,
+        questionSubmitted,
+        questions: questions.map(q => ({ ...q }))
+      };
+      
+      await SavedTestsService.saveTest(saveData.title, progressData, currentSavedTest?.id);
+      setShowSaveModal(false);
+      alert('Test saved successfully!');
+    } catch (error) {
+      console.error('Error saving test:', error);
+      throw error;
+    }
+  };
+
+  const q = questions[current];
+  const isLast = current >= questions.length - 1;
+  const choices = q.choices?.match(/^[A-Z]\..+?(?=\n[A-Z]\.|$)/gms)?.map(s => s.trim()) || [];
+
+  // Hotspot options
+  const hotspotOptions = {};
+  if (q.question_type?.toLowerCase() === 'hotspot') {
+    const lines = q.choices.split(/\r?\n/).filter(Boolean);
+    for (const line of lines) {
+      const [label, rest] = line.split(':');
+      if (label && rest) {
+        hotspotOptions[label.trim()] = rest.split(',').map(opt => opt.trim()).filter(Boolean);
+      }
+    }
+  }
+
+  const correctHotspotAnswers = {};
+  if (q.question_type?.toLowerCase() === 'hotspot') {
+    const lines = q.correct_answer.split(/\r?\n/).filter(Boolean);
+    for (const line of lines) {
+      const [label, answer] = line.split(':');
+      if (label && answer) {
+        correctHotspotAnswers[label.trim()] = answer.trim();
+      }
+    }
+  }
+
+  function getChoiceLabel(choice) {
+    const match = choice.match(/^([A-Z])\./);
+    return match ? match[1] : null;
+  }
+
+  const updateUserAnswer = (answer) => {
+    setUserAnswers(prev => {
+      const updated = [...prev];
+      updated[current] = answer;
+      return updated;
+    });
+  };
+
+  function handleHotspotChange(label, val) {
+    setUserAnswers(prev => {
+      const updated = [...prev];
+      updated[current] = { ...updated[current], [label]: val };
+      return updated;
+    });
+  }
+
+  const submitCurrentQuestion = () => {
+    let points = 0;
+    if (q.question_type?.toLowerCase() === 'multiple choice') {
+      const correctAnswers = q.correct_answer.split(',').map(a => a.trim());
+      const userSelection = Array.isArray(userAnswers[current]) ? userAnswers[current] : [userAnswers[current]];
+      
+      for (const userChoice of userSelection) {
+        const userLabel = getChoiceLabel(userChoice);
+        if (correctAnswers.includes(userLabel)) {
+          points++;
+        }
+      }
+    } else if (q.question_type?.toLowerCase() === 'hotspot') {
+      points = Object.entries(correctHotspotAnswers).filter(
+        ([label, correct]) => userAnswers[current][label] === correct
+      ).length;
+    }
+    setShowExplanation(true);
+    setQuestionSubmitted(prev => {
+      const updated = [...prev];
+      updated[current] = true;
+      return updated;
+    });
+    setQuestionScore(prev => {
+      const updated = [...prev];
+      updated[current] = points;
+      return updated;
+    });
+  };
+
+  const runningScore = questionScore.reduce((sum, val) => sum + (val || 0), 0);
+
+  const nextQuestion = () => {
+    setCurrent(prev => Math.min(questions.length - 1, prev + 1));
+    setShowExplanation(false);
+  };
+
+  const prevQuestion = () => {
+    setCurrent(prev => Math.max(0, prev - 1));
+    setShowExplanation(false);
+  };
+
+  function shuffleArray(array) {
+    const arr = [...array];
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  return (
+    <div className="practice-test">
+      {/* Header with Back Button */}
+      <div className="practice-test-header">
+        <button onClick={onBackToSelection} className="back-to-tests-btn">
+          ← Back to Tests
+        </button>
+        <div className="test-info">
+          <div className="test-level">
+            {selectedTest.icon} {selectedTest.difficulty} Level
+          </div>
+          <h1 className="test-title">{selectedTest.title}</h1>
+        </div>
+      </div>
+
+      <div className="score-display">
+        Score: {runningScore} / {
+          questions.reduce((sum, q) => {
+            if (q.question_type?.toLowerCase() === 'multiple choice') {
+              return sum + q.correct_answer.split(',').length;
+            } else if (q.question_type?.toLowerCase() === 'hotspot') {
+              return sum + q.correct_answer.split(/\r?\n/).filter(Boolean).length;
+            }
+            return sum + 1;
+          }, 0)
+        }
+      </div>
+
+      <div className="test-controls">
+        <button
+          onClick={() => {
+            setQuestions(shuffleArray(originalQuestions));
+            setCurrent(0);
+            setShowExplanation(false);
+          }}
+          className="control-btn"
+        >
+          Shuffle Questions
+        </button>
+        <button
+          onClick={() => {
+            setQuestions(originalQuestions);
+            setCurrent(0);
+            setShowExplanation(false);
+            setUserAnswers(originalQuestions.map(getInitialUserAnswer));
+            setQuestionScore(Array(originalQuestions.length).fill(null));
+            setQuestionSubmitted(Array(originalQuestions.length).fill(false));
+          }}
+          className="control-btn"
+        >
+          Reset
+        </button>
+        <button onClick={() => setShowSaveModal(true)} className="control-btn save-btn">
+          Save Progress
+        </button>
+      </div>
+
+      <div className="question-counter">
+        Question {current + 1} of {questions.length}
+      </div>
+
+      <div className="question-text">
+        <strong>{q.question_text}</strong>
+      </div>
+
+      {/* Multiple Choice Questions */}
+      {q.question_type?.toLowerCase() === 'multiple choice' && (
+        <div className="choices-container">
+          {choices.map((choice, idx) => {
+            const isSelected = Array.isArray(userAnswers[current]) 
+              ? userAnswers[current].includes(choice)
+              : userAnswers[current] === choice;
+            
+            return (
+              <div key={idx} className="choice-item">
+                <label className={`choice-label ${isSelected ? 'selected' : ''}`}>
+                  <input
+                    type="checkbox"
+                    checked={isSelected}
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        updateUserAnswer([...userAnswers[current], choice]);
+                      } else {
+                        updateUserAnswer(userAnswers[current].filter(c => c !== choice));
+                      }
+                    }}
+                    disabled={questionSubmitted[current]}
+                  />
+                  <span className="choice-text">{choice}</span>
+                </label>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Hotspot Questions */}
+      {q.question_type?.toLowerCase() === 'hotspot' && (
+        <div className="hotspot-container">
+          {Object.entries(hotspotOptions).map(([label, options]) => (
+            <div key={label} className="hotspot-item">
+              <strong className="hotspot-label">{label}:</strong>
+              <select
+                value={userAnswers[current][label] || ''}
+                onChange={(e) => handleHotspotChange(label, e.target.value)}
+                disabled={questionSubmitted[current]}
+                className="hotspot-select"
+              >
+                <option value="">Select...</option>
+                {options.map((option, idx) => (
+                  <option key={idx} value={option}>{option}</option>
+                ))}
+              </select>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="navigation-controls">
+        <button
+          onClick={submitCurrentQuestion}
+          disabled={questionSubmitted[current]}
+          className="submit-btn"
+        >
+          Submit Answer
+        </button>
+        <button 
+          onClick={prevQuestion} 
+          disabled={current === 0} 
+          className="nav-btn"
+        >
+          Previous
+        </button>
+        <button 
+          onClick={nextQuestion} 
+          disabled={isLast}
+          className="nav-btn"
+        >
+          Next
+        </button>
+      </div>
+
+      {showExplanation && (
+        <div className="explanation-container">
+          <div className="explanation-header">
+            <strong>Explanation:</strong>
+          </div>
+          <div className="explanation-text">{q.explanation}</div>
+          <div className="correct-answer-header">
+            <strong>Correct Answer:</strong>
+          </div>
+          <div className="correct-answer-text">{q.correct_answer}</div>
+        </div>
+      )}
+
+      <SaveModal
+        isOpen={showSaveModal}
+        onClose={() => setShowSaveModal(false)}
+        onSave={handleSaveProgress}
+        current={current}
+        userAnswers={userAnswers}
+        questionScore={questionScore}
+        questionSubmitted={questionSubmitted}
+        questions={questions}
+        existingSavedTest={currentSavedTest}
+      />
+    </div>
+  );
+}
+
+export default PracticeTest;

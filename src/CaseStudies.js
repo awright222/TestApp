@@ -189,6 +189,7 @@ export function CaseStudies() {
 
 export function CaseStudyDetail() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [meta, setMeta] = useState(null);
   const [sections, setSections] = useState([]);
   const [questions, setQuestions] = useState([]);
@@ -260,7 +261,19 @@ export function CaseStudyDetail() {
   }, [id]);
 
   if (loading || !meta) {
-    return <div>Loading...</div>;
+    return (
+      <div style={{ 
+        minHeight: '50vh',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '2rem'
+      }}>
+        <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📚</div>
+        <div style={{ fontSize: '1.2rem', color: '#669BBC' }}>Loading Case Study...</div>
+      </div>
+    );
   }
 
   // Group sections by section_group
@@ -272,56 +285,233 @@ export function CaseStudyDetail() {
   }, {});
 
   return (
-    <div style={{ padding: '2rem' }}>
-      {/* Meta as H1 */}
-      <h1>{meta.title}</h1>
-      <p>{meta.description}</p>
-
-      {/* Section Tabs */}
-      <div style={{ display: 'flex', gap: 12, margin: '2rem 0 1rem 0' }}>
-        {Object.keys(groupedSections).map(group => (
-          <button
-            key={group}
-            style={{
-              padding: '0.5rem 1.2rem',
-              borderRadius: 8,
-              border: activeTab === group ? '2px solid #669BBC' : '1px solid #bfc9d1',
-              background: activeTab === group ? '#669BBC' : '#00243a',
-              color: activeTab === group ? '#00243a' : '#FDF0D5',
-              fontWeight: activeTab === group ? 'bold' : 'normal',
-              cursor: 'pointer'
-            }}
-            onClick={() => setActiveTab(group)}
-          >
-            {group}
-          </button>
-        ))}
+    <div style={{ 
+      padding: '2rem',
+      maxWidth: '1200px',
+      margin: '0 auto',
+      background: 'linear-gradient(135deg, #FDF0D5 0%, #FFFFFF 100%)',
+      minHeight: '100vh'
+    }}>
+      {/* Header with Back Button */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        marginBottom: '3rem',
+        padding: '1.5rem 0',
+        borderBottom: '2px solid #669BBC20'
+      }}>
+        <button
+          onClick={() => navigate('/practice')}
+          style={{
+            background: 'transparent',
+            border: '2px solid #669BBC',
+            color: '#669BBC',
+            padding: '0.5rem 1rem',
+            borderRadius: '8px',
+            fontSize: '0.9rem',
+            cursor: 'pointer',
+            marginRight: '1.5rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            transition: 'all 0.2s ease'
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.background = '#669BBC';
+            e.target.style.color = 'white';
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.background = 'transparent';
+            e.target.style.color = '#669BBC';
+          }}
+        >
+          ← Back to Practice Tests
+        </button>
+        <div>
+          <div style={{
+            fontSize: '0.9rem',
+            color: '#669BBC',
+            marginBottom: '0.25rem'
+          }}>
+            📋 Interactive Case Study
+          </div>
+          <h1 style={{
+            margin: 0,
+            fontSize: '2.2rem',
+            color: '#003049',
+            fontWeight: '600'
+          }}>
+            {meta.title}
+          </h1>
+          <p style={{
+            margin: '0.5rem 0 0 0',
+            color: '#669BBC',
+            fontSize: '1.1rem',
+            lineHeight: '1.5'
+          }}>
+            {meta.description}
+          </p>
+        </div>
       </div>
 
-      {/* Section Titles as clickable items */}
-      <div style={{ marginBottom: '2rem' }}>
+      {/* Show saved progress notification */}
+      {savedProgress && (
+        <div style={{
+          background: 'linear-gradient(135deg, #669BBC 0%, #4a90a4 100%)',
+          color: 'white',
+          padding: '1.5rem',
+          borderRadius: '12px',
+          marginBottom: '2rem',
+          boxShadow: '0 4px 20px rgba(102, 155, 188, 0.3)',
+          border: '1px solid rgba(255, 255, 255, 0.2)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <div style={{ fontSize: '2rem' }}>💾</div>
+            <div>
+              <strong style={{ fontSize: '1.1rem' }}>Saved Progress Found!</strong>
+              <p style={{ margin: '0.5rem 0 0 0', opacity: 0.9 }}>
+                Your answers and current position have been restored from your previous session.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Section Tabs */}
+      <div style={{ 
+        background: 'white',
+        borderRadius: '12px',
+        padding: '2rem',
+        marginBottom: '2rem',
+        boxShadow: '0 4px 20px rgba(0, 48, 73, 0.08)',
+        border: '1px solid rgba(102, 155, 188, 0.1)'
+      }}>
+        <h2 style={{
+          color: '#003049',
+          fontSize: '1.5rem',
+          marginBottom: '1.5rem',
+          fontWeight: '600'
+        }}>
+          📖 Case Study Information
+        </h2>
+
+        <div style={{ 
+          display: 'flex', 
+          gap: '0.75rem', 
+          marginBottom: '2rem',
+          flexWrap: 'wrap'
+        }}>
+          {Object.keys(groupedSections).map(group => (
+            <button
+              key={group}
+              style={{
+                padding: '0.75rem 1.5rem',
+                borderRadius: '25px',
+                border: 'none',
+                background: activeTab === group 
+                  ? 'linear-gradient(135deg, #003049 0%, #00243a 100%)' 
+                  : 'rgba(102, 155, 188, 0.1)',
+                color: activeTab === group ? 'white' : '#669BBC',
+                fontWeight: '600',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                fontSize: '0.95rem'
+              }}
+              onClick={() => setActiveTab(group)}
+              onMouseEnter={(e) => {
+                if (activeTab !== group) {
+                  e.target.style.background = 'rgba(102, 155, 188, 0.2)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (activeTab !== group) {
+                  e.target.style.background = 'rgba(102, 155, 188, 0.1)';
+                }
+              }}
+            >
+              {group}
+            </button>
+          ))}
+        </div>
+
+        {/* Section Content */}
         {activeTab && groupedSections[activeTab] && (
-          <ul style={{ listStyle: 'none', padding: 0 }}>
-            {groupedSections[activeTab].map(section => (
-              <li key={section.id || section.section_title} style={{ marginBottom: 8 }}>
-                <button
-                  style={{
-                    background: '#003049',
-                    color: '#FDF0D5',
-                    border: '1px solid #669BBC',
-                    borderRadius: 6,
-                    padding: '0.5rem 1rem',
-                    cursor: 'pointer',
-                    width: '100%',
-                    textAlign: 'left'
-                  }}
-                  onClick={() => setModalSection(section)}
-                >
-                  {section.section_title}
-                </button>
-              </li>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+            gap: '1rem'
+          }}>
+            {groupedSections[activeTab].map((section, index) => (
+              <div
+                key={section.id || section.section_title}
+                style={{
+                  background: 'linear-gradient(135deg, #F8F9FA 0%, #FFFFFF 100%)',
+                  borderRadius: '12px',
+                  padding: '1.5rem',
+                  border: '1px solid rgba(102, 155, 188, 0.15)',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  position: 'relative'
+                }}
+                onClick={() => setModalSection(section)}
+                onMouseEnter={(e) => {
+                  e.target.style.transform = 'translateY(-4px)';
+                  e.target.style.boxShadow = '0 8px 30px rgba(0, 48, 73, 0.12)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.transform = 'translateY(0)';
+                  e.target.style.boxShadow = 'none';
+                }}
+              >
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '1rem'
+                }}>
+                  <div style={{
+                    background: 'linear-gradient(135deg, #669BBC 0%, #4a90a4 100%)',
+                    color: 'white',
+                    borderRadius: '50%',
+                    width: '32px',
+                    height: '32px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: 'bold',
+                    fontSize: '0.9rem',
+                    flexShrink: 0
+                  }}>
+                    {index + 1}
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <h4 style={{
+                      color: '#003049',
+                      fontSize: '1.1rem',
+                      fontWeight: '600',
+                      margin: '0 0 0.5rem 0',
+                      lineHeight: '1.3'
+                    }}>
+                      {section.section_title}
+                    </h4>
+                    <p style={{
+                      color: '#669BBC',
+                      fontSize: '0.9rem',
+                      margin: 0,
+                      lineHeight: '1.4'
+                    }}>
+                      Click to read the full information
+                    </p>
+                  </div>
+                  <div style={{
+                    color: '#669BBC',
+                    fontSize: '1.2rem'
+                  }}>
+                    →
+                  </div>
+                </div>
+              </div>
             ))}
-          </ul>
+          </div>
         )}
       </div>
 
@@ -332,24 +522,29 @@ export function CaseStudyDetail() {
           style={{
             position: 'fixed',
             top: 0, left: 0, right: 0, bottom: 0,
-            background: 'rgba(0,0,0,0.5)',
+            background: 'rgba(0, 48, 73, 0.8)',
+            backdropFilter: 'blur(4px)',
             zIndex: 1000,
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center'
+            justifyContent: 'center',
+            padding: '2rem'
           }}
           onClick={() => setModalSection(null)}
         >
           <div
             className="modal-content"
             style={{
-              background: '#fff',
-              color: '#003049',
-              borderRadius: 10,
-              padding: '2rem',
-              minWidth: 320,
-              maxWidth: 600,
-              boxShadow: '0 2px 16px rgba(0,0,0,0.18)',
+              background: 'linear-gradient(135deg, #FFFFFF 0%, #FDF0D5 100%)',
+              borderRadius: '16px',
+              padding: '2.5rem',
+              minWidth: '320px',
+              maxWidth: '800px',
+              width: '100%',
+              maxHeight: '80vh',
+              overflowY: 'auto',
+              boxShadow: '0 20px 60px rgba(0, 48, 73, 0.3)',
+              border: '1px solid rgba(102, 155, 188, 0.2)',
               position: 'relative'
             }}
             onClick={e => e.stopPropagation()}
@@ -358,58 +553,158 @@ export function CaseStudyDetail() {
               className="modal-close"
               style={{
                 position: 'absolute',
-                top: 10,
-                right: 16,
-                background: 'none',
+                top: '1rem',
+                right: '1rem',
+                background: 'rgba(102, 155, 188, 0.1)',
                 border: 'none',
-                fontSize: 28,
-                color: '#003049',
-                cursor: 'pointer'
+                borderRadius: '50%',
+                width: '40px',
+                height: '40px',
+                fontSize: '20px',
+                color: '#669BBC',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'all 0.2s ease'
               }}
               onClick={() => setModalSection(null)}
+              onMouseEnter={(e) => {
+                e.target.style.background = '#669BBC';
+                e.target.style.color = 'white';
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.background = 'rgba(102, 155, 188, 0.1)';
+                e.target.style.color = '#669BBC';
+              }}
               aria-label="Close"
             >
-              &times;
+              ✕
             </button>
-            <h3>{modalSection.section_title}</h3>
-            <div style={{ marginTop: '1rem', whiteSpace: 'pre-line' }}>
+            
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '1rem',
+              marginBottom: '2rem'
+            }}>
+              <div style={{
+                background: 'linear-gradient(135deg, #003049 0%, #00243a 100%)',
+                color: 'white',
+                borderRadius: '12px',
+                padding: '0.75rem',
+                fontSize: '1.5rem'
+              }}>
+                📄
+              </div>
+              <h3 style={{
+                color: '#003049',
+                fontSize: '1.8rem',
+                fontWeight: '600',
+                margin: 0,
+                lineHeight: '1.3'
+              }}>
+                {modalSection.section_title}
+              </h3>
+            </div>
+            
+            <div style={{ 
+              color: '#003049',
+              fontSize: '1.1rem',
+              lineHeight: '1.7',
+              whiteSpace: 'pre-line',
+              background: 'rgba(102, 155, 188, 0.05)',
+              padding: '2rem',
+              borderRadius: '12px',
+              border: '1px solid rgba(102, 155, 188, 0.1)'
+            }}>
               {modalSection.content}
+            </div>
+            
+            <div style={{
+              marginTop: '2rem',
+              textAlign: 'center'
+            }}>
+              <button
+                onClick={() => setModalSection(null)}
+                style={{
+                  background: 'linear-gradient(135deg, #669BBC 0%, #4a90a4 100%)',
+                  color: 'white',
+                  border: 'none',
+                  padding: '0.75rem 2rem',
+                  borderRadius: '25px',
+                  fontSize: '1rem',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.transform = 'scale(1.05)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.transform = 'scale(1)';
+                }}
+              >
+                Got it!
+              </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Show saved progress notification */}
-      {savedProgress && (
+      {/* Questions Section */}
+      <div style={{ 
+        background: 'white',
+        borderRadius: '12px',
+        padding: '2rem',
+        boxShadow: '0 4px 20px rgba(0, 48, 73, 0.08)',
+        border: '1px solid rgba(102, 155, 188, 0.1)'
+      }}>
         <div style={{
-          background: '#669BBC',
-          color: '#003049',
-          padding: '1rem',
-          borderRadius: '8px',
-          marginBottom: '1rem',
-          textAlign: 'center'
+          display: 'flex',
+          alignItems: 'center',
+          gap: '1rem',
+          marginBottom: '2rem'
         }}>
-          <strong>📚 Saved Progress Found!</strong>
-          <p style={{ margin: '0.5rem 0 0 0' }}>
-            You have saved progress for this case study. 
-            Your answers and current position have been restored.
-          </p>
+          <div style={{
+            background: 'linear-gradient(135deg, #003049 0%, #00243a 100%)',
+            color: 'white',
+            borderRadius: '12px',
+            padding: '0.75rem',
+            fontSize: '1.5rem'
+          }}>
+            🎯
+          </div>
+          <h2 style={{
+            color: '#003049',
+            fontSize: '1.5rem',
+            margin: 0,
+            fontWeight: '600'
+          }}>
+            Practice Questions
+          </h2>
         </div>
-      )}
 
-      {/* Questions */}
-      <h3>Questions</h3>
-      {questions.length > 0 ? (
-        <QuestionQuizWithSave 
-          questions={questions} 
-          onSaveProgress={handleSaveProgress}
-          caseStudyTitle={meta?.title}
-          initialProgress={savedProgress?.progress}
-          existingSavedTest={savedProgress}
-        />
-      ) : (
-        <p>No questions for this case study.</p>
-      )}
+        {questions.length > 0 ? (
+          <QuestionQuizWithSave 
+            questions={questions} 
+            onSaveProgress={handleSaveProgress}
+            caseStudyTitle={meta?.title}
+            initialProgress={savedProgress?.progress}
+            existingSavedTest={savedProgress}
+          />
+        ) : (
+          <div style={{
+            textAlign: 'center',
+            padding: '3rem 2rem',
+            color: '#669BBC'
+          }}>
+            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📝</div>
+            <h3 style={{ color: '#669BBC', margin: '0 0 0.5rem 0' }}>No Questions Available</h3>
+            <p style={{ margin: 0 }}>This case study doesn't have practice questions yet.</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

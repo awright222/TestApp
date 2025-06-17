@@ -1,0 +1,159 @@
+/* SaveModal.css */
+.save-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.save-modal-content {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  max-width: 500px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+}
+
+.save-modal-header {
+  margin-top: 0;
+  color: #003049;
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.overwrite-warning {
+  color: #666;
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+
+.save-modal-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+
+.save-modal-btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.save-modal-btn-secondary {
+  background: #f5f5f5;
+  color: #666;
+}
+
+.save-modal-btn-secondary:hover {
+  background: #e0e0e0;
+}
+
+.save-modal-btn-danger {
+  background: #dc3545;
+  color: white;
+}
+
+.save-modal-btn-danger:hover {
+  background: #c82333;
+}
+
+.save-modal-btn-primary {
+  background: #003049;
+  color: white;
+}
+
+.save-modal-btn-primary:hover {
+  background: #00243a;
+}
+
+.save-modal-btn-primary:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.save-progress-info {
+  background: linear-gradient(135deg, #669BBC10 0%, #669BBC05 100%);
+  border: 1px solid rgba(102, 155, 188, 0.2);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.save-progress-title {
+  color: #003049;
+  font-size: 0.9rem;
+  margin: 0;
+  font-weight: 600;
+}
+
+.save-progress-stats {
+  margin-bottom: 1rem;
+}
+
+.save-progress-stats p {
+  color: #666;
+  font-size: 0.9rem;
+  margin: 0 0 0.5rem 0;
+}
+
+.save-title-section {
+  margin-bottom: 1.5rem;
+}
+
+.save-title-label {
+  display: block;
+  color: #003049;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.save-title-input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.2s ease;
+  box-sizing: border-box;
+}
+
+.save-title-input:focus {
+  outline: none;
+  border-color: #003049;
+}
+
+.save-title-hint {
+  color: #666;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+  .save-modal-content {
+    padding: 1.5rem;
+    width: 95%;
+  }
+  
+  .save-modal-buttons {
+    flex-direction: column;
+  }
+  
+  .save-modal-btn {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+}
