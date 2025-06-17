@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Routes, Route, Link, useLocation } from 'react-router-dom';
+import { Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
 import Papa from 'papaparse';
 import './App.css';
 import { CaseStudies, CaseStudyDetail } from './CaseStudies';
@@ -24,11 +24,14 @@ function PracticeTest() {
   const [originalQuestions, setOriginalQuestions] = useState([]);
   const [current, setCurrent] = useState(0);
   const [userAnswers, setUserAnswers] = useState([]);
+  const [submitted, setSubmitted] = useState(false);
   const [questionScore, setQuestionScore] = useState([]);
   const [questionSubmitted, setQuestionSubmitted] = useState([]);
   const [showExplanation, setShowExplanation] = useState(false);
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [currentSavedTest, setCurrentSavedTest] = useState(null);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     Papa.parse(SHEET_CSV_URL, {
@@ -62,6 +65,27 @@ function PracticeTest() {
     } catch (error) {
       console.error('Error saving test:', error);
       throw error;
+    }
+  };
+
+  const handleLoadTest = (savedTest) => {
+    if (!savedTest || !savedTest.progress) {
+      alert('Invalid saved test data');
+      return;
+    }
+
+    try {
+      const { progress } = savedTest;
+      setCurrent(progress.current || 0);
+      setUserAnswers(progress.userAnswers || []);
+      setQuestionScore(progress.questionScore || []);
+      setQuestionSubmitted(progress.questionSubmitted || []);
+      setCurrentSavedTest(savedTest);
+      
+      alert(`Loaded saved test: ${savedTest.title}`);
+    } catch (error) {
+      console.error('Error loading test:', error);
+      alert('Failed to load saved test');
     }
   };
 
@@ -194,6 +218,7 @@ function PracticeTest() {
             setQuestions(originalQuestions);
             setCurrent(0);
             setShowExplanation(false);
+            setSubmitted(false);
             setUserAnswers(originalQuestions.map(getInitialUserAnswer));
             setQuestionScore(Array(originalQuestions.length).fill(null));
             setQuestionSubmitted(Array(originalQuestions.length).fill(false));
@@ -219,6 +244,7 @@ function PracticeTest() {
       {q.question_type?.toLowerCase() === 'multiple choice' && (
         <div style={{ marginBottom: '1rem' }}>
           {choices.map((choice, idx) => {
+            const label = getChoiceLabel(choice);
             const isSelected = Array.isArray(userAnswers[current]) 
               ? userAnswers[current].includes(choice)
               : userAnswers[current] === choice;
