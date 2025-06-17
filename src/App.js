@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Routes, Route, Link, useLocation } from 'react-router-dom';
+import { Routes, Route, Link, useLocation, useNavigate } from 'react-router-dom';
 import Papa from 'papaparse';
 import './App.css';
 import { CaseStudies, CaseStudyDetail } from './CaseStudies';
@@ -21,17 +21,30 @@ const AVAILABLE_TESTS = [
   {
     id: 'mb800',
     title: 'MB-800: Microsoft Dynamics 365 Business Central Functional Consultant',
-    description: 'Practice test for Microsoft Dynamics 365 Business Central Functional Consultant certification',
+    description: 'Complete certification preparation with practice questions and case studies',
     questionCount: '65+ Questions',
+    caseStudyCount: '8 Case Studies',
     difficulty: 'Intermediate',
     csvUrl: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTDO68GqAelFKS2G6SwiUWdPs2tw5Gt62D5xLiB_9zyLyBPLSZm5gTthaQz9yCpmDKuymWMc83PV5a2/pub?gid=0&single=true&output=csv',
     color: '#003049',
-    icon: '💼'
+    icon: '💼',
+    hasCaseStudies: true
   },
   // Add more tests here in the future
 ];
 
 function TestSelector({ onTestSelect }) {
+  const navigate = useNavigate();
+  
+  const handleOptionSelect = (test, option) => {
+    if (option === 'practice') {
+      onTestSelect({ ...test, type: 'practice' });
+    } else if (option === 'casestudy') {
+      // Navigate to case studies
+      navigate('/case-studies');
+    }
+  };
+
   return (
     <div style={{
       padding: '2rem',
@@ -57,38 +70,28 @@ function TestSelector({ onTestSelect }) {
           margin: '0 auto',
           lineHeight: '1.6'
         }}>
-          Choose a practice test to start your certification preparation journey
+          Choose your certification preparation method: practice questions or case studies
         </p>
       </div>
 
       <div style={{
         display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
         gap: '2rem',
         marginTop: '2rem'
       }}>
         {AVAILABLE_TESTS.map((test) => (
           <div
             key={test.id}
-            onClick={() => onTestSelect(test)}
             style={{
               background: 'linear-gradient(135deg, #FDF0D5 0%, #FFFFFF 100%)',
               borderRadius: '16px',
               padding: '2rem',
               boxShadow: '0 8px 32px rgba(0, 48, 73, 0.1)',
               border: '1px solid rgba(102, 155, 188, 0.2)',
-              cursor: 'pointer',
               transition: 'all 0.3s ease',
               position: 'relative',
               overflow: 'hidden'
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.transform = 'translateY(-8px)';
-              e.target.style.boxShadow = '0 16px 48px rgba(0, 48, 73, 0.15)';
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.transform = 'translateY(0)';
-              e.target.style.boxShadow = '0 8px 32px rgba(0, 48, 73, 0.1)';
             }}
           >
             {/* Background Pattern */}
@@ -136,7 +139,8 @@ function TestSelector({ onTestSelect }) {
             <div style={{
               display: 'flex',
               gap: '1rem',
-              marginBottom: '1.5rem'
+              marginBottom: '1.5rem',
+              flexWrap: 'wrap'
             }}>
               <span style={{
                 background: `${test.color}10`,
@@ -148,6 +152,18 @@ function TestSelector({ onTestSelect }) {
               }}>
                 {test.questionCount}
               </span>
+              {test.hasCaseStudies && (
+                <span style={{
+                  background: `${test.color}10`,
+                  color: test.color,
+                  padding: '0.5rem 1rem',
+                  borderRadius: '20px',
+                  fontSize: '0.9rem',
+                  fontWeight: '500'
+                }}>
+                  {test.caseStudyCount}
+                </span>
+              )}
               <span style={{
                 background: '#669BBC20',
                 color: '#669BBC',
@@ -160,28 +176,72 @@ function TestSelector({ onTestSelect }) {
               </span>
             </div>
 
-            {/* Start Button */}
-            <button style={{
-              background: `linear-gradient(135deg, ${test.color} 0%, ${test.color}dd 100%)`,
-              color: 'white',
-              border: 'none',
-              padding: '0.75rem 2rem',
-              borderRadius: '8px',
-              fontSize: '1rem',
-              fontWeight: '600',
-              cursor: 'pointer',
-              width: '100%',
-              transition: 'all 0.2s ease'
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.transform = 'scale(1.02)';
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.transform = 'scale(1)';
-            }}
-            >
-              Start Practice Test
-            </button>
+            {/* Action Buttons */}
+            <div style={{
+              display: 'flex',
+              gap: '1rem',
+              flexDirection: test.hasCaseStudies ? 'column' : 'row'
+            }}>
+              <button 
+                onClick={() => handleOptionSelect(test, 'practice')}
+                style={{
+                  background: `linear-gradient(135deg, ${test.color} 0%, ${test.color}dd 100%)`,
+                  color: 'white',
+                  border: 'none',
+                  padding: '0.75rem 2rem',
+                  borderRadius: '8px',
+                  fontSize: '1rem',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  width: '100%',
+                  transition: 'all 0.2s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.transform = 'scale(1.02)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.transform = 'scale(1)';
+                }}
+              >
+                📝 Practice Questions
+              </button>
+              
+              {test.hasCaseStudies && (
+                <button 
+                  onClick={() => handleOptionSelect(test, 'casestudy')}
+                  style={{
+                    background: 'transparent',
+                    color: test.color,
+                    border: `2px solid ${test.color}`,
+                    padding: '0.75rem 2rem',
+                    borderRadius: '8px',
+                    fontSize: '1rem',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    width: '100%',
+                    transition: 'all 0.2s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.5rem'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.background = test.color;
+                    e.target.style.color = 'white';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.background = 'transparent';
+                    e.target.style.color = test.color;
+                  }}
+                >
+                  📚 Case Studies
+                </button>
+              )}
+            </div>
           </div>
         ))}
       </div>
