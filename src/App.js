@@ -17,9 +17,205 @@ import SharedTests from './components/SharedTests';
 import MyCreatedTests from './components/MyCreatedTests';
 import CreateTest from './components/CreateTest';
 
-const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTDO68GqAelFKS2G6SwiUWdPs2tw5Gt62D5xLiB_9zyLyBPLSZm5gTthaQz9yCpmDKuymWMc83PV5a2/pub?gid=0&single=true&output=csv';
+const AVAILABLE_TESTS = [
+  {
+    id: 'mb800',
+    title: 'MB-800: Microsoft Dynamics 365 Business Central Functional Consultant',
+    description: 'Practice test for Microsoft Dynamics 365 Business Central Functional Consultant certification',
+    questionCount: '65+ Questions',
+    difficulty: 'Intermediate',
+    csvUrl: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTDO68GqAelFKS2G6SwiUWdPs2tw5Gt62D5xLiB_9zyLyBPLSZm5gTthaQz9yCpmDKuymWMc83PV5a2/pub?gid=0&single=true&output=csv',
+    color: '#003049',
+    icon: '💼'
+  },
+  // Add more tests here in the future
+];
 
-function PracticeTest() {
+function TestSelector({ onTestSelect }) {
+  return (
+    <div style={{
+      padding: '2rem',
+      maxWidth: '1200px',
+      margin: '0 auto'
+    }}>
+      <div style={{
+        textAlign: 'center',
+        marginBottom: '3rem'
+      }}>
+        <h1 style={{
+          color: '#003049',
+          fontSize: '2.5rem',
+          marginBottom: '1rem',
+          fontWeight: '600'
+        }}>
+          Practice Tests
+        </h1>
+        <p style={{
+          color: '#669BBC',
+          fontSize: '1.2rem',
+          maxWidth: '600px',
+          margin: '0 auto',
+          lineHeight: '1.6'
+        }}>
+          Choose a practice test to start your certification preparation journey
+        </p>
+      </div>
+
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))',
+        gap: '2rem',
+        marginTop: '2rem'
+      }}>
+        {AVAILABLE_TESTS.map((test) => (
+          <div
+            key={test.id}
+            onClick={() => onTestSelect(test)}
+            style={{
+              background: 'linear-gradient(135deg, #FDF0D5 0%, #FFFFFF 100%)',
+              borderRadius: '16px',
+              padding: '2rem',
+              boxShadow: '0 8px 32px rgba(0, 48, 73, 0.1)',
+              border: '1px solid rgba(102, 155, 188, 0.2)',
+              cursor: 'pointer',
+              transition: 'all 0.3s ease',
+              position: 'relative',
+              overflow: 'hidden'
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.transform = 'translateY(-8px)';
+              e.target.style.boxShadow = '0 16px 48px rgba(0, 48, 73, 0.15)';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.transform = 'translateY(0)';
+              e.target.style.boxShadow = '0 8px 32px rgba(0, 48, 73, 0.1)';
+            }}
+          >
+            {/* Background Pattern */}
+            <div style={{
+              position: 'absolute',
+              top: 0,
+              right: 0,
+              width: '100px',
+              height: '100px',
+              background: `linear-gradient(135deg, ${test.color}10, ${test.color}05)`,
+              borderRadius: '50%',
+              transform: 'translate(30px, -30px)'
+            }} />
+            
+            {/* Icon */}
+            <div style={{
+              fontSize: '3rem',
+              marginBottom: '1rem'
+            }}>
+              {test.icon}
+            </div>
+
+            {/* Title */}
+            <h3 style={{
+              color: test.color,
+              fontSize: '1.4rem',
+              marginBottom: '1rem',
+              fontWeight: '600',
+              lineHeight: '1.3'
+            }}>
+              {test.title}
+            </h3>
+
+            {/* Description */}
+            <p style={{
+              color: '#669BBC',
+              fontSize: '1rem',
+              marginBottom: '1.5rem',
+              lineHeight: '1.5'
+            }}>
+              {test.description}
+            </p>
+
+            {/* Test Info */}
+            <div style={{
+              display: 'flex',
+              gap: '1rem',
+              marginBottom: '1.5rem'
+            }}>
+              <span style={{
+                background: `${test.color}10`,
+                color: test.color,
+                padding: '0.5rem 1rem',
+                borderRadius: '20px',
+                fontSize: '0.9rem',
+                fontWeight: '500'
+              }}>
+                {test.questionCount}
+              </span>
+              <span style={{
+                background: '#669BBC20',
+                color: '#669BBC',
+                padding: '0.5rem 1rem',
+                borderRadius: '20px',
+                fontSize: '0.9rem',
+                fontWeight: '500'
+              }}>
+                {test.difficulty}
+              </span>
+            </div>
+
+            {/* Start Button */}
+            <button style={{
+              background: `linear-gradient(135deg, ${test.color} 0%, ${test.color}dd 100%)`,
+              color: 'white',
+              border: 'none',
+              padding: '0.75rem 2rem',
+              borderRadius: '8px',
+              fontSize: '1rem',
+              fontWeight: '600',
+              cursor: 'pointer',
+              width: '100%',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.transform = 'scale(1.02)';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.transform = 'scale(1)';
+            }}
+            >
+              Start Practice Test
+            </button>
+          </div>
+        ))}
+      </div>
+
+      {/* Coming Soon Section */}
+      <div style={{
+        marginTop: '4rem',
+        textAlign: 'center',
+        padding: '2rem',
+        background: 'linear-gradient(135deg, #669BBC10 0%, #669BBC05 100%)',
+        borderRadius: '16px',
+        border: '2px dashed #669BBC40'
+      }}>
+        <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>🚀</div>
+        <h3 style={{ color: '#669BBC', marginBottom: '0.5rem' }}>More Tests Coming Soon!</h3>
+        <p style={{ color: '#669BBC80' }}>
+          We're working on adding more certification practice tests. Stay tuned!
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function PracticeTestContainer() {
+  const [selectedTest, setSelectedTest] = useState(null);
+
+  if (!selectedTest) {
+    return <TestSelector onTestSelect={setSelectedTest} />;
+  }
+
+  return <PracticeTest selectedTest={selectedTest} onBackToSelection={() => setSelectedTest(null)} />;
+}
+
+function PracticeTest({ selectedTest, onBackToSelection }) {
   const [questions, setQuestions] = useState([]);
   const [originalQuestions, setOriginalQuestions] = useState([]);
   const [current, setCurrent] = useState(0);
@@ -29,21 +225,83 @@ function PracticeTest() {
   const [showExplanation, setShowExplanation] = useState(false);
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [currentSavedTest, setCurrentSavedTest] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Papa.parse(SHEET_CSV_URL, {
-      download: true,
-      header: true,
-      complete: (result) => {
-        const filtered = result.data.filter(q => q.question_text);
-        setQuestions(filtered);
-        setOriginalQuestions(filtered);
-        setUserAnswers(filtered.map(getInitialUserAnswer));
-        setQuestionScore(Array(filtered.length).fill(null));
-        setQuestionSubmitted(Array(filtered.length).fill(false));
-      },
-    });
-  }, []);
+    if (selectedTest) {
+      setLoading(true);
+      Papa.parse(selectedTest.csvUrl, {
+        download: true,
+        header: true,
+        complete: (result) => {
+          const filtered = result.data.filter(q => q.question_text);
+          setQuestions(filtered);
+          setOriginalQuestions(filtered);
+          setUserAnswers(filtered.map(getInitialUserAnswer));
+          setQuestionScore(Array(filtered.length).fill(null));
+          setQuestionSubmitted(Array(filtered.length).fill(false));
+          setLoading(false);
+        },
+        error: (error) => {
+          console.error('Error loading test:', error);
+          setLoading(false);
+          alert('Failed to load test questions. Please try again.');
+        }
+      });
+    }
+  }, [selectedTest]);
+
+  // Show loading screen while questions are being loaded
+  if (loading) {
+    return (
+      <div style={{ 
+        padding: '2rem', 
+        textAlign: 'center', 
+        color: '#669BBC',
+        minHeight: '50vh',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>⚡</div>
+        <div style={{ fontSize: '1.2rem', marginBottom: '0.5rem' }}>Loading {selectedTest.title}...</div>
+        <div style={{ fontSize: '1rem', opacity: 0.7 }}>Please wait while we prepare your questions</div>
+      </div>
+    );
+  }
+
+  if (!questions.length) {
+    return (
+      <div style={{ 
+        padding: '2rem', 
+        textAlign: 'center', 
+        color: '#669BBC',
+        minHeight: '50vh',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        <div style={{ fontSize: '2rem', marginBottom: '1rem' }}>📚</div>
+        <div style={{ fontSize: '1.2rem', marginBottom: '1rem' }}>No questions found for this test.</div>
+        <button 
+          onClick={onBackToSelection}
+          style={{
+            background: '#669BBC',
+            color: 'white',
+            border: 'none',
+            padding: '0.75rem 2rem',
+            borderRadius: '8px',
+            fontSize: '1rem',
+            cursor: 'pointer'
+          }}
+        >
+          Back to Test Selection
+        </button>
+      </div>
+    );
+  }
 
   function getInitialUserAnswer(q) {
     if (q?.question_type?.toLowerCase() === 'multiple choice') {
@@ -165,7 +423,59 @@ function PracticeTest() {
 
   return (
     <div className="app">
-      <h1>MB-800: Microsoft Dynamics 365 Business Central Functional Consultant Practice Test</h1>
+      {/* Header with Back Button */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        marginBottom: '2rem',
+        padding: '1rem 0',
+        borderBottom: '2px solid #669BBC20'
+      }}>
+        <button
+          onClick={onBackToSelection}
+          style={{
+            background: 'transparent',
+            border: '2px solid #669BBC',
+            color: '#669BBC',
+            padding: '0.5rem 1rem',
+            borderRadius: '8px',
+            fontSize: '0.9rem',
+            cursor: 'pointer',
+            marginRight: '1rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            transition: 'all 0.2s ease'
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.background = '#669BBC';
+            e.target.style.color = 'white';
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.background = 'transparent';
+            e.target.style.color = '#669BBC';
+          }}
+        >
+          ← Back to Tests
+        </button>
+        <div>
+          <div style={{
+            fontSize: '0.9rem',
+            color: '#669BBC',
+            marginBottom: '0.25rem'
+          }}>
+            {selectedTest.icon} {selectedTest.difficulty} Level
+          </div>
+          <h1 style={{
+            margin: 0,
+            fontSize: '1.5rem',
+            color: '#003049'
+          }}>
+            {selectedTest.title}
+          </h1>
+        </div>
+      </div>
+
       <div style={{ marginBottom: '1rem', fontWeight: 'bold' }}>
         Score: {runningScore} / {
           questions.reduce((sum, q) => {
@@ -609,7 +919,7 @@ function App() {
       <div style={{ flex: 1, marginLeft: 40 }}>
         <Routes>
           <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/practice" element={<PracticeTest />} />
+          <Route path="/practice" element={<PracticeTestContainer />} />
           <Route path="/shared-tests" element={<SharedTests />} />
           <Route path="/my-tests" element={<MyCreatedTests />} />
           <Route path="/create-test" element={<CreateTest />} />
