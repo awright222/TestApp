@@ -7,6 +7,8 @@ import Timer from "./Timer";
 import SaveModal from './SaveModal';
 import SavedTests from './SavedTests';
 import { SavedTestsService } from './SavedTestsService';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faClock } from '@fortawesome/free-regular-svg-icons';
 
 const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTDO68GqAelFKS2G6SwiUWdPs2tw5Gt62D5xLiB_9zyLyBPLSZm5gTthaQz9yCpmDKuymWMc83PV5a2/pub?gid=0&single=true&output=csv';
 
@@ -312,7 +314,7 @@ function App() {
                     setMobileMenuOpen(false);
                   }}
                 >
-                  Timer
+                  <FontAwesomeIcon icon={faClock} /> Timer
                 </button>
               </li>
             </ul>
@@ -394,7 +396,7 @@ function App() {
           className="timer-toggle-btn desktop"
           onClick={() => setShowTimer(true)}
         >
-          Timer
+          <FontAwesomeIcon icon={faClock} />
         </button>
       )}
       {showTimer && (

@@ -226,22 +226,9 @@ export default function SavedTests({ onLoadTest }) {
   }
 
   return (
-    <div style={{ padding: '2rem' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-        <h2 style={{ margin: 0 }}>Saved Tests</h2>
-        <Link 
-          to="/" 
-          style={{
-            background: '#780000',
-            color: '#FDF0D5',
-            padding: '0.5rem 1rem',
-            borderRadius: '6px',
-            textDecoration: 'none',
-            fontWeight: 'bold'
-          }}
-        >
-          Take New Test
-        </Link>
+    <div className="saved-tests-page" style={{ padding: '2rem' }}>
+      <div className="saved-tests-header">
+        <h2>Saved Tests</h2>
       </div>
 
       {savedTests.length === 0 ? (
@@ -254,21 +241,8 @@ export default function SavedTests({ onLoadTest }) {
         }}>
           <h3 style={{ color: '#669BBC', marginBottom: '1rem' }}>No saved tests yet</h3>
           <p style={{ color: '#bfc9d1', marginBottom: '1.5rem' }}>
-            Start a practice test and save your progress to see it here.
+            Start a practice test or case study and save your progress to see it here.
           </p>
-          <Link 
-            to="/" 
-            style={{
-              background: '#780000',
-              color: '#FDF0D5',
-              padding: '0.75rem 1.5rem',
-              borderRadius: '6px',
-              textDecoration: 'none',
-              fontWeight: 'bold'
-            }}
-          >
-            Start Practice Test
-          </Link>
         </div>
       ) : (
         <div>
@@ -332,34 +306,6 @@ export default function SavedTests({ onLoadTest }) {
               <p style={{ color: '#bfc9d1', marginBottom: '1.5rem' }}>
                 Start a practice test or case study and save your progress to see it here.
               </p>
-              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-                <Link 
-                  to="/" 
-                  style={{
-                    background: '#669BBC',
-                    color: '#003049',
-                    padding: '0.75rem 1.5rem',
-                    borderRadius: '6px',
-                    textDecoration: 'none',
-                    fontWeight: 'bold'
-                  }}
-                >
-                  Practice Test
-                </Link>
-                <Link 
-                  to="/case-studies" 
-                  style={{
-                    background: '#780000',
-                    color: '#FDF0D5',
-                    padding: '0.75rem 1.5rem',
-                    borderRadius: '6px',
-                    textDecoration: 'none',
-                    fontWeight: 'bold'
-                  }}
-                >
-                  Case Studies
-                </Link>
-              </div>
             </div>
           )}
         </div>
