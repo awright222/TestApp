@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { SavedTestsService } from './SavedTestsService';
 import './SaveModal.css';
 
 export default function SaveModal({ 
@@ -15,6 +16,7 @@ export default function SaveModal({
   const [title, setTitle] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [showOverwriteConfirm, setShowOverwriteConfirm] = useState(false);
+  const [allSavedTests, setAllSavedTests] = useState([]);
 
   // Auto-populate title when modal opens with existing saved test
   useEffect(() => {
@@ -25,14 +27,36 @@ export default function SaveModal({
     }
   }, [isOpen, existingSavedTest]);
 
+  // Fetch all saved tests when modal opens for duplicate checking
+  useEffect(() => {
+    if (isOpen) {
+      const fetchSavedTests = async () => {
+        try {
+          const tests = await SavedTestsService.getSavedTests();
+          setAllSavedTests(tests);
+        } catch (error) {
+          console.error('Error fetching saved tests for duplicate checking:', error);
+          setAllSavedTests([]);
+        }
+      };
+
+      fetchSavedTests();
+    }
+  }, [isOpen]);
+
   const handleSave = async () => {
     if (!title.trim()) {
       alert('Please enter a title for your saved test');
       return;
     }
 
-    // Check if this is an overwrite (existing saved test with same title)
-    if (existingSavedTest && existingSavedTest.title === title.trim()) {
+    // Check if there's already a saved test with this title
+    const duplicateTest = allSavedTests.find(test => 
+      test.title.toLowerCase() === title.trim().toLowerCase() &&
+      test.id !== existingSavedTest?.id // Don't count the current test being updated
+    );
+
+    if (duplicateTest) {
       setShowOverwriteConfirm(true);
       return;
     }
