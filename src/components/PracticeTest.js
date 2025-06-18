@@ -13,6 +13,7 @@ function PracticeTest({ selectedTest, onBackToSelection }) {
   const [questionSubmitted, setQuestionSubmitted] = useState([]);
   const [showExplanation, setShowExplanation] = useState(false);
   const [showSaveModal, setShowSaveModal] = useState(false);
+  const [showModal, setShowModal] = useState(false);
   const [currentSavedTest] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -252,7 +253,17 @@ function PracticeTest({ selectedTest, onBackToSelection }) {
       </div>
 
       <div className="question-text">
-        <strong>{q.question_text}</strong>
+        <div className="question-header">
+          <strong>{q.question_text}</strong>
+          <button
+            className="info-btn"
+            onClick={() => setShowModal(true)}
+            aria-label="Show explanation"
+            title="Show explanation"
+          >
+            <span className="info-circle">i</span>
+          </button>
+        </div>
       </div>
 
       {/* Multiple Choice Questions */}
@@ -391,6 +402,32 @@ function PracticeTest({ selectedTest, onBackToSelection }) {
             <strong>Correct Answer:</strong>
           </div>
           <div className="correct-answer-text">{q.correct_answer}</div>
+        </div>
+      )}
+
+      {/* Modal for explanation */}
+      {showModal && (
+        <div className="modal-overlay" onClick={() => setShowModal(false)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <button 
+              className="modal-close" 
+              onClick={() => setShowModal(false)} 
+              aria-label="Close"
+            >
+              &times;
+            </button>
+            <div className="modal-title">Explanation</div>
+            <div className="modal-text">
+              <div className="modal-explanation">
+                <strong>Explanation:</strong>
+                <p>{q.explanation || 'No explanation provided.'}</p>
+              </div>
+              <div className="modal-correct-answer">
+                <strong>Correct Answer:</strong>
+                <p>{q.correct_answer}</p>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
