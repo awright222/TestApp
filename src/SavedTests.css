@@ -291,10 +291,11 @@
 }
 
 .empty-state-text {
-  color: #BFC9D1;
+  color: #E8F4F8;
   margin-bottom: 1.5rem;
   line-height: 1.6;
   font-size: 1.1rem;
+  font-weight: 500;
 }
 
 /* Loading State */
