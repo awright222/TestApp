@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SavedTestsService } from './SavedTestsService';
+import SearchResults from './components/SearchResults';
 import './SavedTests.css';
 
 function TestCard({ test, onDelete, onLoad }) {
@@ -94,7 +95,7 @@ function TestCard({ test, onDelete, onLoad }) {
   );
 }
 
-export default function SavedTests({ onLoadTest }) {
+export default function SavedTests({ onLoadTest, searchTerm, onClearSearch }) {
   const [savedTests, setSavedTests] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -207,6 +208,15 @@ export default function SavedTests({ onLoadTest }) {
             </div>
           )}
         </div>
+      )}
+
+      {/* Search Results */}
+      {searchTerm && (
+        <SearchResults
+          searchTerm={searchTerm}
+          onClose={onClearSearch}
+          currentPage="saved-tests"
+        />
       )}
     </div>
   );

@@ -69,15 +69,47 @@ function App() {
       {/* Main Content */}
       <div className="main-content">
         <Routes>
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/practice" element={<PracticeTestContainer />} />
+          <Route 
+            path="/dashboard" 
+            element={
+              <Dashboard 
+                searchTerm={searchTerm} 
+                onClearSearch={() => setSearchTerm('')} 
+              />
+            } 
+          />
+          <Route 
+            path="/practice" 
+            element={
+              <PracticeTestContainer 
+                searchTerm={searchTerm} 
+                onClearSearch={() => setSearchTerm('')} 
+              />
+            } 
+          />
           <Route path="/shared-tests" element={<SharedTests />} />
           <Route path="/my-tests" element={<MyCreatedTests />} />
           <Route path="/create-test" element={<CreateTest />} />
           <Route path="/case-studies" element={<CaseStudies />} />
           <Route path="/case-studies/:id" element={<CaseStudyDetail />} />
-          <Route path="/saved-tests" element={<SavedTests />} />
-          <Route path="/" element={<Dashboard />} />
+          <Route 
+            path="/saved-tests" 
+            element={
+              <SavedTests 
+                searchTerm={searchTerm} 
+                onClearSearch={() => setSearchTerm('')} 
+              />
+            } 
+          />
+          <Route 
+            path="/" 
+            element={
+              <Dashboard 
+                searchTerm={searchTerm} 
+                onClearSearch={() => setSearchTerm('')} 
+              />
+            } 
+          />
         </Routes>
       </div>
 

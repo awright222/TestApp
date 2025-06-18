@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../firebase/AuthContext';
 import { SavedTestsService } from '../SavedTestsService';
+import SearchResults from './SearchResults';
 
-export default function Dashboard() {
+export default function Dashboard({ searchTerm, onClearSearch }) {
   const { user } = useAuth();
   const [stats, setStats] = useState({
     totalTests: 0,
@@ -282,6 +283,15 @@ export default function Dashboard() {
           </button>
         </div>
       </div>
+
+      {/* Search Results */}
+      {searchTerm && (
+        <SearchResults
+          searchTerm={searchTerm}
+          onClose={onClearSearch}
+          currentPage="dashboard"
+        />
+      )}
     </div>
   );
 }

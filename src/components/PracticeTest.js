@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import Papa from 'papaparse';
 import { SavedTestsService } from '../SavedTestsService';
 import SaveModal from '../SaveModal';
+import SearchResults from './SearchResults';
 import './PracticeTest.css';
 
-function PracticeTest({ selectedTest, onBackToSelection }) {
+function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSearch }) {
   const [questions, setQuestions] = useState([]);
   const [originalQuestions, setOriginalQuestions] = useState([]);
   const [current, setCurrent] = useState(0);
@@ -190,6 +191,11 @@ function PracticeTest({ selectedTest, onBackToSelection }) {
     }
     return arr;
   }
+
+  const jumpToQuestion = (questionIndex) => {
+    setCurrent(questionIndex);
+    setShowExplanation(false);
+  };
 
   return (
     <div className="practice-test">
@@ -442,6 +448,17 @@ function PracticeTest({ selectedTest, onBackToSelection }) {
         questions={questions}
         existingSavedTest={currentSavedTest}
       />
+
+      {/* Search Results */}
+      {searchTerm && (
+        <SearchResults
+          searchTerm={searchTerm}
+          onClose={onClearSearch}
+          currentQuestions={questions}
+          onJumpToQuestion={jumpToQuestion}
+          currentPage="practice"
+        />
+      )}
     </div>
   );
 }
