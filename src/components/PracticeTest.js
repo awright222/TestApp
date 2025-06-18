@@ -249,7 +249,26 @@ function PracticeTest({ selectedTest, onBackToSelection }) {
       </div>
 
       <div className="question-counter">
-        Question {current + 1} of {questions.length}
+        <div className="question-count-with-jump">
+          <span>Question {current + 1} of {questions.length}</span>
+          <div className="question-jump-inline">
+            <label htmlFor="practice-question-jump">Go to Q:</label>
+            <input
+              id="practice-question-jump"
+              type="number"
+              min="1"
+              max={questions.length}
+              value={current + 1}
+              onChange={(e) => {
+                const questionNum = parseInt(e.target.value);
+                if (questionNum >= 1 && questionNum <= questions.length) {
+                  setCurrent(questionNum - 1);
+                }
+              }}
+              className="question-jump-input-inline"
+            />
+          </div>
+        </div>
       </div>
 
       <div className="question-text">
@@ -348,45 +367,26 @@ function PracticeTest({ selectedTest, onBackToSelection }) {
       )}
 
       <div className="navigation-controls">
-        <button
-          onClick={submitCurrentQuestion}
-          disabled={questionSubmitted[current]}
-          className="submit-btn"
-        >
-          Submit Answer
-        </button>
         <button 
           onClick={prevQuestion} 
           disabled={current === 0} 
-          className="nav-btn"
+          className="nav-btn nav-btn-left"
         >
           Previous
         </button>
         
-        {/* Jump to Question */}
-        <div className="question-jump">
-          <label htmlFor="practice-question-jump">Go to Q:</label>
-          <input
-            id="practice-question-jump"
-            type="number"
-            min="1"
-            max={questions.length}
-            value={current + 1}
-            onChange={(e) => {
-              const questionNum = parseInt(e.target.value);
-              if (questionNum >= 1 && questionNum <= questions.length) {
-                setCurrent(questionNum - 1);
-              }
-            }}
-            className="question-jump-input"
-          />
-          <span className="question-total">of {questions.length}</span>
-        </div>
+        <button
+          onClick={submitCurrentQuestion}
+          disabled={questionSubmitted[current]}
+          className="submit-btn submit-btn-center"
+        >
+          Submit Answer
+        </button>
         
         <button 
           onClick={nextQuestion} 
           disabled={isLast}
-          className="nav-btn"
+          className="nav-btn nav-btn-right"
         >
           Next
         </button>
