@@ -202,67 +202,7 @@ export default function SavedTests({ onLoadTest, searchTerm, onClearSearch }) {
   return (
     <div className="saved-tests-page">
       <div className="saved-tests-header">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-          <h2>Saved Tests</h2>
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <button
-              onClick={() => {
-                setLoading(true);
-                loadSavedTests();
-              }}
-              style={{
-                background: '#669BBC',
-                color: 'white',
-                border: 'none',
-                padding: '0.5rem 1rem',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontSize: '0.9rem'
-              }}
-              disabled={loading}
-            >
-              {loading ? '🔄 Loading...' : '🔄 Refresh'}
-            </button>
-            <button
-              onClick={() => {
-                console.log('🧪 Manual trigger testSaved event');
-                window.dispatchEvent(new CustomEvent('testSaved'));
-              }}
-              style={{
-                background: '#28a745',
-                color: 'white',
-                border: 'none',
-                padding: '0.5rem 1rem',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontSize: '0.9rem'
-              }}
-            >
-              🧪 Test Event
-            </button>
-            <button
-              onClick={async () => {
-                console.log('🔍 Debug info:');
-                console.log('- Current user:', user?.email || 'not logged in');
-                console.log('- localStorage saved_tests:', localStorage.getItem('saved_tests'));
-                const tests = await SavedTestsService.getSavedTests();
-                console.log('- getSavedTests() result:', tests);
-                console.log('- Current state count:', savedTests.length);
-              }}
-              style={{
-                background: '#6f42c1',
-                color: 'white',
-                border: 'none',
-                padding: '0.5rem 1rem',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontSize: '0.9rem'
-              }}
-            >
-              🔍 Debug
-            </button>
-          </div>
-        </div>
+        <h2>Saved Tests</h2>
         <p style={{ color: '#669BBC', margin: 0, fontSize: '0.9rem' }}>
           {savedTests.length} saved test{savedTests.length !== 1 ? 's' : ''} found
         </p>

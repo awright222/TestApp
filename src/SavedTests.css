@@ -284,14 +284,14 @@
 }
 
 .empty-state-title {
-  color: #669BBC;
+  color: #FDF0D5;
   margin-bottom: 1rem;
   font-size: 1.5rem;
   font-weight: 600;
 }
 
 .empty-state-text {
-  color: rgba(191, 201, 209, 0.9);
+  color: #BFC9D1;
   margin-bottom: 1.5rem;
   line-height: 1.6;
   font-size: 1.1rem;
