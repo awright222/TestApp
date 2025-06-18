@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { CreatedTestsService } from '../services/CreatedTestsService';
 import './CreateTest.css';
 
 export default function CreateTest() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('import'); // 'import' or 'builder'
   const [importMethod, setImportMethod] = useState(''); // 'file', 'link', or 'template'
   
@@ -99,6 +102,88 @@ Role: Admin","Proper configuration requires setting the department and role corr
 
   const removeQuestion = (id) => {
     setQuestions(questions.filter(q => q.id !== id));
+  };
+
+  // Create test from builder
+  const createTestFromBuilder = async () => {
+    if (!testTitle.trim() || questions.length === 0) {
+      alert('Please enter a test title and add at least one question.');
+      return;
+    }
+
+    try {
+      const testData = {
+        title: testTitle,
+        description: testDescription,
+        questions: questions.map(q => ({
+          question_text: q.question_text,
+          question_type: q.question_type,
+          choices: q.choices,
+          correct_answer: q.correct_answer,
+          explanation: q.explanation
+        })),
+        source: 'builder',
+        icon: '📝',
+        difficulty: 'Custom'
+      };
+
+      console.log('Creating test with data:', testData);
+      const createdTest = await CreatedTestsService.createTest(testData);
+      console.log('Test created successfully:', createdTest);
+      alert(`Test "${testTitle}" created successfully!`);
+      navigate('/my-tests');
+    } catch (error) {
+      console.error('Error creating test:', error);
+      alert('Failed to create test. Please try again.');
+    }
+  };
+
+  // Create test from import
+  const createTestFromImport = async () => {
+    if (!testPreview) {
+      alert('Please validate your import first.');
+      return;
+    }
+
+    try {
+      let testData = {
+        title: testPreview.title,
+        description: `Imported test with ${testPreview.questionCount} questions`,
+        source: 'import',
+        icon: '📥',
+        difficulty: 'Imported'
+      };
+
+      if (uploadedFile) {
+        // For file upload, parse the file
+        const fileContent = await readFileAsText(uploadedFile);
+        const questions = CreatedTestsService.parseCSVToQuestions(fileContent);
+        testData.questions = questions;
+      } else if (googleSheetUrl) {
+        // For Google Sheets, store the URL
+        testData.csvUrl = googleSheetUrl;
+        testData.source = 'google-sheets';
+        // In a real implementation, you'd fetch and parse the sheet here
+        testData.questions = []; // Placeholder
+      }
+
+      await CreatedTestsService.createTest(testData);
+      alert(`Test "${testData.title}" created successfully!`);
+      navigate('/my-tests');
+    } catch (error) {
+      console.error('Error creating test:', error);
+      alert('Failed to create test. Please try again.');
+    }
+  };
+
+  // Helper function to read file as text
+  const readFileAsText = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => resolve(e.target.result);
+      reader.onerror = (e) => reject(e);
+      reader.readAsText(file);
+    });
   };
 
   return (
@@ -221,7 +306,7 @@ Role: Admin","Proper configuration requires setting the department and role corr
                     )}
                   </div>
                   {testPreview.valid && (
-                    <button className="create-test-btn">
+                    <button className="create-test-btn" onClick={createTestFromImport}>
                       🚀 Create Test
                     </button>
                   )}
@@ -367,10 +452,11 @@ Role: Admin","Proper configuration requires setting the department and role corr
                 
                 <div className="builder-actions">
                   <button 
-                    disabled={questions.length === 0}
+                    disabled={questions.length === 0 || !testTitle.trim()}
                     className="create-test-btn"
+                    onClick={createTestFromBuilder}
                   >
-                    � Create Test ({questions.length} questions)
+                    🚀 Create Test ({questions.length} questions)
                   </button>
                 </div>
               </div>
