@@ -387,9 +387,23 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
               ? userAnswers[current].includes(choice)
               : userAnswers[current] === choice;
             
+            // Determine if this choice is correct/incorrect after submission
+            let feedbackClass = '';
+            if (questionSubmitted[current]) {
+              const correctAnswers = q.correct_answer.split(',').map(s => s.trim());
+              const choiceLabel = getChoiceLabel(choice);
+              const isCorrectChoice = correctAnswers.includes(choiceLabel);
+              
+              if (isSelected) {
+                feedbackClass = isCorrectChoice ? 'choice-correct' : 'choice-incorrect';
+              } else if (isCorrectChoice) {
+                feedbackClass = 'choice-missed'; // Correct answer that wasn't selected
+              }
+            }
+            
             return (
               <div key={idx} className="choice-item">
-                <label className={`choice-label ${isSelected ? 'selected' : ''}`}>
+                <label className={`choice-label ${isSelected ? 'selected' : ''} ${feedbackClass}`}>
                   <input
                     type="checkbox"
                     checked={isSelected}

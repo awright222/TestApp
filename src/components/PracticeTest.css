@@ -479,6 +479,69 @@
   font-weight: 500;
 }
 
+/* Feedback styles after submission */
+.choice-label.choice-correct {
+  border-color: #28a745;
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  box-shadow: 0 4px 16px rgba(40, 167, 69, 0.3);
+}
+
+.choice-label.choice-correct .choice-text {
+  color: white;
+  font-weight: 600;
+}
+
+.choice-label.choice-correct::before {
+  content: "✓";
+  background: white;
+  color: #28a745;
+  border: 2px solid #28a745;
+}
+
+.choice-label.choice-incorrect {
+  border-color: #dc3545;
+  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+  box-shadow: 0 4px 16px rgba(220, 53, 69, 0.3);
+}
+
+.choice-label.choice-incorrect .choice-text {
+  color: white;
+  font-weight: 600;
+}
+
+.choice-label.choice-incorrect::before {
+  content: "✗";
+  background: white;
+  color: #dc3545;
+  border: 2px solid #dc3545;
+  font-size: 0.8rem;
+}
+
+.choice-label.choice-missed {
+  border-color: #28a745;
+  background: linear-gradient(135deg, rgba(40, 167, 69, 0.2) 0%, rgba(32, 201, 151, 0.2) 100%);
+  border-width: 2px;
+  border-style: dashed;
+}
+
+.choice-label.choice-missed .choice-text {
+  color: #28a745;
+  font-weight: 600;
+}
+
+.choice-label.choice-missed::after {
+  content: "Correct Answer";
+  position: absolute;
+  top: 0.5rem;
+  right: 1rem;
+  background: #28a745;
+  color: white;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: bold;
+}
+
 /* Hotspot Questions */
 .hotspot-container {
   margin-bottom: 2.5rem;
