@@ -348,18 +348,21 @@ Role: Admin","Proper configuration requires setting the department and role corr
       <div className="create-test-tabs">
         <button 
           className={`tab-btn ${activeTab === 'import' ? 'active' : ''}`}
+          data-tab="import"
           onClick={() => setActiveTab('import')}
         >
           📥 Import Test
         </button>
         <button 
           className={`tab-btn ${activeTab === 'builder' ? 'active' : ''}`}
+          data-tab="builder"
           onClick={() => setActiveTab('builder')}
         >
           🔨 Build Test
         </button>
         <button 
           className={`tab-btn ${activeTab === 'settings' ? 'active' : ''}`}
+          data-tab="settings"
           onClick={() => {
             if (!testTitle.trim() && !isEditing) {
               alert('Please enter a test title before configuring settings.');
