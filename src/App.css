@@ -159,6 +159,50 @@ button:hover {
   justify-content: space-between;
   align-items: center;
   margin-top: 1rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+/* Question Jump Navigation in nav-row */
+.nav-row .question-jump {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(102, 155, 188, 0.1);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: 1px solid rgba(102, 155, 188, 0.3);
+  flex-shrink: 0;
+}
+
+.nav-row .question-jump label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #669BBC;
+  margin: 0;
+}
+
+.nav-row .question-jump-input {
+  width: 60px;
+  padding: 0.25rem 0.5rem;
+  border: 2px solid #669BBC;
+  border-radius: 4px;
+  font-size: 1rem;
+  text-align: center;
+  background: white;
+  color: #003049;
+}
+
+.nav-row .question-jump-input:focus {
+  outline: none;
+  border-color: #003049;
+  box-shadow: 0 0 0 2px rgba(102, 155, 188, 0.2);
+}
+
+.nav-row .question-total {
+  font-size: 0.9rem;
+  color: #669BBC;
+  font-weight: 500;
 }
 
 .submit-row {
@@ -651,6 +695,21 @@ button:hover {
     flex-direction: column;
     align-items: stretch;
     gap: 0.25rem;
+  }
+  
+  /* Mobile nav-row styles */
+  .nav-row {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: center;
+  }
+  
+  .nav-row .question-jump {
+    order: -1; /* Put question jump at the top on mobile */
+  }
+  
+  .nav-row .question-jump-input {
+    width: 80px;
   }
   
   .hotspot-dropdowns strong {

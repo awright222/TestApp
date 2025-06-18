@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import SaveModal from './SaveModal';
+import './QuestionQuiz.css'; // Reuse the same CSS
 
 export default function QuestionQuizWithSave({ 
   questions, 
@@ -103,9 +104,24 @@ export default function QuestionQuizWithSave({
   const prevQuestion = () => setCurrent(c => Math.max(0, c - 1));
   const nextQuestion = () => setCurrent(c => Math.min(questions.length - 1, c + 1));
 
-  // Handle answer change
-  const handleChoiceChange = (val) => {
-    updateUserAnswer([val]);
+  // Handle answer change for multiple choice (allow multiple selections up to the number of correct answers)
+  const handleChoiceChange = (choice) => {
+    const currentAnswers = Array.isArray(userAnswers[current]) ? userAnswers[current] : [];
+    const isSelected = currentAnswers.includes(choice);
+    
+    if (isSelected) {
+      // Remove the choice
+      updateUserAnswer(currentAnswers.filter(c => c !== choice));
+    } else {
+      // Check how many correct answers this question has
+      const correctAnswers = q.correct_answer.split(',').map(s => s.trim());
+      const maxSelections = correctAnswers.length;
+      
+      // Only add if we haven't reached the limit
+      if (currentAnswers.length < maxSelections) {
+        updateUserAnswer([...currentAnswers, choice]);
+      }
+    }
   };
 
   const handleHotspotChange = (label, val) => {
@@ -173,21 +189,42 @@ export default function QuestionQuizWithSave({
 
         {/* Multiple Choice */}
         {q.question_type?.toLowerCase() === 'multiple choice' && (
-          <div className="choices">
-            {choices.map((choice, idx) => (
-              <label key={idx} style={{ display: 'block', marginBottom: 8 }}>
-                <input
-                  type="radio"
-                  name={`choice-${current}`}
-                  value={choice}
-                  checked={userAnswers[current]?.includes(choice)}
-                  onChange={() => handleChoiceChange(choice)}
-                  disabled={questionSubmitted[current]}
-                />
-                {choice}
-              </label>
-            ))}
-          </div>
+          <>
+            {(() => {
+              const correctAnswers = q.correct_answer.split(',').map(s => s.trim());
+              const maxSelections = correctAnswers.length;
+              const currentSelections = Array.isArray(userAnswers[current]) ? userAnswers[current].length : 0;
+              const limitReached = currentSelections >= maxSelections;
+              
+              return (
+                <div className={`question-quiz-selection-info ${limitReached ? 'limit-reached' : ''}`}>
+                  {limitReached 
+                    ? `Selection limit reached: ${currentSelections}/${maxSelections} choices selected`
+                    : `Select up to ${maxSelections} answer${maxSelections > 1 ? 's' : ''} (${currentSelections}/${maxSelections} selected)`
+                  }
+                </div>
+              );
+            })()}
+            <div className="question-quiz-choices">
+              {choices.map((choice, idx) => {
+              const isSelected = Array.isArray(userAnswers[current]) && userAnswers[current].includes(choice);
+              return (
+                <label 
+                  key={idx} 
+                  className={`question-quiz-choice ${isSelected ? 'selected' : ''}`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={isSelected}
+                    onChange={() => handleChoiceChange(choice)}
+                    disabled={questionSubmitted[current]}
+                  />
+                  <span className="question-quiz-choice-text">{choice}</span>
+                </label>
+              );
+            })}
+            </div>
+          </>
         )}
 
         {/* Hotspot */}
@@ -245,6 +282,27 @@ export default function QuestionQuizWithSave({
         {/* Navigation */}
         <div className="nav-row">
           <button onClick={prevQuestion} disabled={current === 0}>⬅ Back</button>
+          
+          {/* Jump to Question */}
+          <div className="question-jump">
+            <label htmlFor="quiz-question-jump">Go to Q:</label>
+            <input
+              id="quiz-question-jump"
+              type="number"
+              min="1"
+              max={questions.length}
+              value={current + 1}
+              onChange={(e) => {
+                const questionNum = parseInt(e.target.value);
+                if (questionNum >= 1 && questionNum <= questions.length) {
+                  setCurrent(questionNum - 1);
+                }
+              }}
+              className="question-jump-input"
+            />
+            <span className="question-total">of {questions.length}</span>
+          </div>
+          
           {current < questions.length - 1 && (
             <button onClick={nextQuestion}>Next ➡</button>
           )}

@@ -3,6 +3,7 @@ import Papa from 'papaparse';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import QuestionQuizWithSave from './QuestionQuizWithSave';
 import { SavedTestsService } from './SavedTestsService';
+import './CaseStudies.css';
 
 const META_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTDO68GqAelFKS2G6SwiUWdPs2tw5Gt62D5xLiB_9zyLyBPLSZm5gTthaQz9yCpmDKuymWMc83PV5a2/pub?gid=2042421471&single=true&output=csv';
 const SECTIONS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTDO68GqAelFKS2G6SwiUWdPs2tw5Gt62D5xLiB_9zyLyBPLSZm5gTthaQz9yCpmDKuymWMc83PV5a2/pub?gid=905416087&single=true&output=csv';
@@ -25,159 +26,56 @@ export function CaseStudies() {
   }, []);
 
   if (loading) return (
-    <div style={{ 
-      padding: '2rem', 
-      textAlign: 'center', 
-      color: '#669BBC',
-      minHeight: '50vh',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center'
-    }}>
-      <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📚</div>
-      <div style={{ fontSize: '1.2rem' }}>Loading Case Studies...</div>
+    <div className="case-studies-loading">
+      <div className="case-studies-loading-icon">📚</div>
+      <div className="case-studies-loading-text">Loading Case Studies...</div>
     </div>
   );
 
   return (
-    <div style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
+    <div className="case-studies-container">
       {/* Header with Back Button */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        marginBottom: '3rem',
-        padding: '1rem 0',
-        borderBottom: '2px solid #669BBC20'
-      }}>
+      <div className="case-studies-header">
         <button
           onClick={() => navigate('/practice')}
-          style={{
-            background: 'transparent',
-            border: '2px solid #669BBC',
-            color: '#669BBC',
-            padding: '0.5rem 1rem',
-            borderRadius: '8px',
-            fontSize: '0.9rem',
-            cursor: 'pointer',
-            marginRight: '1rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            transition: 'all 0.2s ease'
-          }}
-          onMouseEnter={(e) => {
-            e.target.style.background = '#669BBC';
-            e.target.style.color = 'white';
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.background = 'transparent';
-            e.target.style.color = '#669BBC';
-          }}
+          className="back-to-practice-btn"
         >
           ← Back to Practice Tests
         </button>
-        <div>
-          <div style={{
-            fontSize: '0.9rem',
-            color: '#669BBC',
-            marginBottom: '0.25rem'
-          }}>
+        <div className="case-studies-header-info">
+          <div className="case-studies-subtitle">
             💼 MB-800 Certification
           </div>
-          <h1 style={{
-            margin: 0,
-            fontSize: '2rem',
-            color: '#003049'
-          }}>
+          <h1 className="case-studies-title">
             Case Studies
           </h1>
         </div>
       </div>
       
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-        gap: '2rem',
-        marginTop: '2rem'
-      }}>
+      <div className="case-studies-grid">
         {meta.map(cs => (
           <Link
             key={cs.id}
             to={`/case-studies/${cs.id}`}
-            style={{
-              display: 'block',
-              background: 'linear-gradient(135deg, #FDF0D5 0%, #FFFFFF 100%)',
-              borderRadius: '16px',
-              padding: '2rem',
-              boxShadow: '0 8px 32px rgba(0, 48, 73, 0.1)',
-              border: '1px solid rgba(102, 155, 188, 0.2)',
-              textDecoration: 'none',
-              transition: 'all 0.3s ease',
-              position: 'relative',
-              overflow: 'hidden'
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.transform = 'translateY(-8px)';
-              e.target.style.boxShadow = '0 16px 48px rgba(0, 48, 73, 0.15)';
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.transform = 'translateY(0)';
-              e.target.style.boxShadow = '0 8px 32px rgba(0, 48, 73, 0.1)';
-            }}
+            className="case-study-card"
           >
-            {/* Background Pattern */}
-            <div style={{
-              position: 'absolute',
-              top: 0,
-              right: 0,
-              width: '80px',
-              height: '80px',
-              background: 'linear-gradient(135deg, #003049 0%, #00243a 100%)',
-              borderRadius: '50%',
-              transform: 'translate(25px, -25px)',
-              opacity: 0.1
-            }} />
-            
             {/* Case Study Icon */}
-            <div style={{
-              fontSize: '2.5rem',
-              marginBottom: '1rem'
-            }}>
+            <div className="case-study-icon">
               📋
             </div>
 
             {/* Title */}
-            <h3 style={{
-              color: '#003049',
-              fontSize: '1.3rem',
-              marginBottom: '1rem',
-              fontWeight: '600',
-              lineHeight: '1.3'
-            }}>
+            <h3 className="case-study-card-title">
               {cs.title}
             </h3>
 
             {/* Description */}
-            <p style={{
-              color: '#669BBC',
-              fontSize: '0.95rem',
-              marginBottom: '1.5rem',
-              lineHeight: '1.5'
-            }}>
+            <p className="case-study-description">
               {cs.description}
             </p>
 
             {/* Badge */}
-            <div style={{
-              display: 'inline-block',
-              background: '#669BBC20',
-              color: '#669BBC',
-              padding: '0.5rem 1rem',
-              borderRadius: '20px',
-              fontSize: '0.8rem',
-              fontWeight: '500'
-            }}>
+            <div className="case-study-badge">
               Interactive Case Study
             </div>
           </Link>
@@ -262,16 +160,9 @@ export function CaseStudyDetail() {
 
   if (loading || !meta) {
     return (
-      <div style={{ 
-        minHeight: '50vh',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '2rem'
-      }}>
-        <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📚</div>
-        <div style={{ fontSize: '1.2rem', color: '#669BBC' }}>Loading Case Study...</div>
+      <div className="case-study-detail-loading">
+        <div className="case-study-detail-loading-icon">📚</div>
+        <div className="case-study-detail-loading-text">Loading Case Study...</div>
       </div>
     );
   }
@@ -285,70 +176,23 @@ export function CaseStudyDetail() {
   }, {});
 
   return (
-    <div style={{ 
-      padding: '2rem',
-      maxWidth: '1200px',
-      margin: '0 auto',
-      background: 'linear-gradient(135deg, #FDF0D5 0%, #FFFFFF 100%)',
-      minHeight: '100vh'
-    }}>
+    <div className="case-study-detail">
       {/* Header with Back Button */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        marginBottom: '3rem',
-        padding: '1.5rem 0',
-        borderBottom: '2px solid #669BBC20'
-      }}>
+      <div className="case-study-detail-header">
         <button
           onClick={() => navigate('/practice')}
-          style={{
-            background: 'transparent',
-            border: '2px solid #669BBC',
-            color: '#669BBC',
-            padding: '0.5rem 1rem',
-            borderRadius: '8px',
-            fontSize: '0.9rem',
-            cursor: 'pointer',
-            marginRight: '1.5rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            transition: 'all 0.2s ease'
-          }}
-          onMouseEnter={(e) => {
-            e.target.style.background = '#669BBC';
-            e.target.style.color = 'white';
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.background = 'transparent';
-            e.target.style.color = '#669BBC';
-          }}
+          className="back-to-case-studies-btn"
         >
           ← Back to Practice Tests
         </button>
         <div>
-          <div style={{
-            fontSize: '0.9rem',
-            color: '#669BBC',
-            marginBottom: '0.25rem'
-          }}>
+          <div className="case-studies-subtitle">
             📋 Interactive Case Study
           </div>
-          <h1 style={{
-            margin: 0,
-            fontSize: '2.2rem',
-            color: '#003049',
-            fontWeight: '600'
-          }}>
+          <h1 className="case-study-detail-title">
             {meta.title}
           </h1>
-          <p style={{
-            margin: '0.5rem 0 0 0',
-            color: '#669BBC',
-            fontSize: '1.1rem',
-            lineHeight: '1.5'
-          }}>
+          <p className="case-study-description">
             {meta.description}
           </p>
         </div>

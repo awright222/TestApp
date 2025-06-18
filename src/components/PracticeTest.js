@@ -257,8 +257,24 @@ function PracticeTest({ selectedTest, onBackToSelection }) {
 
       {/* Multiple Choice Questions */}
       {q.question_type?.toLowerCase() === 'multiple choice' && (
-        <div className="choices-container">
-          {choices.map((choice, idx) => {
+        <>
+          {(() => {
+            const correctAnswers = q.correct_answer.split(',').map(s => s.trim());
+            const maxSelections = correctAnswers.length;
+            const currentSelections = Array.isArray(userAnswers[current]) ? userAnswers[current].length : 0;
+            const limitReached = currentSelections >= maxSelections;
+            
+            return (
+              <div className={`selection-info ${limitReached ? 'limit-reached' : ''}`}>
+                {limitReached 
+                  ? `Selection limit reached: ${currentSelections}/${maxSelections} choices selected`
+                  : `Select up to ${maxSelections} answer${maxSelections > 1 ? 's' : ''} (${currentSelections}/${maxSelections} selected)`
+                }
+              </div>
+            );
+          })()}
+          <div className="choices-container">
+            {choices.map((choice, idx) => {
             const isSelected = Array.isArray(userAnswers[current]) 
               ? userAnswers[current].includes(choice)
               : userAnswers[current] === choice;
@@ -269,11 +285,22 @@ function PracticeTest({ selectedTest, onBackToSelection }) {
                   <input
                     type="checkbox"
                     checked={isSelected}
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        updateUserAnswer([...userAnswers[current], choice]);
+                    onChange={() => {
+                      const currentAnswers = Array.isArray(userAnswers[current]) ? userAnswers[current] : [];
+                      const isCurrentlySelected = currentAnswers.includes(choice);
+                      
+                      if (isCurrentlySelected) {
+                        // Remove the choice
+                        updateUserAnswer(currentAnswers.filter(c => c !== choice));
                       } else {
-                        updateUserAnswer(userAnswers[current].filter(c => c !== choice));
+                        // Check how many correct answers this question has
+                        const correctAnswers = q.correct_answer.split(',').map(s => s.trim());
+                        const maxSelections = correctAnswers.length;
+                        
+                        // Only add if we haven't reached the limit
+                        if (currentAnswers.length < maxSelections) {
+                          updateUserAnswer([...currentAnswers, choice]);
+                        }
                       }
                     }}
                     disabled={questionSubmitted[current]}
@@ -283,7 +310,8 @@ function PracticeTest({ selectedTest, onBackToSelection }) {
               </div>
             );
           })}
-        </div>
+          </div>
+        </>
       )}
 
       {/* Hotspot Questions */}
@@ -323,6 +351,27 @@ function PracticeTest({ selectedTest, onBackToSelection }) {
         >
           Previous
         </button>
+        
+        {/* Jump to Question */}
+        <div className="question-jump">
+          <label htmlFor="practice-question-jump">Go to Q:</label>
+          <input
+            id="practice-question-jump"
+            type="number"
+            min="1"
+            max={questions.length}
+            value={current + 1}
+            onChange={(e) => {
+              const questionNum = parseInt(e.target.value);
+              if (questionNum >= 1 && questionNum <= questions.length) {
+                setCurrent(questionNum - 1);
+              }
+            }}
+            className="question-jump-input"
+          />
+          <span className="question-total">of {questions.length}</span>
+        </div>
+        
         <button 
           onClick={nextQuestion} 
           disabled={isLast}

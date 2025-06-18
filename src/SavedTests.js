@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SavedTestsService } from './SavedTestsService';
+import './SavedTests.css';
 
 function TestCard({ test, onDelete, onLoad }) {
   const formatDate = (dateString) => {
@@ -23,32 +24,11 @@ function TestCard({ test, onDelete, onLoad }) {
   };
 
   return (
-    <div
-      style={{
-        background: '#00243a',
-        border: '2px solid #669BBC',
-        borderRadius: '10px',
-        padding: '1.5rem',
-        position: 'relative',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-      }}
-    >
+    <div className="test-card">
       {/* Delete button */}
       <button
         onClick={() => onDelete(test.id)}
-        style={{
-          position: 'absolute',
-          top: '1rem',
-          right: '1rem',
-          background: 'none',
-          border: 'none',
-          color: '#669BBC',
-          fontSize: '1.2rem',
-          cursor: 'pointer',
-          padding: '0.25rem',
-          borderRadius: '4px',
-          lineHeight: 1
-        }}
+        className="test-card-delete"
         title="Delete saved test"
         aria-label="Delete saved test"
       >
@@ -56,91 +36,49 @@ function TestCard({ test, onDelete, onLoad }) {
       </button>
 
       {/* Test type badge */}
-      <div style={{ 
-        display: 'flex', 
-        alignItems: 'center', 
-        gap: '0.5rem',
-        marginBottom: '1rem'
-      }}>
-        <span style={{ 
-          background: test.type === 'case-study' ? '#780000' : '#669BBC',
-          color: '#FDF0D5',
-          padding: '0.25rem 0.5rem',
-          borderRadius: '4px',
-          fontSize: '0.8rem',
-          fontWeight: 'bold'
-        }}>
-          {test.type === 'case-study' ? 'CASE STUDY' : 'PRACTICE TEST'}
+      <div className="test-type-badge-container">
+        <span className={`test-type-badge ${test.type === 'case-study' ? 'case-study' : 'practice-test'}`}>
+          {test.type === 'case-study' ? 'Case Study' : 'Practice Test'}
         </span>
       </div>
       
       {/* Test title */}
-      <h3 style={{ 
-        margin: '0 2rem 1rem 0', 
-        color: '#FDF0D5',
-        fontSize: '1.2rem',
-        lineHeight: '1.4'
-      }}>
+      <h3 className="test-card-title">
         {test.title}
       </h3>
 
       {/* Dates */}
-      <div style={{ marginBottom: '1rem' }}>
-        <div style={{ 
-          color: '#bfc9d1', 
-          fontSize: '0.9rem', 
-          marginBottom: '0.5rem' 
-        }}>
+      <div className="test-dates">
+        <div className="test-date">
           Created: {formatDate(test.dateCreated)}
         </div>
         {test.dateModified && (
-          <div style={{ 
-            color: '#bfc9d1', 
-            fontSize: '0.9rem', 
-            marginBottom: '0.5rem' 
-          }}>
+          <div className="test-date">
             Modified: {formatDate(test.dateModified)}
           </div>
         )}
       </div>
 
       {/* Progress info */}
-      <div style={{ marginBottom: '1.5rem' }}>
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center',
-          marginBottom: '0.5rem'
-        }}>
-          <span style={{ color: '#669BBC', fontWeight: 'bold' }}>
+      <div className="progress-section">
+        <div className="progress-header">
+          <span className="progress-percentage">
             Progress: {calculateProgress(test.progress)}%
           </span>
-          <span style={{ color: '#bfc9d1', fontSize: '0.9rem' }}>
+          <span className="progress-fraction">
             {test.progress?.completedQuestions || 0} / {test.progress?.totalQuestions || 0}
           </span>
         </div>
         
         {/* Progress bar */}
-        <div style={{
-          width: '100%',
-          height: '8px',
-          background: '#003049',
-          borderRadius: '4px',
-          overflow: 'hidden'
-        }}>
-          <div style={{
-            width: `${calculateProgress(test.progress)}%`,
-            height: '100%',
-            background: test.type === 'case-study' ? '#780000' : '#669BBC',
-            transition: 'width 0.3s ease'
-          }}></div>
+        <div className="progress-bar-container">
+          <div 
+            className={`progress-bar-fill ${test.type === 'case-study' ? 'case-study' : 'practice-test'}`}
+            style={{ width: `${calculateProgress(test.progress)}%` }}
+          ></div>
         </div>
         
-        <div style={{ 
-          color: '#bfc9d1', 
-          fontSize: '0.9rem', 
-          marginTop: '0.5rem' 
-        }}>
+        <div className="current-question-info">
           Current question: {(test.progress?.current || 0) + 1}
         </div>
       </div>
@@ -148,17 +86,7 @@ function TestCard({ test, onDelete, onLoad }) {
       {/* Load test button */}
       <button
         onClick={() => onLoad(test)}
-        style={{
-          width: '100%',
-          background: test.type === 'case-study' ? '#780000' : '#669BBC',
-          color: '#FDF0D5',
-          border: 'none',
-          padding: '0.75rem',
-          borderRadius: '6px',
-          fontWeight: 'bold',
-          cursor: 'pointer',
-          fontSize: '1rem'
-        }}
+        className={`load-test-btn ${test.type === 'case-study' ? 'case-study' : 'practice-test'}`}
       >
         {test.type === 'case-study' ? 'Continue Case Study' : 'Continue Test'}
       </button>
@@ -222,25 +150,19 @@ export default function SavedTests({ onLoadTest }) {
   };
 
   if (loading) {
-    return <div style={{ padding: '2rem' }}>Loading saved tests...</div>;
+    return <div className="loading-state">Loading saved tests...</div>;
   }
 
   return (
-    <div className="saved-tests-page" style={{ padding: '2rem' }}>
+    <div className="saved-tests-page">
       <div className="saved-tests-header">
         <h2>Saved Tests</h2>
       </div>
 
       {savedTests.length === 0 ? (
-        <div style={{ 
-          textAlign: 'center', 
-          padding: '3rem', 
-          background: '#00243a', 
-          borderRadius: '10px',
-          border: '2px solid #669BBC'
-        }}>
-          <h3 style={{ color: '#669BBC', marginBottom: '1rem' }}>No saved tests yet</h3>
-          <p style={{ color: '#bfc9d1', marginBottom: '1.5rem' }}>
+        <div className="empty-state">
+          <h3 className="empty-state-title">No saved tests yet</h3>
+          <p className="empty-state-text">
             Start a practice test or case study and save your progress to see it here.
           </p>
         </div>
@@ -248,20 +170,11 @@ export default function SavedTests({ onLoadTest }) {
         <div>
           {/* Practice Tests Section */}
           {groupedTests.practiceTests && groupedTests.practiceTests.length > 0 && (
-            <div style={{ marginBottom: '3rem' }}>
-              <h3 style={{ 
-                color: '#669BBC', 
-                borderBottom: '2px solid #669BBC',
-                paddingBottom: '0.5rem',
-                marginBottom: '1.5rem'
-              }}>
+            <div>
+              <h3 className="section-header practice-tests">
                 Practice Tests ({groupedTests.practiceTests.length})
               </h3>
-              <div style={{ 
-                display: 'grid', 
-                gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', 
-                gap: '1.5rem' 
-              }}>
+              <div className="tests-grid">
                 {groupedTests.practiceTests.map(test => (
                   <TestCard key={test.id} test={test} onDelete={handleDeleteTest} onLoad={handleLoadTest} />
                 ))}
@@ -272,19 +185,10 @@ export default function SavedTests({ onLoadTest }) {
           {/* Case Studies Section */}
           {groupedTests.caseStudies && groupedTests.caseStudies.length > 0 && (
             <div>
-              <h3 style={{ 
-                color: '#780000', 
-                borderBottom: '2px solid #780000',
-                paddingBottom: '0.5rem',
-                marginBottom: '1.5rem'
-              }}>
+              <h3 className="section-header case-studies">
                 Case Studies ({groupedTests.caseStudies.length})
               </h3>
-              <div style={{ 
-                display: 'grid', 
-                gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', 
-                gap: '1.5rem' 
-              }}>
+              <div className="tests-grid">
                 {groupedTests.caseStudies.map(test => (
                   <TestCard key={test.id} test={test} onDelete={handleDeleteTest} onLoad={handleLoadTest} />
                 ))}
@@ -295,15 +199,9 @@ export default function SavedTests({ onLoadTest }) {
           {/* Show message if no tests in either category */}
           {(!groupedTests.practiceTests || groupedTests.practiceTests.length === 0) && 
            (!groupedTests.caseStudies || groupedTests.caseStudies.length === 0) && (
-            <div style={{ 
-              textAlign: 'center', 
-              padding: '3rem', 
-              background: '#00243a', 
-              borderRadius: '10px',
-              border: '2px solid #669BBC'
-            }}>
-              <h3 style={{ color: '#669BBC', marginBottom: '1rem' }}>No saved tests yet</h3>
-              <p style={{ color: '#bfc9d1', marginBottom: '1.5rem' }}>
+            <div className="empty-state">
+              <h3 className="empty-state-title">No saved tests yet</h3>
+              <p className="empty-state-text">
                 Start a practice test or case study and save your progress to see it here.
               </p>
             </div>
