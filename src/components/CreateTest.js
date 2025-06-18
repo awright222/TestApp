@@ -8,7 +8,7 @@ export default function CreateTest() {
   const { testId } = useParams(); // For editing existing tests
   const isEditing = Boolean(testId);
   
-  const [activeTab, setActiveTab] = useState('import'); // 'import' or 'builder'
+  const [activeTab, setActiveTab] = useState('import'); // 'import', 'builder', or 'settings'
   
   // Import states
   const [googleSheetUrl, setGoogleSheetUrl] = useState('');
@@ -28,6 +28,24 @@ export default function CreateTest() {
     explanation: ''
   });
 
+  // Settings states
+  const [testSettings, setTestSettings] = useState({
+    timeLimit: 0, // 0 = no limit
+    allowSaveAndReturn: false,
+    showExplanations: true,
+    showCorrectAnswers: false,
+    randomizeQuestions: false,
+    randomizeChoices: false,
+    maxAttempts: 1,
+    isPublished: false,
+    requireName: true,
+    requireEmail: false,
+    passingScore: 70,
+    showResults: true,
+    allowReview: true,
+    accessCode: '',
+    visibility: 'private' // 'private', 'public', 'unlisted'
+  });
   // Load existing test data if editing
   useEffect(() => {
     const loadTestForEditing = async () => {
@@ -37,6 +55,15 @@ export default function CreateTest() {
           setTestTitle(test.title);
           setTestDescription(test.description || '');
           setQuestions(test.questions || []);
+          
+          // Load test settings if they exist
+          if (test.settings) {
+            setTestSettings(prevSettings => ({
+              ...prevSettings,
+              ...test.settings
+            }));
+          }
+          
           // If it was built manually, switch to builder tab
           if (test.source === 'builder') {
             setActiveTab('builder');
@@ -156,7 +183,9 @@ Role: Admin","Proper configuration requires setting the department and role corr
         source: 'builder',
         icon: '🔨',
         difficulty: 'Custom',
-        color: '#28a745'
+        color: '#28a745',
+        // Include all settings
+        settings: testSettings
       };
 
       console.log('Creating test with data:', testData);
@@ -199,7 +228,9 @@ Role: Admin","Proper configuration requires setting the department and role corr
         description: `Imported test with ${testPreview.questionCount} questions`,
         source: 'import',
         icon: '📥',
-        difficulty: 'Imported'
+        difficulty: 'Imported',
+        // Include all settings
+        settings: testSettings
       };
 
       if (uploadedFile) {
@@ -264,6 +295,15 @@ Role: Admin","Proper configuration requires setting the department and role corr
           onClick={() => setActiveTab('builder')}
         >
           🔨 Build Test
+        </button>
+        <button 
+          className={`tab-btn ${activeTab === 'settings' ? 'active' : ''}`}
+          onClick={() => setActiveTab('settings')}
+        >
+          ⚙️ Settings & Publishing
+          {(testSettings.timeLimit > 0 || testSettings.isPublished || testSettings.accessCode) && (
+            <span className="settings-badge">•</span>
+          )}
         </button>
       </div>
 
@@ -508,6 +548,24 @@ Role: Admin","Proper configuration requires setting the department and role corr
                   </div>
                 ))}
                 
+                {/* Settings Summary */}
+                <div className="settings-summary">
+                  <h4>⚙️ Current Settings</h4>
+                  <div className="settings-preview">
+                    <span>Time: {testSettings.timeLimit > 0 ? `${testSettings.timeLimit} min` : 'No limit'}</span>
+                    <span>Attempts: {testSettings.maxAttempts}</span>
+                    <span>Visibility: {testSettings.visibility}</span>
+                    {testSettings.accessCode && <span>Access Code: ✓</span>}
+                    {testSettings.isPublished && <span className="published">Published</span>}
+                  </div>
+                  <button 
+                    className="edit-settings-btn"
+                    onClick={() => setActiveTab('settings')}
+                  >
+                    Edit Settings
+                  </button>
+                </div>
+
                 <div className="builder-actions">
                   <button 
                     disabled={questions.length === 0 || !testTitle.trim()}
@@ -519,6 +577,279 @@ Role: Admin","Proper configuration requires setting the department and role corr
                 </div>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Settings Tab */}
+      {activeTab === 'settings' && (
+        <div className="tab-content">
+          <div className="settings-content">
+            <h2>⚙️ Test Settings & Publishing</h2>
+            <p>Configure advanced settings for your test including time limits, visibility, and publishing options.</p>
+
+            <div className="settings-sections">
+              {/* Basic Settings */}
+              <div className="settings-section">
+                <h3>⏱️ Time & Attempts</h3>
+                <div className="setting-group">
+                  <label>
+                    <span>Time Limit (minutes)</span>
+                    <input
+                      type="number"
+                      min="0"
+                      value={testSettings.timeLimit}
+                      onChange={(e) => setTestSettings({...testSettings, timeLimit: parseInt(e.target.value) || 0})}
+                      placeholder="0 = No limit"
+                    />
+                    <small>Set to 0 for no time limit</small>
+                  </label>
+                </div>
+                <div className="setting-group">
+                  <label>
+                    <span>Maximum Attempts</span>
+                    <input
+                      type="number"
+                      min="1"
+                      value={testSettings.maxAttempts}
+                      onChange={(e) => setTestSettings({...testSettings, maxAttempts: parseInt(e.target.value) || 1})}
+                    />
+                  </label>
+                </div>
+                <div className="setting-group">
+                  <label>
+                    <span>Passing Score (%)</span>
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={testSettings.passingScore}
+                      onChange={(e) => setTestSettings({...testSettings, passingScore: parseInt(e.target.value) || 70})}
+                    />
+                  </label>
+                </div>
+              </div>
+
+              {/* Test Behavior */}
+              <div className="settings-section">
+                <h3>🎯 Test Behavior</h3>
+                <div className="checkbox-group">
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={testSettings.allowSaveAndReturn}
+                      onChange={(e) => setTestSettings({...testSettings, allowSaveAndReturn: e.target.checked})}
+                    />
+                    <span>Allow save and return later</span>
+                  </label>
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={testSettings.randomizeQuestions}
+                      onChange={(e) => setTestSettings({...testSettings, randomizeQuestions: e.target.checked})}
+                    />
+                    <span>Randomize question order</span>
+                  </label>
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={testSettings.randomizeChoices}
+                      onChange={(e) => setTestSettings({...testSettings, randomizeChoices: e.target.checked})}
+                    />
+                    <span>Randomize answer choices</span>
+                  </label>
+                </div>
+              </div>
+
+              {/* Results & Feedback */}
+              <div className="settings-section">
+                <h3>📊 Results & Feedback</h3>
+                <div className="checkbox-group">
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={testSettings.showResults}
+                      onChange={(e) => setTestSettings({...testSettings, showResults: e.target.checked})}
+                    />
+                    <span>Show results to test taker</span>
+                  </label>
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={testSettings.showExplanations}
+                      onChange={(e) => setTestSettings({...testSettings, showExplanations: e.target.checked})}
+                    />
+                    <span>Show answer explanations</span>
+                  </label>
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={testSettings.showCorrectAnswers}
+                      onChange={(e) => setTestSettings({...testSettings, showCorrectAnswers: e.target.checked})}
+                    />
+                    <span>Show correct answers</span>
+                  </label>
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={testSettings.allowReview}
+                      onChange={(e) => setTestSettings({...testSettings, allowReview: e.target.checked})}
+                    />
+                    <span>Allow review after completion</span>
+                  </label>
+                </div>
+              </div>
+
+              {/* Access Control */}
+              <div className="settings-section">
+                <h3>🔒 Access Control</h3>
+                <div className="setting-group">
+                  <label>
+                    <span>Visibility</span>
+                    <select
+                      value={testSettings.visibility}
+                      onChange={(e) => setTestSettings({...testSettings, visibility: e.target.value})}
+                    >
+                      <option value="private">Private (only you can access)</option>
+                      <option value="unlisted">Unlisted (accessible via link)</option>
+                      <option value="public">Public (discoverable)</option>
+                    </select>
+                  </label>
+                </div>
+                <div className="setting-group">
+                  <label>
+                    <span>Access Code (optional)</span>
+                    <input
+                      type="text"
+                      value={testSettings.accessCode}
+                      onChange={(e) => setTestSettings({...testSettings, accessCode: e.target.value})}
+                      placeholder="Leave empty for no access code"
+                    />
+                    <small>Require test takers to enter this code</small>
+                  </label>
+                </div>
+              </div>
+
+              {/* Test Taker Info */}
+              <div className="settings-section">
+                <h3>👤 Test Taker Information</h3>
+                <div className="checkbox-group">
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={testSettings.requireName}
+                      onChange={(e) => setTestSettings({...testSettings, requireName: e.target.checked})}
+                    />
+                    <span>Require name</span>
+                  </label>
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={testSettings.requireEmail}
+                      onChange={(e) => setTestSettings({...testSettings, requireEmail: e.target.checked})}
+                    />
+                    <span>Require email address</span>
+                  </label>
+                </div>
+              </div>
+
+              {/* Publishing */}
+              <div className="settings-section">
+                <h3>🚀 Publishing</h3>
+                <div className="checkbox-group">
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={testSettings.isPublished}
+                      onChange={(e) => setTestSettings({...testSettings, isPublished: e.target.checked})}
+                    />
+                    <span>Publish test (make available to test takers)</span>
+                  </label>
+                </div>
+                {testSettings.isPublished && (
+                  <div className="publish-info">
+                    <p>✅ Test will be published and accessible to test takers</p>
+                    <p>🔗 Shareable link will be generated after saving</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Quick Presets */}
+              <div className="settings-section">
+                <h3>⚡ Quick Presets</h3>
+                <p style={{ color: '#669BBC', marginBottom: '1rem' }}>
+                  Apply common configurations quickly:
+                </p>
+                <div className="preset-buttons">
+                  <button 
+                    className="preset-btn"
+                    onClick={() => setTestSettings({
+                      ...testSettings,
+                      timeLimit: 60,
+                      maxAttempts: 1,
+                      showResults: true,
+                      showExplanations: true,
+                      allowReview: true,
+                      visibility: 'private',
+                      requireName: true,
+                      isPublished: false
+                    })}
+                  >
+                    📚 Study Mode
+                    <small>60 min, explanations, review allowed</small>
+                  </button>
+                  <button 
+                    className="preset-btn"
+                    onClick={() => setTestSettings({
+                      ...testSettings,
+                      timeLimit: 30,
+                      maxAttempts: 1,
+                      showResults: false,
+                      showExplanations: false,
+                      allowReview: false,
+                      randomizeQuestions: true,
+                      visibility: 'unlisted',
+                      requireName: true,
+                      isPublished: true
+                    })}
+                  >
+                    🎯 Exam Mode
+                    <small>30 min, no review, randomized</small>
+                  </button>
+                  <button 
+                    className="preset-btn"
+                    onClick={() => setTestSettings({
+                      ...testSettings,
+                      timeLimit: 0,
+                      maxAttempts: 999,
+                      showResults: true,
+                      showExplanations: true,
+                      allowReview: true,
+                      allowSaveAndReturn: true,
+                      visibility: 'public',
+                      requireName: false,
+                      isPublished: true
+                    })}
+                  >
+                    🌐 Practice Mode
+                    <small>No time limit, unlimited attempts</small>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="settings-actions">
+              <button 
+                className="save-settings-btn"
+                onClick={() => {
+                  // Apply settings and go back to builder or import
+                  alert('Settings saved! You can now create your test.');
+                  setActiveTab(questions.length > 0 ? 'builder' : 'import');
+                }}
+              >
+                💾 Save Settings
+              </button>
+            </div>
           </div>
         </div>
       )}
