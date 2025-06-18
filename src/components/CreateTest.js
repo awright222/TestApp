@@ -154,20 +154,32 @@ Role: Admin","Proper configuration requires setting the department and role corr
           explanation: q.explanation
         })),
         source: 'builder',
-        icon: '�',
+        icon: '🔨',
         difficulty: 'Custom',
         color: '#28a745'
       };
 
+      console.log('Creating test with data:', testData);
+
+      let result;
       if (isEditing) {
-        await CreatedTestsService.updateTest(testId, testData);
-        alert(`Test "${testTitle}" updated successfully!`);
+        result = await CreatedTestsService.updateTest(testId, testData);
+        console.log('Test updated:', result);
       } else {
-        await CreatedTestsService.createTest(testData);
-        alert(`Test "${testTitle}" created successfully!`);
+        result = await CreatedTestsService.createTest(testData);
+        console.log('Test created:', result);
       }
       
-      navigate('/my-tests');
+      // Wait a moment to ensure localStorage write is complete
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      alert(`Test "${testTitle}" ${isEditing ? 'updated' : 'created'} successfully!`);
+      
+      // Navigate after the alert is dismissed
+      setTimeout(() => {
+        navigate('/my-tests');
+      }, 100);
+      
     } catch (error) {
       console.error('Error saving test:', error);
       alert('Failed to save test. Please try again.');
@@ -203,9 +215,19 @@ Role: Admin","Proper configuration requires setting the department and role corr
         testData.questions = []; // Placeholder
       }
 
-      await CreatedTestsService.createTest(testData);
+      const result = await CreatedTestsService.createTest(testData);
+      console.log('Import test created:', result);
+      
+      // Wait a moment to ensure localStorage write is complete
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       alert(`Test "${testData.title}" created successfully!`);
-      navigate('/my-tests');
+      
+      // Navigate after the alert is dismissed
+      setTimeout(() => {
+        navigate('/my-tests');
+      }, 100);
+      
     } catch (error) {
       console.error('Error creating test:', error);
       alert('Failed to create test. Please try again.');

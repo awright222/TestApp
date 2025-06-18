@@ -1,21 +1,35 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { CreatedTestsService } from '../services/CreatedTestsService';
 
 export default function MyCreatedTests() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [createdTests, setCreatedTests] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [lastRefresh, setLastRefresh] = useState(Date.now());
 
   useEffect(() => {
+    console.log('MyCreatedTests component mounted');
     loadCreatedTests();
   }, []);
 
+  // Reload tests when navigating to this page
+  useEffect(() => {
+    if (location.pathname === '/my-tests') {
+      console.log('Navigated to My Tests page, reloading...');
+      setLoading(true); // Show loading state
+      loadCreatedTests();
+    }
+  }, [location.pathname]);
+
   const loadCreatedTests = async () => {
     try {
+      console.log('Loading created tests...', new Date().toISOString());
       const tests = await CreatedTestsService.getCreatedTests();
-      console.log('Loaded created tests:', tests);
+      console.log('Loaded tests:', tests);
       setCreatedTests(tests);
+      setLastRefresh(Date.now());
     } catch (error) {
       console.error('Error loading created tests:', error);
     } finally {
@@ -73,26 +87,52 @@ export default function MyCreatedTests() {
           <h1 style={{ color: '#003049', marginBottom: '0.5rem' }}>📝 My Created Tests</h1>
           <p style={{ color: '#669BBC', margin: 0 }}>
             {createdTests.length} test{createdTests.length !== 1 ? 's' : ''} created
+            <small style={{ marginLeft: '1rem', opacity: 0.7 }}>
+              Last updated: {new Date(lastRefresh).toLocaleTimeString()}
+            </small>
           </p>
         </div>
-        <button
-          onClick={() => navigate('/create-test')}
-          style={{
-            background: '#780000',
-            color: '#FDF0D5',
-            border: 'none',
-            padding: '0.75rem 1.5rem',
-            borderRadius: '8px',
-            fontSize: '1rem',
-            fontWeight: '600',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem'
-          }}
-        >
-          ➕ Create New Test
-        </button>
+        <div style={{ display: 'flex', gap: '1rem' }}>
+          <button
+            onClick={() => {
+              setLoading(true);
+              loadCreatedTests();
+            }}
+            style={{
+              background: '#669BBC',
+              color: '#FDF0D5',
+              border: 'none',
+              padding: '0.75rem 1.5rem',
+              borderRadius: '8px',
+              fontSize: '1rem',
+              fontWeight: '600',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem'
+            }}
+          >
+            🔄 Refresh
+          </button>
+          <button
+            onClick={() => navigate('/create-test')}
+            style={{
+              background: '#780000',
+              color: '#FDF0D5',
+              border: 'none',
+              padding: '0.75rem 1.5rem',
+              borderRadius: '8px',
+              fontSize: '1rem',
+              fontWeight: '600',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem'
+            }}
+          >
+            ➕ Create New Test
+          </button>
+        </div>
       </div>
 
       {createdTests.length === 0 ? (

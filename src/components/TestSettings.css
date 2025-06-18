@@ -1,0 +1,253 @@
+.test-settings-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.test-settings-modal {
+  background: white;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 800px;
+  max-height: 90vh;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 48, 73, 0.3);
+  display: flex;
+  flex-direction: column;
+}
+
+.settings-header {
+  background: linear-gradient(135deg, #003049 0%, #669BBC 100%);
+  color: #FDF0D5;
+  padding: 1.5rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.settings-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: #FDF0D5;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 50%;
+  transition: background-color 0.2s;
+}
+
+.close-btn:hover {
+  background: rgba(253, 240, 213, 0.2);
+}
+
+.settings-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 2rem;
+}
+
+.settings-section {
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid rgba(102, 155, 188, 0.2);
+}
+
+.settings-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.settings-section h3 {
+  color: #003049;
+  margin: 0 0 1rem 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.setting-group {
+  margin-bottom: 1rem;
+}
+
+.setting-group label {
+  display: block;
+  color: #003049;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.setting-group input,
+.setting-group select,
+.setting-group textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid rgba(102, 155, 188, 0.3);
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+}
+
+.setting-group input:focus,
+.setting-group select:focus,
+.setting-group textarea:focus {
+  outline: none;
+  border-color: #669BBC;
+}
+
+.setting-group textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.checkbox-group {
+  display: flex;
+  align-items: center;
+}
+
+.checkbox-group label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  margin: 0;
+}
+
+.checkbox-group input[type="checkbox"] {
+  width: auto;
+  margin-right: 0.75rem;
+  transform: scale(1.2);
+}
+
+.time-input-group {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.time-input-group input {
+  flex: 0 0 120px;
+}
+
+.input-help {
+  color: #669BBC;
+  font-size: 0.9rem;
+  font-style: italic;
+}
+
+.publishing-status {
+  background: linear-gradient(135deg, #FDF0D5 0%, #FFFFFF 100%);
+  border: 1px solid rgba(102, 155, 188, 0.2);
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.status-indicator {
+  font-weight: 600;
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+}
+
+.status-indicator.published {
+  color: #28a745;
+}
+
+.status-indicator.draft {
+  color: #ffc107;
+}
+
+.status-description {
+  margin: 0;
+  color: #669BBC;
+  font-size: 0.9rem;
+}
+
+.settings-actions {
+  background: #f8f9fa;
+  padding: 1.5rem 2rem;
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  border-top: 1px solid rgba(102, 155, 188, 0.2);
+}
+
+.cancel-btn,
+.save-btn {
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cancel-btn {
+  background: #e9ecef;
+  color: #495057;
+}
+
+.cancel-btn:hover {
+  background: #dee2e6;
+}
+
+.save-btn {
+  background: #669BBC;
+  color: white;
+}
+
+.save-btn:hover {
+  background: #5a7e9a;
+  transform: translateY(-1px);
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .test-settings-overlay {
+    padding: 0.5rem;
+  }
+  
+  .test-settings-modal {
+    max-height: 95vh;
+  }
+  
+  .settings-header {
+    padding: 1rem 1.5rem;
+  }
+  
+  .settings-content {
+    padding: 1.5rem;
+  }
+  
+  .settings-actions {
+    padding: 1rem 1.5rem;
+    flex-direction: column-reverse;
+  }
+  
+  .cancel-btn,
+  .save-btn {
+    width: 100%;
+  }
+  
+  .time-input-group {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .time-input-group input {
+    flex: none;
+    width: 100%;
+  }
+}

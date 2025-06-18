@@ -15,7 +15,11 @@ export default function Dashboard({ searchTerm, onClearSearch }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Temporarily disable stats loading to debug
+    /*
     loadUserStats();
+    */
+    setLoading(false);
   }, []);
 
   const loadUserStats = async () => {

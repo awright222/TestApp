@@ -7,15 +7,31 @@ export class CreatedTestsService {
   // Get all created tests for the current user
   static async getCreatedTests() {
     try {
+      console.log('CreatedTestsService.getCreatedTests called');
       const storedTests = localStorage.getItem(STORAGE_KEY);
-      console.log('Raw stored tests:', storedTests);
-      if (!storedTests) return [];
+      console.log('Raw stored data:', storedTests);
+      
+      if (!storedTests) {
+        console.log('No stored tests found, returning empty array');
+        return [];
+      }
       
       const allTests = JSON.parse(storedTests);
       console.log('Parsed tests:', allTests);
-      return allTests || [];
+      
+      // Ensure we have a valid array
+      if (!Array.isArray(allTests)) {
+        console.warn('Invalid stored tests data, resetting...');
+        localStorage.removeItem(STORAGE_KEY);
+        return [];
+      }
+      
+      console.log('Returning tests:', allTests);
+      return allTests;
     } catch (error) {
       console.error('Error loading created tests:', error);
+      // Clear corrupted data
+      localStorage.removeItem(STORAGE_KEY);
       return [];
     }
   }
@@ -23,7 +39,9 @@ export class CreatedTestsService {
   // Create a new test
   static async createTest(testData) {
     try {
+      console.log('CreatedTestsService.createTest called with:', testData);
       const existingTests = await this.getCreatedTests();
+      console.log('Existing tests:', existingTests);
       
       const newTest = {
         id: Date.now().toString(),
@@ -44,7 +62,12 @@ export class CreatedTestsService {
       console.log('Creating new test:', newTest);
       const updatedTests = [...existingTests, newTest];
       console.log('All tests after creation:', updatedTests);
+      
       localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedTests));
+      
+      // Verify the data was saved
+      const savedData = localStorage.getItem(STORAGE_KEY);
+      console.log('Saved data verification:', savedData);
       
       return newTest;
     } catch (error) {
@@ -125,7 +148,15 @@ export class CreatedTestsService {
   // Parse CSV data into questions array
   static parseCSVToQuestions(csvText) {
     try {
-      const lines = csvText.split('\n');
+      if (!csvText || typeof csvText !== 'string') {
+        throw new Error('Invalid CSV data');
+      }
+      
+      const lines = csvText.split('\n').filter(line => line.trim());
+      if (lines.length < 2) {
+        throw new Error('CSV must have at least a header and one data row');
+      }
+      
       // const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
       const questions = [];
 
@@ -138,11 +169,11 @@ export class CreatedTestsService {
         
         if (values.length >= 5) {
           questions.push({
-            question_text: values[0],
-            question_type: values[1],
-            choices: values[2],
-            correct_answer: values[3],
-            explanation: values[4]
+            question_text: values[0] || '',
+            question_type: values[1] || 'multiple choice',
+            choices: values[2] || '',
+            correct_answer: values[3] || '',
+            explanation: values[4] || ''
           });
         }
       }
@@ -150,7 +181,7 @@ export class CreatedTestsService {
       return questions;
     } catch (error) {
       console.error('Error parsing CSV:', error);
-      throw new Error('Invalid CSV format');
+      throw new Error('Invalid CSV format: ' + error.message);
     }
   }
 }

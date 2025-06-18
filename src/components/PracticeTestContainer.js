@@ -15,7 +15,7 @@ function PracticeTestContainer({ searchTerm, onClearSearch }) {
       setLoading(true);
       try {
         const customTest = await CreatedTestsService.getTestById(testId);
-        if (customTest) {
+        if (customTest && customTest.questions && Array.isArray(customTest.questions)) {
           // Transform the custom test to match the expected format
           const transformedTest = {
             title: customTest.title,
@@ -29,7 +29,7 @@ function PracticeTestContainer({ searchTerm, onClearSearch }) {
           };
           setSelectedTest(transformedTest);
         } else {
-          alert('Custom test not found!');
+          alert('Custom test not found or has no questions!');
           navigate('/my-tests');
         }
       } catch (error) {

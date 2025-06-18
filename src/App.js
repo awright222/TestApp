@@ -13,8 +13,10 @@ import Dashboard from './components/Dashboard';
 import SharedTests from './components/SharedTests';
 import MyCreatedTests from './components/MyCreatedTests';
 import CreateTest from './components/CreateTest';
+// import TakeTest from './components/TakeTest';
 import PracticeTestContainer from './components/PracticeTestContainer';
 import Sidebar from './components/Sidebar';
+import Debug from './components/Debug';
 
 function App() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -92,6 +94,7 @@ function App() {
           <Route path="/create-test" element={<CreateTest />} />
           <Route path="/create-test/:testId" element={<CreateTest />} />
           <Route path="/custom-test/:testId" element={<PracticeTestContainer />} />
+          {/* <Route path="/take-test/:shareId" element={<TakeTest />} /> */}
           <Route path="/case-studies" element={<CaseStudies />} />
           <Route path="/case-studies/:id" element={<CaseStudyDetail />} />
           <Route 
@@ -112,6 +115,30 @@ function App() {
               />
             } 
           />
+          {/* Debug route to clear localStorage if needed */}
+          <Route path="/debug" element={<Debug />} />
+          <Route path="/debug/clear" element={
+            <div style={{ padding: '2rem', textAlign: 'center' }}>
+              <h2>Debug Tools</h2>
+              <button 
+                onClick={() => {
+                  localStorage.clear();
+                  alert('localStorage cleared!');
+                  window.location.href = '/';
+                }}
+                style={{
+                  background: '#dc3545',
+                  color: 'white',
+                  border: 'none',
+                  padding: '1rem 2rem',
+                  borderRadius: '8px',
+                  cursor: 'pointer'
+                }}
+              >
+                Clear All Data
+              </button>
+            </div>
+          } />
         </Routes>
       </div>
 
