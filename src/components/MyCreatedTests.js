@@ -1,23 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { CreatedTestsService } from '../services/CreatedTestsService';
 
 export default function MyCreatedTests() {
   const navigate = useNavigate();
-  const location = useLocation();
   const [createdTests, setCreatedTests] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadCreatedTests();
   }, []);
-
-  // Reload tests when navigating to this page
-  useEffect(() => {
-    if (location.pathname === '/my-tests') {
-      loadCreatedTests();
-    }
-  }, [location.pathname]);
 
   const loadCreatedTests = async () => {
     try {
@@ -42,6 +34,14 @@ export default function MyCreatedTests() {
         alert('Failed to delete test. Please try again.');
       }
     }
+  };
+
+  const launchTest = (testId) => {
+    navigate(`/custom-test/${testId}`);
+  };
+
+  const editTest = (testId) => {
+    navigate(`/create-test/${testId}`);
   };
 
   const formatDate = (dateString) => {
@@ -268,6 +268,7 @@ export default function MyCreatedTests() {
                 flexWrap: 'wrap'
               }}>
                 <button
+                  onClick={() => launchTest(test.id)}
                   style={{
                     background: test.color,
                     color: 'white',
@@ -279,11 +280,11 @@ export default function MyCreatedTests() {
                     cursor: 'pointer',
                     flex: 1
                   }}
-                  disabled
                 >
                   🚀 Launch Test
                 </button>
                 <button
+                  onClick={() => editTest(test.id)}
                   style={{
                     background: 'transparent',
                     color: test.color,
@@ -295,22 +296,10 @@ export default function MyCreatedTests() {
                     cursor: 'pointer',
                     flex: 1
                   }}
-                  disabled
                 >
                   ✏️ Edit
                 </button>
               </div>
-              
-              {/* Coming Soon Notice */}
-              <p style={{
-                fontSize: '0.75rem',
-                color: '#999',
-                textAlign: 'center',
-                margin: '0.5rem 0 0 0',
-                fontStyle: 'italic'
-              }}>
-                Launch & Edit features coming soon!
-              </p>
             </div>
           ))}
         </div>

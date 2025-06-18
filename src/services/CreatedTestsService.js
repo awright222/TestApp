@@ -1,5 +1,4 @@
 // CreatedTestsService.js - Service for managing user-created tests
-import { useAuth } from '../firebase/AuthContext';
 
 const STORAGE_KEY = 'created_tests';
 
@@ -9,9 +8,11 @@ export class CreatedTestsService {
   static async getCreatedTests() {
     try {
       const storedTests = localStorage.getItem(STORAGE_KEY);
+      console.log('Raw stored tests:', storedTests);
       if (!storedTests) return [];
       
       const allTests = JSON.parse(storedTests);
+      console.log('Parsed tests:', allTests);
       return allTests || [];
     } catch (error) {
       console.error('Error loading created tests:', error);
@@ -23,7 +24,6 @@ export class CreatedTestsService {
   static async createTest(testData) {
     try {
       const existingTests = await this.getCreatedTests();
-      console.log('Existing tests before create:', existingTests);
       
       const newTest = {
         id: Date.now().toString(),
@@ -41,13 +41,10 @@ export class CreatedTestsService {
         isActive: true
       };
 
+      console.log('Creating new test:', newTest);
       const updatedTests = [...existingTests, newTest];
-      console.log('Saving updated tests:', updatedTests);
+      console.log('All tests after creation:', updatedTests);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedTests));
-      
-      // Verify it was saved
-      const savedTests = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-      console.log('Verified saved tests:', savedTests);
       
       return newTest;
     } catch (error) {
@@ -69,6 +66,7 @@ export class CreatedTestsService {
       existingTests[testIndex] = {
         ...existingTests[testIndex],
         ...updates,
+        questionCount: (updates.questions || existingTests[testIndex].questions || []).length,
         updatedAt: new Date().toISOString()
       };
 
@@ -128,7 +126,7 @@ export class CreatedTestsService {
   static parseCSVToQuestions(csvText) {
     try {
       const lines = csvText.split('\n');
-      const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
+      // const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
       const questions = [];
 
       for (let i = 1; i < lines.length; i++) {

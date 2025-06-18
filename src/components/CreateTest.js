@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { CreatedTestsService } from '../services/CreatedTestsService';
 import './CreateTest.css';
 
 export default function CreateTest() {
   const navigate = useNavigate();
+  const { testId } = useParams(); // For editing existing tests
+  const isEditing = Boolean(testId);
+  
   const [activeTab, setActiveTab] = useState('import'); // 'import' or 'builder'
-  const [importMethod, setImportMethod] = useState(''); // 'file', 'link', or 'template'
   
   // Import states
   const [googleSheetUrl, setGoogleSheetUrl] = useState('');
@@ -25,6 +27,35 @@ export default function CreateTest() {
     correct_answer: '',
     explanation: ''
   });
+
+  // Load existing test data if editing
+  useEffect(() => {
+    const loadTestForEditing = async () => {
+      try {
+        const test = await CreatedTestsService.getTestById(testId);
+        if (test) {
+          setTestTitle(test.title);
+          setTestDescription(test.description || '');
+          setQuestions(test.questions || []);
+          // If it was built manually, switch to builder tab
+          if (test.source === 'builder') {
+            setActiveTab('builder');
+          }
+        } else {
+          alert('Test not found!');
+          navigate('/my-tests');
+        }
+      } catch (error) {
+        console.error('Error loading test for editing:', error);
+        alert('Failed to load test for editing.');
+        navigate('/my-tests');
+      }
+    };
+
+    if (isEditing && testId) {
+      loadTestForEditing();
+    }
+  }, [isEditing, testId, navigate]);
 
   const downloadTemplate = () => {
     const csvContent = `question_text,question_type,choices,correct_answer,explanation
@@ -123,18 +154,23 @@ Role: Admin","Proper configuration requires setting the department and role corr
           explanation: q.explanation
         })),
         source: 'builder',
-        icon: '📝',
-        difficulty: 'Custom'
+        icon: '�',
+        difficulty: 'Custom',
+        color: '#28a745'
       };
 
-      console.log('Creating test with data:', testData);
-      const createdTest = await CreatedTestsService.createTest(testData);
-      console.log('Test created successfully:', createdTest);
-      alert(`Test "${testTitle}" created successfully!`);
+      if (isEditing) {
+        await CreatedTestsService.updateTest(testId, testData);
+        alert(`Test "${testTitle}" updated successfully!`);
+      } else {
+        await CreatedTestsService.createTest(testData);
+        alert(`Test "${testTitle}" created successfully!`);
+      }
+      
       navigate('/my-tests');
     } catch (error) {
-      console.error('Error creating test:', error);
-      alert('Failed to create test. Please try again.');
+      console.error('Error saving test:', error);
+      alert('Failed to save test. Please try again.');
     }
   };
 
@@ -189,8 +225,8 @@ Role: Admin","Proper configuration requires setting the department and role corr
   return (
     <div className="create-test-container">
       <div className="create-test-header">
-        <h1>✨ Create New Test</h1>
-        <p>Build custom tests with your own questions and answers</p>
+        <h1>{isEditing ? '✏️ Edit Test' : '✨ Create New Test'}</h1>
+        <p>{isEditing ? 'Update your custom test' : 'Build custom tests with your own questions and answers'}</p>
       </div>
 
       {/* Tab Navigation */}
@@ -456,7 +492,7 @@ Role: Admin","Proper configuration requires setting the department and role corr
                     className="create-test-btn"
                     onClick={createTestFromBuilder}
                   >
-                    🚀 Create Test ({questions.length} questions)
+                    {isEditing ? '� Update Test' : '�🚀 Create Test'} ({questions.length} questions)
                   </button>
                 </div>
               </div>

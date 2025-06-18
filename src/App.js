@@ -90,6 +90,8 @@ function App() {
           <Route path="/shared-tests" element={<SharedTests />} />
           <Route path="/my-tests" element={<MyCreatedTests />} />
           <Route path="/create-test" element={<CreateTest />} />
+          <Route path="/create-test/:testId" element={<CreateTest />} />
+          <Route path="/custom-test/:testId" element={<PracticeTestContainer />} />
           <Route path="/case-studies" element={<CaseStudies />} />
           <Route path="/case-studies/:id" element={<CaseStudyDetail />} />
           <Route 
