@@ -108,3 +108,10 @@ User settings/preferences storage
 Test sharing between users
 Social features like public test libraries
 Advanced analytics and user insights
+
+✅ Settings are test-specific - each test has its own independent settings
+✅ Settings persist during creation - won't be lost when switching tabs
+✅ Settings don't interfere - creating multiple tests won't share settings
+✅ Editing preserves settings - editing a test loads its specific settings
+✅ Clean slate for new tests - each new test starts fresh
+✅ Visual confirmation - clear indication of which test the settings apply to
