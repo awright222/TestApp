@@ -21,8 +21,10 @@ function TestCard({ test, onDelete, onLoad }) {
   };
 
   const calculateProgress = (progress) => {
-    if (!progress || !progress.totalQuestions) return 0;
-    return Math.round((progress.completedQuestions / progress.totalQuestions) * 100);
+    if (!progress || !progress.totalQuestions || progress.totalQuestions === 0) return 0;
+    const completed = progress.completedQuestions || 0;
+    const total = progress.totalQuestions;
+    return Math.round((completed / total) * 100);
   };
 
   return (

@@ -48,12 +48,12 @@ export default function SaveModal({
       title: title.trim(),
       dateCreated: existingSavedTest?.dateCreated || new Date().toISOString(),
       progress: {
-        current,
-        userAnswers,
-        questionScore,
-        questionSubmitted,
-        totalQuestions: questions.length,
-        completedQuestions: questionSubmitted.filter(Boolean).length
+        current: current || 0,
+        userAnswers: userAnswers || {},
+        questionScore: questionScore || {},
+        questionSubmitted: questionSubmitted || [],
+        totalQuestions: (questions || []).length,
+        completedQuestions: (questionSubmitted || []).filter(Boolean).length
       }
     };
 
@@ -136,10 +136,10 @@ export default function SaveModal({
         
         <div className="save-progress-stats">
           <p>
-            Progress: {questionSubmitted.filter(Boolean).length} of {questions.length} questions completed
+            Progress: {(questionSubmitted || []).filter(Boolean).length} of {(questions || []).length} questions completed
           </p>
           <p>
-            Current question: {current + 1}
+            Current question: {(current || 0) + 1}
           </p>
         </div>
 
