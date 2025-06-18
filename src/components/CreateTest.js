@@ -8,7 +8,10 @@ export default function CreateTest() {
   const { testId } = useParams(); // For editing existing tests
   const isEditing = Boolean(testId);
   
-  const [activeTab, setActiveTab] = useState('import'); // 'import', 'builder', or 'settings'
+  const [activeTab, setActiveTab] = useState('import'); // 'import', 'builder', 'case-study', or 'settings'
+  
+  // Test type state
+  const [testType, setTestType] = useState('regular'); // 'regular', 'case-study', 'mixed'
   
   // Import states
   const [googleSheetUrl, setGoogleSheetUrl] = useState('');
@@ -27,6 +30,27 @@ export default function CreateTest() {
     correct_answer: '',
     explanation: ''
   });
+
+  // Case Study states
+  const [caseStudyTabs, setCaseStudyTabs] = useState([
+    {
+      id: 1,
+      title: 'Background',
+      cards: [
+        { id: 1, title: 'Company Overview', content: '' }
+      ]
+    }
+  ]);
+  const [caseStudyQuestions, setCaseStudyQuestions] = useState([]);
+  const [currentCaseStudyQuestion, setCurrentCaseStudyQuestion] = useState({
+    question_text: '',
+    question_type: 'multiple choice',
+    choices: '',
+    correct_answer: '',
+    explanation: ''
+  });
+  const [activeTabEditor, setActiveTabEditor] = useState(1);
+  const [selectedCard, setSelectedCard] = useState(null);
 
   // Settings states - these should be specific to this test instance
   const [testSettings, setTestSettings] = useState({
@@ -358,8 +382,17 @@ Role: Admin","Proper configuration requires setting the department and role corr
           data-tab="builder"
           onClick={() => setActiveTab('builder')}
         >
-          🔨 Build Test
+          {testType === 'regular' ? '🔨 Build Test' : '🔨 Build Questions'}
         </button>
+        {(testType === 'case-study' || testType === 'mixed') && (
+          <button 
+            className={`tab-btn ${activeTab === 'case-study' ? 'active' : ''}`}
+            data-tab="case-study"
+            onClick={() => setActiveTab('case-study')}
+          >
+            📚 Case Study Builder
+          </button>
+        )}
         <button 
           className={`tab-btn ${activeTab === 'settings' ? 'active' : ''}`}
           data-tab="settings"
@@ -492,6 +525,58 @@ Role: Admin","Proper configuration requires setting the department and role corr
         <div className="tab-content">
           <div className="test-builder">
             <h2>Build Your Test</h2>
+            
+            {/* Test Type Selection */}
+            <div className="test-type-section">
+              <h3>📋 Test Type</h3>
+              <p>Choose the type of test you want to create:</p>
+              <div className="test-type-options">
+                <label className={`test-type-option ${testType === 'regular' ? 'selected' : ''}`}>
+                  <input
+                    type="radio"
+                    name="testType"
+                    value="regular"
+                    checked={testType === 'regular'}
+                    onChange={(e) => setTestType(e.target.value)}
+                  />
+                  <div className="test-type-card">
+                    <div className="test-type-icon">❓</div>
+                    <h4>Regular Test</h4>
+                    <p>Traditional multiple choice and hotspot questions</p>
+                  </div>
+                </label>
+                
+                <label className={`test-type-option ${testType === 'case-study' ? 'selected' : ''}`}>
+                  <input
+                    type="radio"
+                    name="testType"
+                    value="case-study"
+                    checked={testType === 'case-study'}
+                    onChange={(e) => setTestType(e.target.value)}
+                  />
+                  <div className="test-type-card">
+                    <div className="test-type-icon">📚</div>
+                    <h4>Case Study</h4>
+                    <p>Scenario-based questions with background information</p>
+                  </div>
+                </label>
+                
+                <label className={`test-type-option ${testType === 'mixed' ? 'selected' : ''}`}>
+                  <input
+                    type="radio"
+                    name="testType"
+                    value="mixed"
+                    checked={testType === 'mixed'}
+                    onChange={(e) => setTestType(e.target.value)}
+                  />
+                  <div className="test-type-card">
+                    <div className="test-type-icon">🔀</div>
+                    <h4>Mixed Test</h4>
+                    <p>Combination of regular questions and case studies</p>
+                  </div>
+                </label>
+              </div>
+            </div>
             
             {/* Test Info */}
             <div className="test-info-section">
@@ -651,6 +736,304 @@ Role: Admin","Proper configuration requires setting the department and role corr
                 </div>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Case Study Tab */}
+      {activeTab === 'case-study' && (
+        <div className="tab-content">
+          <div className="case-study-builder">
+            <h2>📚 Case Study Builder</h2>
+            <p>Create scenario-based tests with custom tabs and information cards</p>
+            
+            {/* Tab Management */}
+            <div className="case-study-tabs-section">
+              <div className="section-header">
+                <h3>📑 Information Tabs</h3>
+                <button 
+                  className="add-tab-btn"
+                  onClick={() => {
+                    const newTab = {
+                      id: Date.now(),
+                      title: `Tab ${caseStudyTabs.length + 1}`,
+                      cards: [
+                        { id: Date.now() + 1, title: 'Card 1', content: '' }
+                      ]
+                    };
+                    setCaseStudyTabs([...caseStudyTabs, newTab]);
+                  }}
+                >
+                  ➕ Add Tab
+                </button>
+              </div>
+              
+              {/* Tab Editor */}
+              <div className="tabs-editor">
+                <div className="tabs-list">
+                  {caseStudyTabs.map(tab => (
+                    <div 
+                      key={tab.id}
+                      className={`tab-editor-item ${activeTabEditor === tab.id ? 'active' : ''}`}
+                      onClick={() => setActiveTabEditor(tab.id)}
+                    >
+                      <div className="tab-header">
+                        <input
+                          type="text"
+                          value={tab.title}
+                          onChange={(e) => {
+                            setCaseStudyTabs(caseStudyTabs.map(t => 
+                              t.id === tab.id ? { ...t, title: e.target.value } : t
+                            ));
+                          }}
+                          onClick={(e) => e.stopPropagation()}
+                          placeholder="Tab title"
+                        />
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setCaseStudyTabs(caseStudyTabs.filter(t => t.id !== tab.id));
+                            if (activeTabEditor === tab.id && caseStudyTabs.length > 1) {
+                              setActiveTabEditor(caseStudyTabs[0].id);
+                            }
+                          }}
+                          className="delete-tab-btn"
+                          disabled={caseStudyTabs.length === 1}
+                        >
+                          🗑️
+                        </button>
+                      </div>
+                      <div className="tab-info">
+                        {tab.cards.length} card{tab.cards.length !== 1 ? 's' : ''}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                
+                {/* Card Editor for Active Tab */}
+                {caseStudyTabs.find(tab => tab.id === activeTabEditor) && (
+                  <div className="cards-editor">
+                    <div className="cards-header">
+                      <h4>Cards for "{caseStudyTabs.find(tab => tab.id === activeTabEditor)?.title}"</h4>
+                      <button
+                        className="add-card-btn"
+                        onClick={() => {
+                          const activeTab = caseStudyTabs.find(tab => tab.id === activeTabEditor);
+                          if (activeTab && activeTab.cards.length < 10) {
+                            const newCard = {
+                              id: Date.now(),
+                              title: `Card ${activeTab.cards.length + 1}`,
+                              content: ''
+                            };
+                            setCaseStudyTabs(caseStudyTabs.map(tab =>
+                              tab.id === activeTabEditor 
+                                ? { ...tab, cards: [...tab.cards, newCard] }
+                                : tab
+                            ));
+                          }
+                        }}
+                        disabled={caseStudyTabs.find(tab => tab.id === activeTabEditor)?.cards.length >= 10}
+                      >
+                        ➕ Add Card
+                      </button>
+                    </div>
+                    
+                    <div className="cards-list">
+                      {caseStudyTabs.find(tab => tab.id === activeTabEditor)?.cards.map(card => (
+                        <div key={card.id} className="card-editor">
+                          <div className="card-header">
+                            <input
+                              type="text"
+                              value={card.title}
+                              onChange={(e) => {
+                                setCaseStudyTabs(caseStudyTabs.map(tab =>
+                                  tab.id === activeTabEditor
+                                    ? {
+                                        ...tab,
+                                        cards: tab.cards.map(c =>
+                                          c.id === card.id ? { ...c, title: e.target.value } : c
+                                        )
+                                      }
+                                    : tab
+                                ));
+                              }}
+                              placeholder="Card title"
+                            />
+                            <button
+                              onClick={() => {
+                                setCaseStudyTabs(caseStudyTabs.map(tab =>
+                                  tab.id === activeTabEditor
+                                    ? {
+                                        ...tab,
+                                        cards: tab.cards.filter(c => c.id !== card.id)
+                                      }
+                                    : tab
+                                ));
+                              }}
+                              className="delete-card-btn"
+                              disabled={caseStudyTabs.find(tab => tab.id === activeTabEditor)?.cards.length === 1}
+                            >
+                              🗑️
+                            </button>
+                          </div>
+                          <textarea
+                            value={card.content}
+                            onChange={(e) => {
+                              setCaseStudyTabs(caseStudyTabs.map(tab =>
+                                tab.id === activeTabEditor
+                                  ? {
+                                      ...tab,
+                                      cards: tab.cards.map(c =>
+                                        c.id === card.id ? { ...c, content: e.target.value } : c
+                                      )
+                                    }
+                                  : tab
+                              ));
+                            }}
+                            placeholder="Card content - this will be shown in a modal when the card is clicked"
+                            rows="4"
+                            className="card-content-textarea"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            {/* Case Study Questions */}
+            <div className="case-study-questions-section">
+              <h3>❓ Case Study Questions</h3>
+              <p>Add questions that reference the case study information above</p>
+              
+              {/* Question Form */}
+              <div className="question-form">
+                <div className="input-group">
+                  <label>Question</label>
+                  <textarea
+                    placeholder="Enter your question..."
+                    value={currentCaseStudyQuestion.question_text}
+                    onChange={(e) => setCurrentCaseStudyQuestion({...currentCaseStudyQuestion, question_text: e.target.value})}
+                    className="textarea-input"
+                    rows="3"
+                  />
+                </div>
+
+                <div className="input-group">
+                  <label>Question Type</label>
+                  <select
+                    value={currentCaseStudyQuestion.question_type}
+                    onChange={(e) => setCurrentCaseStudyQuestion({...currentCaseStudyQuestion, question_type: e.target.value})}
+                    className="select-input"
+                  >
+                    <option value="multiple choice">Multiple Choice</option>
+                    <option value="hotspot">Hotspot/Interactive</option>
+                  </select>
+                </div>
+
+                <div className="input-group">
+                  <label>Choices</label>
+                  <textarea
+                    placeholder={currentCaseStudyQuestion.question_type === 'multiple choice' 
+                      ? "A. First option\nB. Second option\nC. Third option\nD. Fourth option"
+                      : "Label1: option1, option2, option3\nLabel2: optionA, optionB"}
+                    value={currentCaseStudyQuestion.choices}
+                    onChange={(e) => setCurrentCaseStudyQuestion({...currentCaseStudyQuestion, choices: e.target.value})}
+                    className="textarea-input"
+                    rows="4"
+                  />
+                </div>
+
+                <div className="input-group">
+                  <label>Correct Answer</label>
+                  <input
+                    type="text"
+                    placeholder={currentCaseStudyQuestion.question_type === 'multiple choice' ? "A" : "Label1: option1\nLabel2: optionA"}
+                    value={currentCaseStudyQuestion.correct_answer}
+                    onChange={(e) => setCurrentCaseStudyQuestion({...currentCaseStudyQuestion, correct_answer: e.target.value})}
+                    className="text-input"
+                  />
+                </div>
+
+                <div className="input-group">
+                  <label>Explanation</label>
+                  <textarea
+                    placeholder="Explain why this is the correct answer..."
+                    value={currentCaseStudyQuestion.explanation}
+                    onChange={(e) => setCurrentCaseStudyQuestion({...currentCaseStudyQuestion, explanation: e.target.value})}
+                    className="textarea-input"
+                    rows="3"
+                  />
+                </div>
+
+                <button 
+                  onClick={() => {
+                    if (currentCaseStudyQuestion.question_text && currentCaseStudyQuestion.choices && currentCaseStudyQuestion.correct_answer) {
+                      setCaseStudyQuestions([...caseStudyQuestions, { ...currentCaseStudyQuestion, id: Date.now() }]);
+                      setCurrentCaseStudyQuestion({
+                        question_text: '',
+                        question_type: 'multiple choice',
+                        choices: '',
+                        correct_answer: '',
+                        explanation: ''
+                      });
+                    } else {
+                      alert('Please fill in all required fields.');
+                    }
+                  }}
+                  className="add-question-btn"
+                >
+                  ➕ Add Question
+                </button>
+              </div>
+
+              {/* Questions List */}
+              {caseStudyQuestions.length > 0 && (
+                <div className="questions-list">
+                  <h4>Questions ({caseStudyQuestions.length})</h4>
+                  {caseStudyQuestions.map((q, index) => (
+                    <div key={q.id} className="question-item">
+                      <div className="question-header">
+                        <span className="question-number">Q{index + 1}</span>
+                        <span className="question-type">{q.question_type}</span>
+                        <button 
+                          onClick={() => setCaseStudyQuestions(caseStudyQuestions.filter(qs => qs.id !== q.id))}
+                          className="delete-question-btn"
+                        >
+                          🗑️
+                        </button>
+                      </div>
+                      <div className="question-text">{q.question_text}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Preview & Create Button */}
+            <div className="case-study-actions">
+              <button 
+                className="preview-btn"
+                onClick={() => {
+                  // TODO: Implement preview functionality
+                  alert('Preview functionality coming soon!');
+                }}
+              >
+                👁️ Preview Case Study
+              </button>
+              
+              <button 
+                className="create-case-study-btn"
+                onClick={() => {
+                  // TODO: Implement save functionality
+                  alert('Save functionality coming soon!');
+                }}
+                disabled={!testTitle || caseStudyQuestions.length === 0}
+              >
+                💾 Save Case Study
+              </button>
+            </div>
           </div>
         </div>
       )}
