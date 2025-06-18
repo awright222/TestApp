@@ -21,24 +21,64 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
   useEffect(() => {
     if (selectedTest) {
       setLoading(true);
-      Papa.parse(selectedTest.csvUrl, {
-        download: true,
-        header: true,
-        complete: (result) => {
-          const filtered = result.data.filter(q => q.question_text);
-          setQuestions(filtered);
-          setOriginalQuestions(filtered);
-          setUserAnswers(filtered.map(getInitialUserAnswer));
-          setQuestionScore(Array(filtered.length).fill(null));
-          setQuestionSubmitted(Array(filtered.length).fill(false));
-          setLoading(false);
-        },
-        error: (error) => {
-          console.error('Error loading test:', error);
-          setLoading(false);
-          alert('Failed to load test questions. Please try again.');
+      
+      // Handle different test sources
+      if (selectedTest.csvUrl) {
+        // Load from CSV (original test format)
+        Papa.parse(selectedTest.csvUrl, {
+          download: true,
+          header: true,
+          complete: (result) => {
+            const filtered = result.data.filter(q => q.question_text);
+            setQuestions(filtered);
+            setOriginalQuestions(filtered);
+            
+            // Check if this is a saved test with progress
+            if (selectedTest.savedProgress) {
+              // Restore saved progress
+              setCurrent(selectedTest.savedProgress.current || 0);
+              setUserAnswers(selectedTest.savedProgress.userAnswers || filtered.map(getInitialUserAnswer));
+              setQuestionScore(selectedTest.savedProgress.questionScore || Array(filtered.length).fill(null));
+              setQuestionSubmitted(selectedTest.savedProgress.questionSubmitted || Array(filtered.length).fill(false));
+            } else {
+              // Initialize fresh state
+              setUserAnswers(filtered.map(getInitialUserAnswer));
+              setQuestionScore(Array(filtered.length).fill(null));
+              setQuestionSubmitted(Array(filtered.length).fill(false));
+            }
+            setLoading(false);
+          },
+          error: (error) => {
+            console.error('Error loading test:', error);
+            setLoading(false);
+            alert('Failed to load test questions. Please try again.');
+          }
+        });
+      } else if (selectedTest.questions && Array.isArray(selectedTest.questions)) {
+        // Handle custom tests or saved tests with direct question arrays
+        const questionArray = selectedTest.questions;
+        setQuestions(questionArray);
+        setOriginalQuestions(questionArray);
+        
+        // Check if this is a saved test with progress
+        if (selectedTest.savedProgress) {
+          // Restore saved progress
+          setCurrent(selectedTest.savedProgress.current || 0);
+          setUserAnswers(selectedTest.savedProgress.userAnswers || questionArray.map(getInitialUserAnswer));
+          setQuestionScore(selectedTest.savedProgress.questionScore || Array(questionArray.length).fill(null));
+          setQuestionSubmitted(selectedTest.savedProgress.questionSubmitted || Array(questionArray.length).fill(false));
+        } else {
+          // Initialize fresh state
+          setUserAnswers(questionArray.map(getInitialUserAnswer));
+          setQuestionScore(Array(questionArray.length).fill(null));
+          setQuestionSubmitted(Array(questionArray.length).fill(false));
         }
-      });
+        setLoading(false);
+      } else {
+        console.error('Invalid test format:', selectedTest);
+        setLoading(false);
+        alert('Invalid test format. Please try again.');
+      }
     }
   }, [selectedTest]);
 

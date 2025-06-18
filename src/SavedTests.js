@@ -143,10 +143,8 @@ export default function SavedTests({ onLoadTest, searchTerm, onClearSearch }) {
       navigate(`/case-studies/${test.caseStudyId}`);
       alert(`Loading case study: ${test.caseStudyTitle}`);
     } else {
-      // For regular practice tests, use the onLoadTest callback
-      if (onLoadTest) {
-        onLoadTest(test);
-      }
+      // For regular practice tests, navigate to practice with saved state
+      navigate('/practice', { state: { savedTest: test } });
     }
   };
 

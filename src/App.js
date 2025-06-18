@@ -102,7 +102,7 @@ function App() {
             element={
               <SavedTests 
                 searchTerm={searchTerm} 
-                onClearSearch={() => setSearchTerm('')} 
+                onClearSearch={() => setSearchTerm('')}
               />
             } 
           />

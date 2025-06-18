@@ -58,6 +58,81 @@ export default function MyCreatedTests() {
     navigate(`/create-test/${testId}`);
   };
 
+  const exportTest = (test) => {
+    try {
+      const exportData = {
+        id: test.id,
+        title: test.title,
+        description: test.description,
+        questions: test.questions,
+        source: test.source,
+        settings: test.settings,
+        exportedAt: new Date().toISOString(),
+        version: "1.0"
+      };
+      
+      const dataStr = JSON.stringify(exportData, null, 2);
+      const dataBlob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(dataBlob);
+      
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${test.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_export.json`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      
+      alert('Test exported successfully!');
+    } catch (error) {
+      console.error('Export failed:', error);
+      alert('Failed to export test. Please try again.');
+    }
+  };
+
+  const importTest = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      try {
+        const text = await file.text();
+        const importData = JSON.parse(text);
+        
+        // Validate import data
+        if (!importData.title || !importData.questions || !Array.isArray(importData.questions)) {
+          throw new Error('Invalid test file format');
+        }
+        
+        // Create new test with imported data
+        const newTest = {
+          title: `${importData.title} (Imported)`,
+          description: importData.description || '',
+          questions: importData.questions,
+          source: 'import',
+          settings: importData.settings || {},
+          color: '#669BBC',
+          icon: '📥'
+        };
+        
+        await CreatedTestsService.createTest(newTest);
+        
+        // Refresh the list
+        await new Promise(resolve => setTimeout(resolve, 100));
+        await loadCreatedTests();
+        
+        alert(`Test "${newTest.title}" imported successfully!`);
+      } catch (error) {
+        console.error('Import failed:', error);
+        alert('Failed to import test. Please check the file format and try again.');
+      }
+    };
+    input.click();
+  };
+
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -93,6 +168,24 @@ export default function MyCreatedTests() {
           </p>
         </div>
         <div style={{ display: 'flex', gap: '1rem' }}>
+          <button
+            onClick={importTest}
+            style={{
+              background: '#28a745',
+              color: '#FDF0D5',
+              border: 'none',
+              padding: '0.75rem 1.5rem',
+              borderRadius: '8px',
+              fontSize: '1rem',
+              fontWeight: '600',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem'
+            }}
+          >
+            📥 Import Test
+          </button>
           <button
             onClick={() => {
               setLoading(true);
@@ -338,6 +431,22 @@ export default function MyCreatedTests() {
                   }}
                 >
                   ✏️ Edit
+                </button>
+                <button
+                  onClick={() => exportTest(test)}
+                  style={{
+                    background: 'transparent',
+                    color: '#28a745',
+                    border: '2px solid #28a745',
+                    padding: '0.5rem 1rem',
+                    borderRadius: '6px',
+                    fontSize: '0.9rem',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    flex: 1
+                  }}
+                >
+                  📤 Export
                 </button>
               </div>
             </div>
