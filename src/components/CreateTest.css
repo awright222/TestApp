@@ -3,22 +3,30 @@
   max-width: 1000px;
   margin: 0 auto;
   padding: 2rem;
+  background: #FDF0D5; /* Light background */
+  color: #003049; /* Dark text */
+  border-radius: 16px;
+  min-height: calc(100vh - 4rem);
 }
 
 .create-test-header {
   text-align: center;
   margin-bottom: 3rem;
+  background: #FDF0D5;
+  padding: 2rem;
+  border-radius: 16px;
+  margin-bottom: 2rem;
 }
 
 .create-test-header h1 {
-  color: #003049;
+  color: #003049 !important; /* Ensure always visible */
   font-size: 2.5rem;
   margin-bottom: 1rem;
   font-weight: 600;
 }
 
 .create-test-header p {
-  color: #669BBC;
+  color: #669BBC !important; /* Ensure always visible */
   font-size: 1.2rem;
   max-width: 600px;
   margin: 0 auto;
@@ -49,17 +57,18 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
-  color: #669BBC;
+  color: #669BBC !important; /* Ensure always visible */
 }
 
 .tab-btn.active {
   background: white;
-  color: #003049;
+  color: #003049 !important; /* Ensure always visible */
   box-shadow: 0 2px 8px rgba(0, 48, 73, 0.1);
 }
 
 .tab-btn:hover:not(.active) {
   background: rgba(102, 155, 188, 0.1);
+  color: #003049 !important; /* Ensure always visible */
 }
 
 /* Tab Content */
@@ -782,4 +791,23 @@
 
 .edit-settings-btn:hover {
   background: #5a8ca8;
+}
+
+/* Test Info Display in Settings */
+.settings-test-info {
+  background: rgba(102, 155, 188, 0.1);
+  border: 1px solid rgba(102, 155, 188, 0.3);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.settings-test-info p {
+  margin: 0;
+  color: #003049;
+}
+
+.settings-test-info strong {
+  color: #669BBC;
 }

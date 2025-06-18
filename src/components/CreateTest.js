@@ -28,7 +28,7 @@ export default function CreateTest() {
     explanation: ''
   });
 
-  // Settings states
+  // Settings states - these should be specific to this test instance
   const [testSettings, setTestSettings] = useState({
     timeLimit: 0, // 0 = no limit
     allowSaveAndReturn: false,
@@ -46,6 +46,58 @@ export default function CreateTest() {
     accessCode: '',
     visibility: 'private' // 'private', 'public', 'unlisted'
   });
+
+  // Reset settings when creating a new test (not editing)
+  useEffect(() => {
+    if (!isEditing) {
+      // For new tests, check if we have temporary settings in sessionStorage
+      const savedTempSettings = sessionStorage.getItem('current_test_settings');
+      
+      if (savedTempSettings) {
+        try {
+          const parsedSettings = JSON.parse(savedTempSettings);
+          setTestSettings(parsedSettings);
+        } catch (e) {
+          console.warn('Failed to parse temporary settings, using defaults');
+        }
+      } else {
+        // Reset to defaults for new test
+        setTestSettings({
+          timeLimit: 0,
+          allowSaveAndReturn: false,
+          showExplanations: true,
+          showCorrectAnswers: false,
+          randomizeQuestions: false,
+          randomizeChoices: false,
+          maxAttempts: 1,
+          isPublished: false,
+          requireName: true,
+          requireEmail: false,
+          passingScore: 70,
+          showResults: true,
+          allowReview: true,
+          accessCode: '',
+          visibility: 'private'
+        });
+      }
+    }
+  }, [isEditing, testId]); // Reset when switching between new/edit modes
+
+  // Save settings temporarily when they change (for current test creation session)
+  useEffect(() => {
+    if (!isEditing) {
+      sessionStorage.setItem('current_test_settings', JSON.stringify(testSettings));
+    }
+  }, [testSettings, isEditing]);
+
+  // Clear temporary settings when component unmounts or test is created
+  useEffect(() => {
+    return () => {
+      if (!isEditing) {
+        sessionStorage.removeItem('current_test_settings');
+      }
+    };
+  }, [isEditing]);
   // Load existing test data if editing
   useEffect(() => {
     const loadTestForEditing = async () => {
@@ -202,6 +254,11 @@ Role: Admin","Proper configuration requires setting the department and role corr
       // Wait a moment to ensure localStorage write is complete
       await new Promise(resolve => setTimeout(resolve, 100));
       
+      // Clear temporary settings since test is now created
+      if (!isEditing) {
+        sessionStorage.removeItem('current_test_settings');
+      }
+      
       alert(`Test "${testTitle}" ${isEditing ? 'updated' : 'created'} successfully!`);
       
       // Navigate after the alert is dismissed
@@ -252,6 +309,11 @@ Role: Admin","Proper configuration requires setting the department and role corr
       // Wait a moment to ensure localStorage write is complete
       await new Promise(resolve => setTimeout(resolve, 100));
       
+      // Clear temporary settings since test is now created
+      if (!isEditing) {
+        sessionStorage.removeItem('current_test_settings');
+      }
+      
       alert(`Test "${testData.title}" created successfully!`);
       
       // Navigate after the alert is dismissed
@@ -298,7 +360,14 @@ Role: Admin","Proper configuration requires setting the department and role corr
         </button>
         <button 
           className={`tab-btn ${activeTab === 'settings' ? 'active' : ''}`}
-          onClick={() => setActiveTab('settings')}
+          onClick={() => {
+            if (!testTitle.trim() && !isEditing) {
+              alert('Please enter a test title before configuring settings.');
+              setActiveTab('builder');
+            } else {
+              setActiveTab('settings');
+            }
+          }}
         >
           ⚙️ Settings & Publishing
           {(testSettings.timeLimit > 0 || testSettings.isPublished || testSettings.accessCode) && (
@@ -548,23 +617,25 @@ Role: Admin","Proper configuration requires setting the department and role corr
                   </div>
                 ))}
                 
-                {/* Settings Summary */}
-                <div className="settings-summary">
-                  <h4>⚙️ Current Settings</h4>
-                  <div className="settings-preview">
-                    <span>Time: {testSettings.timeLimit > 0 ? `${testSettings.timeLimit} min` : 'No limit'}</span>
-                    <span>Attempts: {testSettings.maxAttempts}</span>
-                    <span>Visibility: {testSettings.visibility}</span>
-                    {testSettings.accessCode && <span>Access Code: ✓</span>}
-                    {testSettings.isPublished && <span className="published">Published</span>}
+                {/* Settings Summary - only show if test has a title */}
+                {testTitle.trim() && (
+                  <div className="settings-summary">
+                    <h4>⚙️ Settings for "{testTitle}"</h4>
+                    <div className="settings-preview">
+                      <span>Time: {testSettings.timeLimit > 0 ? `${testSettings.timeLimit} min` : 'No limit'}</span>
+                      <span>Attempts: {testSettings.maxAttempts}</span>
+                      <span>Visibility: {testSettings.visibility}</span>
+                      {testSettings.accessCode && <span>Access Code: ✓</span>}
+                      {testSettings.isPublished && <span className="published">Published</span>}
+                    </div>
+                    <button 
+                      className="edit-settings-btn"
+                      onClick={() => setActiveTab('settings')}
+                    >
+                      Edit Settings
+                    </button>
                   </div>
-                  <button 
-                    className="edit-settings-btn"
-                    onClick={() => setActiveTab('settings')}
-                  >
-                    Edit Settings
-                  </button>
-                </div>
+                )}
 
                 <div className="builder-actions">
                   <button 
@@ -586,6 +657,11 @@ Role: Admin","Proper configuration requires setting the department and role corr
         <div className="tab-content">
           <div className="settings-content">
             <h2>⚙️ Test Settings & Publishing</h2>
+            {testTitle && (
+              <div className="settings-test-info">
+                <p>Configuring settings for: <strong>"{testTitle}"</strong></p>
+              </div>
+            )}
             <p>Configure advanced settings for your test including time limits, visibility, and publishing options.</p>
 
             <div className="settings-sections">

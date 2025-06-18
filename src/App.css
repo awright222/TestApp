@@ -762,17 +762,53 @@ button:hover {
   justify-content: center;
 }
 
-.loading-content {
-  text-align: center;
+/* Fix for main content pages to ensure proper backgrounds and text visibility */
+.main-content > * {
+  background: #FDF0D5; /* Light cream background for all main content */
+  color: #003049; /* Dark blue text for good contrast */
+  min-height: calc(100vh - 4rem);
+  padding: 2rem;
+  border-radius: 16px 0 0 0;
+  margin-bottom: 2rem;
 }
 
-.loading-spinner {
-  font-size: 2rem;
-  color: #669BBC;
-  margin-bottom: 1rem;
+/* Ensure specific page components have proper backgrounds */
+.create-test-container,
+.practice-test-container,
+.my-created-tests-container,
+.case-studies-container,
+.dashboard-container {
+  background: #FDF0D5 !important;
+  color: #003049 !important;
+  padding: 2rem;
+  border-radius: 16px;
+  margin: 0;
+  min-height: calc(100vh - 4rem);
 }
 
-.loading-text {
-  color: #FDF0D5;
-  font-size: 1.2rem;
+/* Fix for any headers that might be invisible */
+.main-content h1,
+.main-content h2,
+.main-content h3,
+.main-content h4,
+.main-content h5,
+.main-content h6 {
+  color: #003049 !important;
+}
+
+/* Fix for any paragraphs that might be invisible */
+.main-content p {
+  color: #669BBC !important;
+}
+
+/* Ensure buttons have proper contrast */
+.main-content button {
+  background: #780000 !important;
+  color: #FDF0D5 !important;
+  border: none !important;
+}
+
+.main-content button:hover {
+  background: #669BBC !important;
+  color: #003049 !important;
 }

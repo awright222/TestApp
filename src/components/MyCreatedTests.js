@@ -76,7 +76,7 @@ export default function MyCreatedTests() {
   }
 
   return (
-    <div style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
+    <div className="my-created-tests-container" style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto', background: '#FDF0D5', borderRadius: '16px', minHeight: 'calc(100vh - 4rem)' }}>
       <div style={{ 
         display: 'flex', 
         justifyContent: 'space-between', 

@@ -160,18 +160,24 @@
 }
 
 .sidebar-nav li a {
-  color: #669BBC;
+  color: #FDF0D5; /* Changed from #669BBC to cream/light color for better visibility */
   font-weight: bold;
   text-decoration: none;
   transition: color 0.2s ease;
 }
 
 .sidebar-nav li a.active {
-  color: #FDF0D5;
+  color: #FFFFFF; /* Pure white for active state */
+  background: rgba(102, 155, 188, 0.2); /* Add subtle background for active state */
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
 }
 
 .sidebar-nav li a:hover {
-  color: #FDF0D5;
+  color: #FFFFFF; /* Pure white on hover */
+  background: rgba(102, 155, 188, 0.1); /* Subtle background on hover */
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
 }
 
 /* Auth Section */

@@ -58,13 +58,17 @@ function PracticeTestContainer({ searchTerm, onClearSearch }) {
 
   if (loading) {
     return (
-      <div style={{ 
+      <div className="practice-test-container" style={{ 
         display: 'flex', 
         justifyContent: 'center', 
         alignItems: 'center', 
         height: '60vh',
         flexDirection: 'column',
-        gap: '1rem'
+        gap: '1rem',
+        background: '#FDF0D5',
+        borderRadius: '16px',
+        minHeight: 'calc(100vh - 4rem)',
+        padding: '2rem'
       }}>
         <div style={{ fontSize: '2rem' }}>🔄</div>
         <p style={{ color: '#669BBC' }}>Loading your custom test...</p>
@@ -73,16 +77,22 @@ function PracticeTestContainer({ searchTerm, onClearSearch }) {
   }
 
   if (!selectedTest) {
-    return <TestSelector onTestSelect={setSelectedTest} />;
+    return (
+      <div className="practice-test-container" style={{ background: '#FDF0D5', borderRadius: '16px', minHeight: 'calc(100vh - 4rem)', padding: '2rem' }}>
+        <TestSelector onTestSelect={setSelectedTest} />
+      </div>
+    );
   }
 
   return (
-    <PracticeTest 
-      selectedTest={selectedTest} 
-      onBackToSelection={handleBackToSelection}
-      searchTerm={searchTerm}
-      onClearSearch={onClearSearch}
-    />
+    <div className="practice-test-container" style={{ background: '#FDF0D5', borderRadius: '16px', minHeight: 'calc(100vh - 4rem)' }}>
+      <PracticeTest 
+        selectedTest={selectedTest} 
+        onBackToSelection={handleBackToSelection}
+        searchTerm={searchTerm}
+        onClearSearch={onClearSearch}
+      />
+    </div>
   );
 }
 
