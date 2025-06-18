@@ -47,6 +47,20 @@
   margin-bottom: 3rem;
   border: 2px solid rgba(102, 155, 188, 0.2);
   box-shadow: 0 4px 12px rgba(0, 48, 73, 0.1);
+  position: relative;
+  overflow: visible; /* Allow accent line to show beyond container */
+}
+
+/* Add subtle background animation for active tab area */
+.create-test-tabs::after {
+  content: '';
+  position: absolute;
+  bottom: -3px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, rgba(255, 107, 53, 0.1), transparent);
+  border-radius: 0 0 16px 16px;
 }
 
 .tab-btn {
@@ -79,9 +93,11 @@
 .tab-btn.active {
   background: linear-gradient(135deg, #669BBC 0%, #5a8ca8 100%);
   color: #FFFFFF;
-  box-shadow: 0 4px 16px rgba(102, 155, 188, 0.4);
+  box-shadow: 0 4px 16px rgba(102, 155, 188, 0.4), 0 0 0 2px rgba(255, 107, 53, 0.3);
   transform: translateY(-2px);
   border: 1px solid #669BBC;
+  position: relative;
+  z-index: 2;
 }
 
 .tab-btn:hover:not(.active) {
@@ -92,23 +108,44 @@
   border-color: #669BBC;
 }
 
-/* Tab icons enhancement */
+.tab-btn:hover:not(.active)::before {
+  width: 30%;
+  background: linear-gradient(90deg, rgba(255, 107, 53, 0.3), rgba(247, 147, 30, 0.3));
+  box-shadow: 0 0 5px rgba(255, 107, 53, 0.2);
+}
+
+/* Enhanced animated accent line */
 .tab-btn::before {
   content: '';
   position: absolute;
-  bottom: 0;
+  bottom: -2px;
   left: 50%;
   transform: translateX(-50%);
   width: 0;
-  height: 3px;
-  background: currentColor;
-  transition: width 0.3s ease;
-  border-radius: 2px 2px 0 0;
+  height: 5px;
+  background: linear-gradient(90deg, #FF6B35, #F7931E, #FFD23F);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border-radius: 3px 3px 0 0;
+  box-shadow: 0 0 10px rgba(255, 107, 53, 0.4);
 }
 
 .tab-btn.active::before {
-  width: 80%;
-  background: rgba(255, 255, 255, 0.8);
+  width: 90%;
+  background: linear-gradient(90deg, #FF6B35, #F7931E, #FFD23F);
+  box-shadow: 0 0 20px rgba(255, 107, 53, 0.8), 0 0 40px rgba(255, 107, 53, 0.4);
+  animation: accentPulse 2s ease-in-out infinite alternate;
+}
+
+/* Add pulsing glow animation */
+@keyframes accentPulse {
+  0% {
+    box-shadow: 0 0 20px rgba(255, 107, 53, 0.8), 0 0 40px rgba(255, 107, 53, 0.4);
+    filter: brightness(1);
+  }
+  100% {
+    box-shadow: 0 0 25px rgba(255, 107, 53, 1), 0 0 50px rgba(255, 107, 53, 0.6);
+    filter: brightness(1.2);
+  }
 }
 
 /* Smooth tab content transitions */
