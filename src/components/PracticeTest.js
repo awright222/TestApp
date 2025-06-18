@@ -394,11 +394,21 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
               const choiceLabel = getChoiceLabel(choice);
               const isCorrectChoice = correctAnswers.includes(choiceLabel);
               
+              console.log('Feedback Debug:', {
+                choice: choice.substring(0, 50) + '...',
+                choiceLabel,
+                correctAnswers,
+                isCorrectChoice,
+                isSelected
+              });
+              
               if (isSelected) {
                 feedbackClass = isCorrectChoice ? 'choice-correct' : 'choice-incorrect';
               } else if (isCorrectChoice) {
                 feedbackClass = 'choice-missed'; // Correct answer that wasn't selected
               }
+              
+              console.log('Applied feedbackClass:', feedbackClass);
             }
             
             return (
@@ -439,22 +449,65 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
       {/* Hotspot Questions */}
       {q.question_type?.toLowerCase() === 'hotspot' && (
         <div className="hotspot-container">
-          {Object.entries(hotspotOptions).map(([label, options]) => (
-            <div key={label} className="hotspot-item">
-              <strong className="hotspot-label">{label}:</strong>
-              <select
-                value={userAnswers[current][label] || ''}
-                onChange={(e) => handleHotspotChange(label, e.target.value)}
-                disabled={questionSubmitted[current]}
-                className="hotspot-select"
-              >
-                <option value="">Select...</option>
-                {options.map((option, idx) => (
-                  <option key={idx} value={option}>{option}</option>
-                ))}
-              </select>
-            </div>
-          ))}
+          {Object.entries(hotspotOptions).map(([label, options]) => {
+            // Determine feedback for this hotspot item after submission
+            let feedbackClass = '';
+            let feedbackIcon = '';
+            if (questionSubmitted[current]) {
+              const userSelection = userAnswers[current][label] || '';
+              const correctAnswer = correctHotspotAnswers[label];
+              const isCorrect = userSelection === correctAnswer;
+              
+              console.log('Hotspot Feedback Debug:', {
+                label,
+                userSelection,
+                correctAnswer,
+                isCorrect
+              });
+              
+              if (userSelection) {
+                if (isCorrect) {
+                  feedbackClass = 'hotspot-correct';
+                  feedbackIcon = '✓';
+                } else {
+                  feedbackClass = 'hotspot-incorrect';
+                  feedbackIcon = '✗';
+                }
+              } else if (correctAnswer) {
+                feedbackClass = 'hotspot-missed';
+                feedbackIcon = '!';
+              }
+              
+              console.log('Applied hotspot feedbackClass:', feedbackClass);
+            }
+            
+            return (
+              <div key={label} className={`hotspot-item ${feedbackClass}`}>
+                <strong className="hotspot-label">{label}:</strong>
+                <select
+                  value={userAnswers[current][label] || ''}
+                  onChange={(e) => handleHotspotChange(label, e.target.value)}
+                  disabled={questionSubmitted[current]}
+                  className={`hotspot-select ${feedbackClass}`}
+                >
+                  <option value="">Select...</option>
+                  {options.map((option, idx) => (
+                    <option key={idx} value={option}>{option}</option>
+                  ))}
+                </select>
+                {questionSubmitted[current] && feedbackIcon && (
+                  <div className={`hotspot-feedback-icon ${feedbackClass}`}>
+                    {feedbackIcon}
+                  </div>
+                )}
+                {questionSubmitted[current] && feedbackClass === 'hotspot-missed' && (
+                  <div className="hotspot-correct-answer">
+                    Correct: {correctHotspotAnswers[label]}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
 

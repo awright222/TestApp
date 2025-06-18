@@ -603,6 +603,97 @@
   border-color: #669BBC;
 }
 
+/* Hotspot feedback styles after submission */
+.hotspot-item.hotspot-correct {
+  border-color: #28a745;
+  background: linear-gradient(135deg, rgba(40, 167, 69, 0.1) 0%, rgba(32, 201, 151, 0.1) 100%);
+  box-shadow: 0 4px 16px rgba(40, 167, 69, 0.2);
+}
+
+.hotspot-item.hotspot-correct .hotspot-label {
+  color: #28a745;
+}
+
+.hotspot-select.hotspot-correct {
+  border-color: #28a745;
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  color: white;
+  font-weight: 600;
+}
+
+.hotspot-item.hotspot-incorrect {
+  border-color: #dc3545;
+  background: linear-gradient(135deg, rgba(220, 53, 69, 0.1) 0%, rgba(200, 35, 51, 0.1) 100%);
+  box-shadow: 0 4px 16px rgba(220, 53, 69, 0.2);
+}
+
+.hotspot-item.hotspot-incorrect .hotspot-label {
+  color: #dc3545;
+}
+
+.hotspot-select.hotspot-incorrect {
+  border-color: #dc3545;
+  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+  color: white;
+  font-weight: 600;
+}
+
+.hotspot-item.hotspot-missed {
+  border-color: #ffc107;
+  background: linear-gradient(135deg, rgba(255, 193, 7, 0.1) 0%, rgba(255, 224, 102, 0.1) 100%);
+  box-shadow: 0 4px 16px rgba(255, 193, 7, 0.2);
+  border-style: dashed;
+}
+
+.hotspot-item.hotspot-missed .hotspot-label {
+  color: #856404;
+}
+
+.hotspot-select.hotspot-missed {
+  border-color: #ffc107;
+  background: rgba(255, 193, 7, 0.1);
+  color: #856404;
+  font-weight: 600;
+}
+
+.hotspot-feedback-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  font-weight: bold;
+  margin-left: 0.5rem;
+}
+
+.hotspot-feedback-icon.hotspot-correct {
+  background: #28a745;
+  color: white;
+}
+
+.hotspot-feedback-icon.hotspot-incorrect {
+  background: #dc3545;
+  color: white;
+}
+
+.hotspot-feedback-icon.hotspot-missed {
+  background: #ffc107;
+  color: #856404;
+}
+
+.hotspot-correct-answer {
+  margin-left: 0.5rem;
+  padding: 0.4rem 0.8rem;
+  background: #28a745;
+  color: white;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
 /* Navigation */
 .navigation-controls {
   margin-bottom: 2rem;
