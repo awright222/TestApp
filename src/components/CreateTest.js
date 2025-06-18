@@ -424,6 +424,17 @@ Role: Admin","Proper configuration requires setting the department and role corr
           </button>
         )}
         
+        {/* Preview Tab - Show only when test has content */}
+        {(testTitle.trim() && (questions.length > 0 || caseStudyTabs.some(tab => tab.cards.some(card => card.content)))) && (
+          <button 
+            className={`tab-btn ${activeTab === 'preview' ? 'active' : ''}`}
+            data-tab="preview"
+            onClick={() => setActiveTab('preview')}
+          >
+            👁️ Preview Test
+          </button>
+        )}
+        
         <button 
           className={`tab-btn ${activeTab === 'settings' ? 'active' : ''}`}
           data-tab="settings"
@@ -792,10 +803,17 @@ Role: Admin","Proper configuration requires setting the department and role corr
             <div className="builder-actions">
               <button 
                 disabled={questions.length === 0 || !testTitle.trim()}
+                className="preview-test-btn"
+                onClick={() => setActiveTab('preview')}
+              >
+                👁️ Preview Test
+              </button>
+              <button 
+                disabled={questions.length === 0 || !testTitle.trim()}
                 className="create-test-btn"
                 onClick={createTestFromBuilder}
               >
-                {isEditing ? '� Update Test' : '�🚀 Create Test'} ({questions.length} questions)
+                {isEditing ? '💾 Update Test' : '🚀 Create Test'} ({questions.length} questions)
               </button>
             </div>
 
@@ -1070,6 +1088,13 @@ Role: Admin","Proper configuration requires setting the department and role corr
                 </div>
                 
                 <div className="case-study-actions-inline">
+                  <button 
+                    className="preview-test-btn"
+                    onClick={() => setActiveTab('preview')}
+                    disabled={!testTitle || (caseStudyQuestions.length === 0 && !caseStudyTabs.some(tab => tab.cards.some(card => card.content)))}
+                  >
+                    👁️ Preview Test
+                  </button>
                   <button 
                     className="create-case-study-btn"
                     onClick={() => {
@@ -1473,6 +1498,158 @@ Role: Admin","Proper configuration requires setting the department and role corr
                 </div>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Preview Tab */}
+      {activeTab === 'preview' && (
+        <div className="tab-content">
+          <div className="preview-content">
+            <div className="preview-header">
+              <h2>👁️ Test Preview</h2>
+              <p>This is how your test will appear to students</p>
+              <div className="preview-controls">
+                <button 
+                  className="back-to-builder-btn"
+                  onClick={() => setActiveTab(testType === 'case-study' ? 'case-study' : 'builder')}
+                >
+                  ← Back to Builder
+                </button>
+              </div>
+            </div>
+
+            <div className="preview-test-container">
+              {/* Test Header */}
+              <div className="preview-test-header">
+                <h1>{testTitle || 'Untitled Test'}</h1>
+                {testDescription && <p className="test-description">{testDescription}</p>}
+                
+                <div className="test-info">
+                  <div className="info-item">
+                    <span className="info-label">Questions:</span>
+                    <span className="info-value">{questions.length + caseStudyQuestions.length}</span>
+                  </div>
+                  {testSettings.timeLimit > 0 && (
+                    <div className="info-item">
+                      <span className="info-label">Time Limit:</span>
+                      <span className="info-value">{testSettings.timeLimit} minutes</span>
+                    </div>
+                  )}
+                  <div className="info-item">
+                    <span className="info-label">Attempts:</span>
+                    <span className="info-value">{testSettings.maxAttempts}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Regular Questions Preview */}
+              {questions.length > 0 && (
+                <div className="preview-questions-section">
+                  <h3>📝 Questions</h3>
+                  {questions.map((question, index) => (
+                    <div key={question.id} className="preview-question">
+                      <div className="question-header-preview">
+                        <span className="question-number-preview">Question {index + 1}</span>
+                        <span className="question-type-badge">{question.question_type}</span>
+                      </div>
+                      
+                      <div className="question-content-preview">
+                        <p className="question-text-preview">{question.question_text}</p>
+                        
+                        {question.choices && (
+                          <div className="choices-preview">
+                            {question.choices.split('\n').filter(choice => choice.trim()).map((choice, choiceIndex) => (
+                              <div key={choiceIndex} className="choice-preview">
+                                <input type="radio" disabled />
+                                <span>{choice.trim()}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        
+                        {question.explanation && testSettings.showExplanations && (
+                          <div className="explanation-preview">
+                            <strong>Explanation:</strong> {question.explanation}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Case Study Preview */}
+              {caseStudyTabs.length > 0 && caseStudyTabs.some(tab => tab.cards.some(card => card.content)) && (
+                <div className="preview-case-study-section">
+                  <h3>📚 Case Study</h3>
+                  <div className="preview-case-study-tabs">
+                    {caseStudyTabs.map(tab => (
+                      <div key={tab.id} className="preview-tab">
+                        <h4>{tab.title}</h4>
+                        <div className="preview-cards">
+                          {tab.cards.filter(card => card.content).map(card => (
+                            <div key={card.id} className="preview-card">
+                              <h5>{card.title}</h5>
+                              <div className="preview-card-content">
+                                {card.content}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {caseStudyQuestions.length > 0 && (
+                    <div className="preview-case-study-questions">
+                      <h4>Case Study Questions</h4>
+                      {caseStudyQuestions.map((question, index) => (
+                        <div key={question.id} className="preview-question">
+                          <div className="question-header-preview">
+                            <span className="question-number-preview">Question {questions.length + index + 1}</span>
+                            <span className="question-type-badge">{question.question_type}</span>
+                          </div>
+                          
+                          <div className="question-content-preview">
+                            <p className="question-text-preview">{question.question_text}</p>
+                            
+                            {question.choices && (
+                              <div className="choices-preview">
+                                {question.choices.split('\n').filter(choice => choice.trim()).map((choice, choiceIndex) => (
+                                  <div key={choiceIndex} className="choice-preview">
+                                    <input type="radio" disabled />
+                                    <span>{choice.trim()}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                            
+                            {question.explanation && testSettings.showExplanations && (
+                              <div className="explanation-preview">
+                                <strong>Explanation:</strong> {question.explanation}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Preview Footer */}
+              <div className="preview-footer">
+                <div className="preview-actions">
+                  <button className="preview-submit-btn" disabled>
+                    Submit Test (Preview Mode)
+                  </button>
+                </div>
+                <p className="preview-note">
+                  This is a preview - students will see a similar interface when taking your test.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       )}
