@@ -9,12 +9,24 @@ export class SavedTestsService {
     try {
       // If user is logged in, fetch from Firebase
       if (auth.currentUser) {
-        return await FirebaseTestsService.getUserProgress(auth.currentUser.uid);
+        try {
+          console.log('User is logged in, fetching from Firebase...');
+          const result = await FirebaseTestsService.getUserProgress(auth.currentUser.uid);
+          console.log('Firebase fetch result:', result);
+          return result;
+        } catch (firebaseError) {
+          console.error('Firebase fetch failed, falling back to localStorage:', firebaseError);
+          // Fall through to localStorage
+        }
       }
       
       // Otherwise, use localStorage
+      console.log('Getting saved tests from localStorage...');
       const saved = localStorage.getItem(this.STORAGE_KEY);
-      return saved ? JSON.parse(saved) : [];
+      console.log('Raw localStorage data:', saved);
+      const result = saved ? JSON.parse(saved) : [];
+      console.log('Parsed result:', result);
+      return result;
     } catch (error) {
       console.error('Error loading saved tests:', error);
       return [];
@@ -23,29 +35,47 @@ export class SavedTestsService {
 
   static async saveTest(testData) {
     try {
-      // If user is logged in, save to Firebase
+      console.log('SavedTestsService.saveTest called with:', testData);
+      console.log('Current user:', auth.currentUser?.email);
+      
+      // If user is logged in, try to save to Firebase
       if (auth.currentUser) {
-        return await FirebaseTestsService.saveUserProgress(auth.currentUser.uid, testData);
+        try {
+          console.log('User is logged in, saving to Firebase...');
+          const result = await FirebaseTestsService.saveUserProgress(auth.currentUser.uid, testData);
+          console.log('Firebase save result:', result);
+          return result;
+        } catch (firebaseError) {
+          console.error('Firebase save failed, falling back to localStorage:', firebaseError);
+          // Fall through to localStorage save
+        }
       }
       
-      // Otherwise, use localStorage
+      // Use localStorage (either user not logged in or Firebase failed)
+      console.log('Saving to localStorage...');
       const savedTests = await this.getSavedTests();
+      console.log('Current saved tests:', savedTests);
       
       // Check if a test with the same title already exists
       const existingIndex = savedTests.findIndex(test => test.title === testData.title);
+      console.log('Existing test index:', existingIndex);
       
       if (existingIndex !== -1) {
         // Update existing test
+        console.log('Updating existing test at index:', existingIndex);
         savedTests[existingIndex] = {
           ...testData,
           dateModified: new Date().toISOString()
         };
       } else {
         // Add new test
+        console.log('Adding new test');
         savedTests.push(testData);
       }
       
+      console.log('About to save to localStorage:', savedTests);
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(savedTests));
+      console.log('Successfully saved to localStorage');
       return true;
     } catch (error) {
       console.error('Error saving test:', error);

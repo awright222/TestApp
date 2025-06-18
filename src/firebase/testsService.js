@@ -13,8 +13,15 @@ export class FirebaseTestsService {
   // Save test progress to user's collection (for SavedTestsService)
   static async saveUserProgress(userId, progressData) {
     try {
+      console.log('FirebaseTestsService.saveUserProgress called with:', {
+        userId,
+        progressData: { ...progressData, progress: progressData.progress ? 'present' : 'missing' }
+      });
+      
       const progressId = progressData.id || Date.now().toString();
       const userProgressRef = doc(db, 'users', userId, 'testProgress', progressId);
+      
+      console.log('Attempting to save to Firebase with ID:', progressId);
       
       await setDoc(userProgressRef, {
         ...progressData,
@@ -23,9 +30,15 @@ export class FirebaseTestsService {
         synced: true
       });
       
+      console.log('Successfully saved to Firebase');
       return { success: true, id: progressId };
     } catch (error) {
-      console.error('Error saving test progress:', error);
+      console.error('Error saving test progress to Firebase:', error);
+      console.error('Error details:', {
+        code: error.code,
+        message: error.message,
+        stack: error.stack
+      });
       throw new Error('Failed to save test progress to cloud');
     }
   }

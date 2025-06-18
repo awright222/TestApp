@@ -133,7 +133,7 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
       
       // Create the complete saved test object
       const savedTestData = {
-        id: currentSavedTest?.id || Date.now(),
+        id: currentSavedTest?.id || Date.now().toString(), // Ensure ID is string
         title: saveData.title,
         type: 'practice-test',
         progress: progressData,

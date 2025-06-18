@@ -63,7 +63,8 @@ export default function SaveModal({
       setShowOverwriteConfirm(false);
       onClose();
     } catch (error) {
-      alert('Failed to save test. Please try again.');
+      console.error('SaveModal error:', error);
+      alert(`Failed to save test: ${error.message}\n\nCheck the browser console for more details.`);
     } finally {
       setIsSaving(false);
     }
