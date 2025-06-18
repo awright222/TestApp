@@ -21,9 +21,13 @@ function TestCard({ test, onDelete, onLoad }) {
   };
 
   const calculateProgress = (progress) => {
-    if (!progress || !progress.totalQuestions || progress.totalQuestions === 0) return 0;
+    if (!progress || !progress.totalQuestions || progress.totalQuestions === 0) {
+      console.log('SavedTests: Invalid progress data:', progress);
+      return 0;
+    }
     const completed = progress.completedQuestions || 0;
     const total = progress.totalQuestions;
+    console.log('SavedTests: Calculating progress:', { completed, total, percentage: Math.round((completed / total) * 100) });
     return Math.round((completed / total) * 100);
   };
 

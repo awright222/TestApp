@@ -30,6 +30,14 @@ export default function SaveModal({
   // Fetch all saved tests when modal opens for duplicate checking
   useEffect(() => {
     if (isOpen) {
+      console.log('SaveModal opened with props:', {
+        current,
+        questionsLength: questions?.length,
+        questionSubmittedLength: questionSubmitted?.length,
+        userAnswersLength: userAnswers ? Object.keys(userAnswers).length : 0,
+        existingSavedTest
+      });
+      
       const fetchSavedTests = async () => {
         try {
           const tests = await SavedTestsService.getSavedTests();
@@ -42,7 +50,7 @@ export default function SaveModal({
 
       fetchSavedTests();
     }
-  }, [isOpen]);
+  }, [isOpen, current, questions, questionSubmitted, userAnswers, existingSavedTest]);
 
   const handleSave = async () => {
     if (!title.trim()) {
@@ -165,6 +173,12 @@ export default function SaveModal({
           <p>
             Current question: {(current || 0) + 1}
           </p>
+          {/* Debug info - remove in production */}
+          {process.env.NODE_ENV === 'development' && (
+            <p style={{ fontSize: '0.8rem', color: '#666', marginTop: '0.5rem' }}>
+              Debug: current={current}, questions.length={questions?.length}, questionSubmitted.length={questionSubmitted?.length}
+            </p>
+          )}
         </div>
 
         <div className="save-title-section">

@@ -15,7 +15,7 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
   const [showExplanation, setShowExplanation] = useState(false);
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  const [currentSavedTest] = useState(null);
+  const [currentSavedTest, setCurrentSavedTest] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -39,6 +39,10 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
             // Check if this is a saved test with progress
             if (selectedTest.savedProgress) {
               console.log('PracticeTest: Restoring saved progress:', selectedTest.savedProgress);
+              // Set the current saved test info for the SaveModal
+              if (selectedTest.savedTestInfo) {
+                setCurrentSavedTest(selectedTest.savedTestInfo);
+              }
               // Restore saved progress
               setCurrent(selectedTest.savedProgress.current || 0);
               setUserAnswers(selectedTest.savedProgress.userAnswers || filtered.map(getInitialUserAnswer));
@@ -68,6 +72,10 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
         // Check if this is a saved test with progress
         if (selectedTest.savedProgress) {
           console.log('PracticeTest: Restoring saved progress:', selectedTest.savedProgress);
+          // Set the current saved test info for the SaveModal
+          if (selectedTest.savedTestInfo) {
+            setCurrentSavedTest(selectedTest.savedTestInfo);
+          }
           // Restore saved progress
           setCurrent(selectedTest.savedProgress.current || 0);
           setUserAnswers(selectedTest.savedProgress.userAnswers || questionArray.map(getInitialUserAnswer));
@@ -123,12 +131,10 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
 
   const handleSaveProgress = async (saveData) => {
     try {
+      // Use the progress data from SaveModal (it has the correct structure with totalQuestions and completedQuestions)
       const progressData = {
-        current,
-        userAnswers,
-        questionScore,
-        questionSubmitted,
-        questions: questions.map(q => ({ ...q }))
+        ...saveData.progress, // Use SaveModal's progress structure
+        questions: questions.map(q => ({ ...q })) // Add questions array for backward compatibility
       };
       
       // Create the complete saved test object
@@ -151,6 +157,14 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
       };
       
       await SavedTestsService.saveTest(savedTestData);
+      
+      console.log('PracticeTest: Saved test data:', {
+        title: savedTestData.title,
+        progress: savedTestData.progress,
+        totalQuestions: savedTestData.progress?.totalQuestions,
+        completedQuestions: savedTestData.progress?.completedQuestions
+      });
+      
       setShowSaveModal(false);
       
       // Enhanced success message

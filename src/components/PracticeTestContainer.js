@@ -59,6 +59,12 @@ function PracticeTestContainer({ searchTerm, onClearSearch }) {
         color: savedTest.originalTest?.color || '#669BBC',
         questions: questions,
         savedProgress: progress,
+        savedTestInfo: {
+          id: savedTest.id,
+          title: savedTest.title,
+          dateCreated: savedTest.dateCreated,
+          dateModified: savedTest.dateModified
+        },
         isSavedTest: true
       };
       
