@@ -15,20 +15,43 @@ function PracticeTestContainer({ searchTerm, onClearSearch }) {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    console.log('=== PracticeTestContainer useEffect triggered ===');
+    console.log('testId from params:', testId);
+    console.log('location.state:', location.state);
+    console.log('location.pathname:', location.pathname);
+    
     // Check if we have a saved test from navigation state
     if (location.state?.savedTest) {
       const savedTest = location.state.savedTest;
-      console.log('Loading saved test:', savedTest);
+      console.log('=== Loading saved test ===');
+      console.log('Full savedTest object:', savedTest);
+      console.log('savedTest.questions:', savedTest.questions);
+      console.log('savedTest.progress:', savedTest.progress);
+      console.log('savedTest.progress?.questions:', savedTest.progress?.questions);
       
       // Extract questions and progress from saved test structure
       const questions = savedTest.questions || savedTest.progress?.questions || [];
       const progress = savedTest.progress || null;
       
+      console.log('Extracted questions:', questions);
+      console.log('Questions length:', questions.length);
+      console.log('Extracted progress:', progress);
+      
       if (questions.length === 0) {
-        console.error('No questions found in saved test:', savedTest);
-        setSelectedTest({ error: 'No questions found in saved test', testId: savedTest.id });
+        console.error('❌ No questions found in saved test');
+        console.error('savedTest structure:', Object.keys(savedTest));
+        console.error('Full savedTest:', JSON.stringify(savedTest, null, 2));
+        
+        const errorMessage = 'This saved test is missing question data and cannot be continued. This can happen if the test was saved incorrectly or corrupted. Please delete this test and create a new one.';
+        setSelectedTest({ 
+          error: errorMessage, 
+          testId: savedTest.id,
+          isCorrupted: true
+        });
         return;
       }
+      
+      console.log('✅ Questions found, transforming test...');
       
       // Transform saved test to the expected format and include progress
       const transformedTest = {
@@ -39,12 +62,17 @@ function PracticeTestContainer({ searchTerm, onClearSearch }) {
         isSavedTest: true
       };
       
+      console.log('Transformed test:', transformedTest);
       setSelectedTest(transformedTest);
       return;
     }
 
+    console.log('No saved test in location.state, checking for custom test...');
+    console.log('testId:', testId);
+    
     // If no saved test, proceed with custom test loading logic
     const loadCustomTest = async () => {
+      console.log('Loading custom test with ID:', testId);
       setLoading(true);
       try {
         const customTest = await CreatedTestsService.getTestById(testId);
@@ -137,14 +165,40 @@ function PracticeTestContainer({ searchTerm, onClearSearch }) {
         padding: '2rem',
         textAlign: 'center'
       }}>
-        <div style={{ fontSize: '3rem' }}>❌</div>
-        <h2 style={{ color: '#003049', marginBottom: '1rem' }}>Test Not Found</h2>
-        <p style={{ color: '#669BBC', marginBottom: '0.5rem' }}>
+        <div style={{ fontSize: '3rem' }}>{selectedTest.isCorrupted ? '💥' : '❌'}</div>
+        <h2 style={{ color: '#003049', marginBottom: '1rem' }}>
+          {selectedTest.isCorrupted ? 'Test Data Corrupted' : 'Test Not Found'}
+        </h2>
+        <p style={{ color: '#669BBC', marginBottom: '0.5rem', maxWidth: '500px' }}>
           {selectedTest.error}
         </p>
         <p style={{ color: '#669BBC', fontSize: '0.9rem', marginBottom: '2rem' }}>
           Test ID: {selectedTest.testId}
         </p>
+        
+        {selectedTest.isCorrupted && (
+          <div style={{ 
+            background: 'rgba(220, 53, 69, 0.1)', 
+            border: '2px solid #dc3545', 
+            borderRadius: '8px', 
+            padding: '1rem', 
+            marginBottom: '2rem',
+            maxWidth: '500px'
+          }}>
+            <h3 style={{ color: '#721c24', marginBottom: '0.5rem' }}>🔧 How to Fix This</h3>
+            <p style={{ color: '#721c24', fontSize: '0.9rem', marginBottom: '1rem' }}>
+              This test is missing its question data. This usually happens when:
+            </p>
+            <ul style={{ color: '#721c24', fontSize: '0.9rem', textAlign: 'left', marginBottom: '1rem' }}>
+              <li>The test was saved incorrectly</li>
+              <li>Data got corrupted during sync</li>
+              <li>The test was created by an old version of the app</li>
+            </ul>
+            <p style={{ color: '#721c24', fontSize: '0.9rem' }}>
+              <strong>Solution:</strong> Delete this test and start a new practice session.
+            </p>
+          </div>
+        )}
         
         {selectedTest.needsAuth && (
           <div style={{ 

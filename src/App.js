@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import './App.css';
 import { CaseStudies, CaseStudyDetail } from './CaseStudies';
 import Timer from "./Timer";
@@ -17,6 +17,7 @@ import CreateTest from './components/CreateTest';
 import PracticeTestContainer from './components/PracticeTestContainer';
 import CrossDeviceDebug from './components/CrossDeviceDebug';
 import SaveTestDebug from './components/SaveTestDebug';
+import NoAuthDebug from './components/NoAuthDebug';
 import Sidebar from './components/Sidebar';
 import Debug from './components/Debug';
 
@@ -25,6 +26,7 @@ function App() {
   const [showTimer, setShowTimer] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const location = useLocation();
 
   const { user, loading } = useAuth();
 
@@ -37,6 +39,15 @@ function App() {
           <div className="loading-text">Loading...</div>
         </div>
       </div>
+    );
+  }
+
+  // Allow debug routes without authentication
+  if (location.pathname.startsWith('/debug/no-auth')) {
+    return (
+      <Routes>
+        <Route path="/debug/no-auth" element={<NoAuthDebug />} />
+      </Routes>
     );
   }
 

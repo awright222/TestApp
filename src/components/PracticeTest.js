@@ -152,7 +152,13 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
       
       await SavedTestsService.saveTest(savedTestData);
       setShowSaveModal(false);
-      alert('Test saved successfully!');
+      
+      // Enhanced success message
+      alert(
+        '✅ Test saved successfully!\n\n' +
+        '📍 You can find it in the "Saved Tests" section in the sidebar.\n' +
+        '☁️ If you\'re logged in, it\'s automatically synced across your devices!'
+      );
     } catch (error) {
       console.error('Error saving test:', error);
       throw error;

@@ -7,13 +7,32 @@ export class SavedTestsService {
 
   static async getSavedTests() {
     try {
+      console.log('=== SavedTestsService.getSavedTests called ===');
+      console.log('auth.currentUser:', auth.currentUser?.email || 'not logged in');
+      
       // If user is logged in, fetch from Firebase
       if (auth.currentUser) {
         try {
           console.log('User is logged in, fetching from Firebase...');
           const result = await FirebaseTestsService.getUserProgress(auth.currentUser.uid);
           console.log('Firebase fetch result:', result);
-          return result;
+          
+          // If Firebase has tests, return them
+          if (result && result.length > 0) {
+            return result;
+          }
+          
+          // If Firebase is empty, check localStorage 
+          console.log('Firebase empty, checking localStorage...');
+          const localTests = localStorage.getItem(this.STORAGE_KEY);
+          if (localTests) {
+            const parsedLocal = JSON.parse(localTests);
+            console.log('Found', parsedLocal.length, 'tests in localStorage');
+            console.log('Note: These tests need to be migrated to Firebase. Save a new test to trigger migration.');
+            return parsedLocal; // Return local tests for now
+          }
+          
+          return [];
         } catch (firebaseError) {
           console.error('Firebase fetch failed, falling back to localStorage:', firebaseError);
           // Fall through to localStorage
@@ -22,10 +41,12 @@ export class SavedTestsService {
       
       // Otherwise, use localStorage
       console.log('Getting saved tests from localStorage...');
+      console.log('Storage key:', this.STORAGE_KEY);
       const saved = localStorage.getItem(this.STORAGE_KEY);
       console.log('Raw localStorage data:', saved);
       const result = saved ? JSON.parse(saved) : [];
       console.log('Parsed result:', result);
+      console.log('Returning', result.length, 'tests');
       return result;
     } catch (error) {
       console.error('Error loading saved tests:', error);
@@ -35,26 +56,72 @@ export class SavedTestsService {
 
   static async saveTest(testData) {
     try {
-      console.log('SavedTestsService.saveTest called with:', testData);
-      console.log('Current user:', auth.currentUser?.email);
+      console.log('=== SavedTestsService.saveTest called ===');
+      console.log('Current user:', auth.currentUser?.email || 'not logged in');
+      console.log('auth.currentUser object:', auth.currentUser);
+      console.log('auth.currentUser.uid:', auth.currentUser?.uid);
+      console.log('Test data to save:', {
+        id: testData.id,
+        title: testData.title,
+        type: testData.type,
+        questionsCount: testData.questions?.length || 0,
+        hasProgress: !!testData.progress
+      });
+      
+      // Validate that questions are included
+      if (!testData.questions || !Array.isArray(testData.questions) || testData.questions.length === 0) {
+        console.error('❌ CRITICAL: Attempting to save test without questions!');
+        console.error('testData keys:', Object.keys(testData));
+        console.error('This will cause "Continue Test" to fail');
+        throw new Error('Cannot save test without questions array. Make sure the test data includes a questions array with at least one question.');
+      }
+      
+      console.log('✅ Questions validation passed:', testData.questions.length, 'questions found');
       
       // If user is logged in, try to save to Firebase
       if (auth.currentUser) {
         try {
-          console.log('User is logged in, saving to Firebase...');
+          console.log('🔥 User is logged in, attempting Firebase save...');
+          console.log('🔥 Firebase save - user UID:', auth.currentUser.uid);
+          console.log('🔥 Test data structure check:', {
+            hasQuestions: !!testData.questions,
+            questionsLength: testData.questions?.length || 0,
+            hasProgressQuestions: !!testData.progress?.questions,
+            progressQuestionsLength: testData.progress?.questions?.length || 0
+          });
+          
+          console.log('🔥 Calling FirebaseTestsService.saveUserProgress...');
           const result = await FirebaseTestsService.saveUserProgress(auth.currentUser.uid, testData);
-          console.log('Firebase save result:', result);
-          return result;
+          console.log('🔥 Firebase save result:', result);
+          
+          if (result && result.success) {
+            console.log('🔥 ✅ Successfully saved to Firebase - RETURNING EARLY');
+            // Dispatch event to notify SavedTests component
+            console.log('📢 Dispatching testSaved event from Firebase save');
+            window.dispatchEvent(new CustomEvent('testSaved'));
+            return result;
+          } else {
+            console.error('🔥 ❌ Firebase save failed (result.success = false), falling back to localStorage');
+            console.error('🔥 Full result object:', result);
+          }
         } catch (firebaseError) {
-          console.error('Firebase save failed, falling back to localStorage:', firebaseError);
+          console.error('🔥 ❌ Firebase save error, falling back to localStorage:', firebaseError);
+          console.error('🔥 Firebase error details:', {
+            name: firebaseError.name,
+            code: firebaseError.code,
+            message: firebaseError.message,
+            stack: firebaseError.stack
+          });
           // Fall through to localStorage save
         }
+      } else {
+        console.log('🔥 User not logged in, using localStorage only');
       }
       
       // Use localStorage (either user not logged in or Firebase failed)
-      console.log('Saving to localStorage...');
+      console.log('💾 Saving to localStorage...');
       const savedTests = await this.getSavedTests();
-      console.log('Current saved tests:', savedTests);
+      console.log('💾 Current saved tests:', savedTests);
       
       // Check if a test with the same title already exists
       const existingIndex = savedTests.findIndex(test => test.title === testData.title);
@@ -76,6 +143,11 @@ export class SavedTestsService {
       console.log('About to save to localStorage:', savedTests);
       localStorage.setItem(this.STORAGE_KEY, JSON.stringify(savedTests));
       console.log('Successfully saved to localStorage');
+      
+      // Dispatch event to notify SavedTests component
+      console.log('📢 Dispatching testSaved event from localStorage save');
+      window.dispatchEvent(new CustomEvent('testSaved'));
+      
       return true;
     } catch (error) {
       console.error('Error saving test:', error);
@@ -151,6 +223,41 @@ export class SavedTestsService {
     } catch (error) {
       console.error('Error migrating tests to Firebase:', error);
       // Don't throw here - migration is optional
+    }
+  }
+
+  // Utility method to clean up corrupted tests (tests without questions)
+  static async cleanupCorruptedTests() {
+    try {
+      console.log('Cleaning up corrupted tests...');
+      const savedTests = await this.getSavedTests();
+      const validTests = savedTests.filter(test => {
+        const hasQuestions = test.questions && Array.isArray(test.questions) && test.questions.length > 0;
+        if (!hasQuestions) {
+          console.log('Removing corrupted test:', test.id, test.title);
+        }
+        return hasQuestions;
+      });
+      
+      const removedCount = savedTests.length - validTests.length;
+      
+      if (removedCount > 0) {
+        if (auth.currentUser) {
+          // For Firebase users, we'd need to implement individual deletion
+          console.log(`Found ${removedCount} corrupted tests, but cleanup for Firebase users needs individual deletion`);
+        } else {
+          // For localStorage, replace with valid tests only
+          localStorage.setItem(this.STORAGE_KEY, JSON.stringify(validTests));
+          console.log(`Removed ${removedCount} corrupted tests from localStorage`);
+        }
+      } else {
+        console.log('No corrupted tests found');
+      }
+      
+      return { removed: removedCount, remaining: validTests.length };
+    } catch (error) {
+      console.error('Error cleaning up corrupted tests:', error);
+      return { removed: 0, remaining: 0 };
     }
   }
 }
