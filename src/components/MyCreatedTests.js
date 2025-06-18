@@ -166,6 +166,9 @@ export default function MyCreatedTests() {
               Last updated: {new Date(lastRefresh).toLocaleTimeString()}
             </small>
           </p>
+          <p style={{ color: '#28a745', fontSize: '0.9rem', margin: '0.5rem 0 0 0' }}>
+            ☁️ Tests are automatically synced across all your devices
+          </p>
         </div>
         <div style={{ display: 'flex', gap: '1rem' }}>
           <button

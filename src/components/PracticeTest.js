@@ -20,21 +20,25 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
 
   useEffect(() => {
     if (selectedTest) {
+      console.log('PracticeTest: Loading selectedTest:', selectedTest);
       setLoading(true);
       
       // Handle different test sources
       if (selectedTest.csvUrl) {
+        console.log('PracticeTest: Loading from CSV URL');
         // Load from CSV (original test format)
         Papa.parse(selectedTest.csvUrl, {
           download: true,
           header: true,
           complete: (result) => {
             const filtered = result.data.filter(q => q.question_text);
+            console.log('PracticeTest: CSV loaded, questions:', filtered.length);
             setQuestions(filtered);
             setOriginalQuestions(filtered);
             
             // Check if this is a saved test with progress
             if (selectedTest.savedProgress) {
+              console.log('PracticeTest: Restoring saved progress:', selectedTest.savedProgress);
               // Restore saved progress
               setCurrent(selectedTest.savedProgress.current || 0);
               setUserAnswers(selectedTest.savedProgress.userAnswers || filtered.map(getInitialUserAnswer));
@@ -55,6 +59,7 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
           }
         });
       } else if (selectedTest.questions && Array.isArray(selectedTest.questions)) {
+        console.log('PracticeTest: Loading from questions array, count:', selectedTest.questions.length);
         // Handle custom tests or saved tests with direct question arrays
         const questionArray = selectedTest.questions;
         setQuestions(questionArray);
@@ -62,12 +67,14 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
         
         // Check if this is a saved test with progress
         if (selectedTest.savedProgress) {
+          console.log('PracticeTest: Restoring saved progress:', selectedTest.savedProgress);
           // Restore saved progress
           setCurrent(selectedTest.savedProgress.current || 0);
           setUserAnswers(selectedTest.savedProgress.userAnswers || questionArray.map(getInitialUserAnswer));
           setQuestionScore(selectedTest.savedProgress.questionScore || Array(questionArray.length).fill(null));
           setQuestionSubmitted(selectedTest.savedProgress.questionSubmitted || Array(questionArray.length).fill(false));
         } else {
+          console.log('PracticeTest: Initializing fresh state');
           // Initialize fresh state
           setUserAnswers(questionArray.map(getInitialUserAnswer));
           setQuestionScore(Array(questionArray.length).fill(null));
@@ -75,7 +82,7 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
         }
         setLoading(false);
       } else {
-        console.error('Invalid test format:', selectedTest);
+        console.error('PracticeTest: Invalid test format:', selectedTest);
         setLoading(false);
         alert('Invalid test format. Please try again.');
       }
@@ -124,7 +131,26 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
         questions: questions.map(q => ({ ...q }))
       };
       
-      await SavedTestsService.saveTest(saveData.title, progressData, currentSavedTest?.id);
+      // Create the complete saved test object
+      const savedTestData = {
+        id: currentSavedTest?.id || Date.now(),
+        title: saveData.title,
+        type: 'practice-test',
+        progress: progressData,
+        questions: questions.map(q => ({ ...q })), // Include questions at root level for compatibility
+        dateCreated: currentSavedTest?.dateCreated || new Date().toISOString(),
+        dateModified: new Date().toISOString(),
+        // Include original test metadata if available
+        originalTest: {
+          title: selectedTest.title,
+          color: selectedTest.color,
+          csvUrl: selectedTest.csvUrl,
+          isCustomTest: selectedTest.isCustomTest,
+          customTestId: selectedTest.customTestId
+        }
+      };
+      
+      await SavedTestsService.saveTest(savedTestData);
       setShowSaveModal(false);
       alert('Test saved successfully!');
     } catch (error) {

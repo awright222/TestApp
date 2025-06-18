@@ -1,8 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import AuthModal from './AuthModal';
+import { useAuth } from '../firebase/AuthContext';
 
 export default function Landing() {
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  
+  // Check if user was trying to access a specific test
+  const pendingTestAccess = location.pathname.includes('/custom-test/') || sessionStorage.getItem('pendingTestAccess');
+  const testId = pendingTestAccess 
+    ? (location.pathname.includes('/custom-test/') 
+        ? location.pathname.split('/custom-test/')[1] 
+        : sessionStorage.getItem('pendingTestAccess'))
+    : null;
+  
+  // If user logs in and there was a pending test, redirect to it
+  useEffect(() => {
+    if (user && pendingTestAccess && testId) {
+      console.log('Redirecting to pending test after login:', testId);
+      // Clear the pending access from sessionStorage
+      sessionStorage.removeItem('pendingTestAccess');
+      navigate(`/custom-test/${testId}`);
+    }
+  }, [user, pendingTestAccess, testId, navigate]);
 
   return (
     <div style={{
@@ -38,8 +61,18 @@ export default function Landing() {
           marginBottom: '2rem',
           color: '#bfc9d1'
         }}>
-          Create, share, and take practice tests with ease. Perfect for students, teachers, and professionals 
-          who want to build custom assessments and track progress over time.
+          {pendingTestAccess ? (
+            <>
+              🔐 <strong>Login Required</strong><br />
+              You're trying to access a test, but you need to be logged in for cross-device sync. 
+              Sign in below to access your tests from any device!
+            </>
+          ) : (
+            <>
+              Create, share, and take practice tests with ease. Perfect for students, teachers, and professionals 
+              who want to build custom assessments and track progress over time.
+            </>
+          )}
         </p>
 
         {/* Features List */}
@@ -104,7 +137,7 @@ export default function Landing() {
             e.target.style.transform = 'translateY(0)';
           }}
         >
-          Get Started - Sign In or Sign Up
+          {pendingTestAccess ? '🚀 Sign In to Access Your Test' : 'Get Started - Sign In or Sign Up'}
         </button>
 
         {/* Footer */}

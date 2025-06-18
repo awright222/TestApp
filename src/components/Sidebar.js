@@ -120,6 +120,9 @@ function Sidebar({
             <div className="welcome-text">
               Welcome, {user.displayName || user.email}
             </div>
+            <div className="sync-status">
+              <span className="sync-indicator">☁️ Tests synced across devices</span>
+            </div>
             <button onClick={logout} className="sign-out-btn">
               Sign Out
             </button>

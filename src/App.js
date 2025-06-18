@@ -15,6 +15,7 @@ import MyCreatedTests from './components/MyCreatedTests';
 import CreateTest from './components/CreateTest';
 // import TakeTest from './components/TakeTest';
 import PracticeTestContainer from './components/PracticeTestContainer';
+import CrossDeviceDebug from './components/CrossDeviceDebug';
 import Sidebar from './components/Sidebar';
 import Debug from './components/Debug';
 
@@ -117,6 +118,7 @@ function App() {
           />
           {/* Debug route to clear localStorage if needed */}
           <Route path="/debug" element={<Debug />} />
+          <Route path="/debug/cross-device" element={<CrossDeviceDebug />} />
           <Route path="/debug/clear" element={
             <div style={{ padding: '2rem', textAlign: 'center' }}>
               <h2>Debug Tools</h2>

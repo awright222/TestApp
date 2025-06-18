@@ -214,6 +214,20 @@
   font-size: 0.8rem;
 }
 
+/* Sync status indicator */
+.sync-status {
+  margin: 0.5rem 0;
+}
+
+.sync-indicator {
+  color: #28a745;
+  font-size: 0.8rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
 /* Mobile styles */
 @media (max-width: 600px) {
   .sidebar {

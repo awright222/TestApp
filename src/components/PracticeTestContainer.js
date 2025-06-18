@@ -4,11 +4,13 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import TestSelector from './TestSelector';
 import PracticeTest from './PracticeTest';
 import { CreatedTestsService } from '../services/CreatedTestsService';
+import { useAuth } from '../firebase/AuthContext';
 
 function PracticeTestContainer({ searchTerm, onClearSearch }) {
   const { testId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuth();
   const [selectedTest, setSelectedTest] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -18,12 +20,22 @@ function PracticeTestContainer({ searchTerm, onClearSearch }) {
       const savedTest = location.state.savedTest;
       console.log('Loading saved test:', savedTest);
       
+      // Extract questions and progress from saved test structure
+      const questions = savedTest.questions || savedTest.progress?.questions || [];
+      const progress = savedTest.progress || null;
+      
+      if (questions.length === 0) {
+        console.error('No questions found in saved test:', savedTest);
+        setSelectedTest({ error: 'No questions found in saved test', testId: savedTest.id });
+        return;
+      }
+      
       // Transform saved test to the expected format and include progress
       const transformedTest = {
         title: savedTest.title,
-        color: savedTest.color || '#669BBC',
-        questions: savedTest.questions || [],
-        savedProgress: savedTest.progress,
+        color: savedTest.originalTest?.color || '#669BBC',
+        questions: questions,
+        savedProgress: progress,
         isSavedTest: true
       };
       
@@ -50,9 +62,12 @@ function PracticeTestContainer({ searchTerm, onClearSearch }) {
           };
           setSelectedTest(transformedTest);
         } else {
-          console.log('Custom test not found:', { testId, customTest });
-          // Instead of alert, show an error state
-          setSelectedTest({ error: 'Test not found', testId });
+          console.log('Custom test not found:', { testId, customTest, user: user?.email });
+          // Instead of alert, show an error state with auth context
+          const errorMessage = user 
+            ? 'Test not found in your account' 
+            : 'Test not found - you may need to log in to access this test';
+          setSelectedTest({ error: errorMessage, testId, needsAuth: !user });
         }
       } catch (error) {
         console.error('Error loading custom test:', error);
@@ -66,7 +81,7 @@ function PracticeTestContainer({ searchTerm, onClearSearch }) {
     if (testId) {
       loadCustomTest();
     }
-  }, [testId, navigate, location.state]);
+  }, [testId, navigate, location.state, user]);
 
   const handleBackToSelection = () => {
     if (testId) {
@@ -125,11 +140,49 @@ function PracticeTestContainer({ searchTerm, onClearSearch }) {
         <div style={{ fontSize: '3rem' }}>❌</div>
         <h2 style={{ color: '#003049', marginBottom: '1rem' }}>Test Not Found</h2>
         <p style={{ color: '#669BBC', marginBottom: '0.5rem' }}>
-          The test you're trying to access doesn't exist or couldn't be loaded.
+          {selectedTest.error}
         </p>
         <p style={{ color: '#669BBC', fontSize: '0.9rem', marginBottom: '2rem' }}>
           Test ID: {selectedTest.testId}
         </p>
+        
+        {selectedTest.needsAuth && (
+          <div style={{ 
+            background: 'rgba(255, 193, 7, 0.1)', 
+            border: '2px solid #ffc107', 
+            borderRadius: '8px', 
+            padding: '1rem', 
+            marginBottom: '2rem',
+            maxWidth: '500px'
+          }}>
+            <h3 style={{ color: '#856404', marginBottom: '0.5rem' }}>🔐 Cross-Device Access</h3>
+            <p style={{ color: '#856404', fontSize: '0.9rem', marginBottom: '1rem' }}>
+              To access your tests from any device, you need to be logged in. This enables cloud sync 
+              so you can start a test on one device and continue on another.
+            </p>
+            <button 
+              onClick={() => {
+                // Store the current test ID in sessionStorage so we can redirect back after login
+                sessionStorage.setItem('pendingTestAccess', testId);
+                // Navigate to root (which will show Landing page for unauthenticated users)
+                navigate('/');
+              }}
+              style={{
+                background: '#ffc107',
+                color: '#212529',
+                border: 'none',
+                padding: '0.75rem 1.5rem',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                fontWeight: '600',
+                width: '100%'
+              }}
+            >
+              🚀 Log In to Sync Tests
+            </button>
+          </div>
+        )}
+        
         <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
           <button 
             onClick={() => navigate('/my-tests')}

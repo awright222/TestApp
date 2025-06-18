@@ -1,4 +1,17 @@
 // CreatedTestsService.js - Service for managing user-created tests
+import { auth } from '../firebase/config';
+import { 
+  collection, 
+  doc, 
+  getDoc, 
+  getDocs, 
+  setDoc, 
+  deleteDoc, 
+  updateDoc,
+  query,
+  orderBy 
+} from 'firebase/firestore';
+import { db } from '../firebase/config';
 
 const STORAGE_KEY = 'created_tests';
 
@@ -8,6 +21,28 @@ export class CreatedTestsService {
   static async getCreatedTests() {
     try {
       console.log('CreatedTestsService.getCreatedTests called');
+      
+      // If user is logged in, fetch from Firebase
+      if (auth.currentUser) {
+        console.log('User logged in, fetching from Firebase');
+        const testsRef = collection(db, 'users', auth.currentUser.uid, 'createdTests');
+        const q = query(testsRef, orderBy('createdAt', 'desc'));
+        const querySnapshot = await getDocs(q);
+        
+        const tests = [];
+        querySnapshot.forEach((doc) => {
+          tests.push({
+            id: doc.id,
+            ...doc.data()
+          });
+        });
+        
+        console.log('Fetched tests from Firebase:', tests);
+        return tests;
+      }
+      
+      // Otherwise, use localStorage
+      console.log('No user logged in, using localStorage');
       const storedTests = localStorage.getItem(STORAGE_KEY);
       console.log('Raw stored data:', storedTests);
       
@@ -30,6 +65,16 @@ export class CreatedTestsService {
       return allTests;
     } catch (error) {
       console.error('Error loading created tests:', error);
+      // If Firebase fails, try localStorage as fallback
+      if (auth.currentUser) {
+        console.log('Firebase failed, falling back to localStorage');
+        try {
+          const storedTests = localStorage.getItem(STORAGE_KEY);
+          return storedTests ? JSON.parse(storedTests) : [];
+        } catch (localError) {
+          console.error('LocalStorage fallback also failed:', localError);
+        }
+      }
       // Clear corrupted data
       localStorage.removeItem(STORAGE_KEY);
       return [];
@@ -40,8 +85,6 @@ export class CreatedTestsService {
   static async createTest(testData) {
     try {
       console.log('CreatedTestsService.createTest called with:', testData);
-      const existingTests = await this.getCreatedTests();
-      console.log('Existing tests:', existingTests);
       
       const newTest = {
         id: Date.now().toString(),
@@ -56,18 +99,28 @@ export class CreatedTestsService {
         icon: testData.icon || '📝',
         color: testData.color || '#669BBC',
         csvUrl: testData.csvUrl || null, // For imported tests
-        isActive: true
+        isActive: true,
+        settings: testData.settings || {}
       };
 
       console.log('Creating new test:', newTest);
+      
+      // If user is logged in, save to Firebase
+      if (auth.currentUser) {
+        console.log('User logged in, saving to Firebase');
+        const testRef = doc(db, 'users', auth.currentUser.uid, 'createdTests', newTest.id);
+        await setDoc(testRef, newTest);
+        console.log('Test saved to Firebase successfully');
+        return newTest;
+      }
+      
+      // Otherwise, use localStorage
+      console.log('No user logged in, saving to localStorage');
+      const existingTests = await this.getCreatedTests();
       const updatedTests = [...existingTests, newTest];
-      console.log('All tests after creation:', updatedTests);
       
       localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedTests));
-      
-      // Verify the data was saved
-      const savedData = localStorage.getItem(STORAGE_KEY);
-      console.log('Saved data verification:', savedData);
+      console.log('Test saved to localStorage successfully');
       
       return newTest;
     } catch (error) {
@@ -79,6 +132,27 @@ export class CreatedTestsService {
   // Update an existing test
   static async updateTest(testId, updates) {
     try {
+      // If user is logged in, update in Firebase
+      if (auth.currentUser) {
+        console.log('User logged in, updating in Firebase');
+        const testRef = doc(db, 'users', auth.currentUser.uid, 'createdTests', testId);
+        const updatedData = {
+          ...updates,
+          questionCount: (updates.questions || []).length,
+          updatedAt: new Date().toISOString()
+        };
+        await updateDoc(testRef, updatedData);
+        
+        // Return the updated test
+        const updatedDoc = await getDoc(testRef);
+        if (updatedDoc.exists()) {
+          return { id: updatedDoc.id, ...updatedDoc.data() };
+        }
+        throw new Error('Test not found after update');
+      }
+      
+      // Otherwise, use localStorage
+      console.log('No user logged in, updating in localStorage');
       const existingTests = await this.getCreatedTests();
       const testIndex = existingTests.findIndex(test => test.id === testId);
       
@@ -104,6 +178,17 @@ export class CreatedTestsService {
   // Delete a test
   static async deleteTest(testId) {
     try {
+      // If user is logged in, delete from Firebase
+      if (auth.currentUser) {
+        console.log('User logged in, deleting from Firebase');
+        const testRef = doc(db, 'users', auth.currentUser.uid, 'createdTests', testId);
+        await deleteDoc(testRef);
+        console.log('Test deleted from Firebase successfully');
+        return true;
+      }
+      
+      // Otherwise, use localStorage
+      console.log('No user logged in, deleting from localStorage');
       const existingTests = await this.getCreatedTests();
       const filteredTests = existingTests.filter(test => test.id !== testId);
       
@@ -182,6 +267,61 @@ export class CreatedTestsService {
     } catch (error) {
       console.error('Error parsing CSV:', error);
       throw new Error('Invalid CSV format: ' + error.message);
+    }
+  }
+
+  // Migrate localStorage tests to Firebase when user logs in
+  static async migrateToFirebase() {
+    try {
+      if (!auth.currentUser) {
+        console.log('No user logged in, skipping migration');
+        return;
+      }
+
+      console.log('Starting migration of created tests to Firebase');
+      const localTests = localStorage.getItem(STORAGE_KEY);
+      
+      if (!localTests) {
+        console.log('No local tests to migrate');
+        return;
+      }
+
+      const tests = JSON.parse(localTests);
+      if (!Array.isArray(tests) || tests.length === 0) {
+        console.log('No valid local tests to migrate');
+        return;
+      }
+
+      console.log(`Migrating ${tests.length} tests to Firebase`);
+      
+      // Check which tests already exist in Firebase
+      const existingTests = await this.getCreatedTests();
+      const existingIds = new Set(existingTests.map(test => test.id));
+
+      let migratedCount = 0;
+      for (const test of tests) {
+        if (!existingIds.has(test.id)) {
+          try {
+            const testRef = doc(db, 'users', auth.currentUser.uid, 'createdTests', test.id);
+            await setDoc(testRef, test);
+            migratedCount++;
+            console.log(`Migrated test: ${test.title}`);
+          } catch (error) {
+            console.error(`Failed to migrate test ${test.title}:`, error);
+          }
+        }
+      }
+
+      console.log(`Migration completed: ${migratedCount} tests migrated`);
+      
+      // Optionally clear localStorage after successful migration
+      if (migratedCount > 0) {
+        localStorage.removeItem(STORAGE_KEY);
+        console.log('Cleared localStorage after migration');
+      }
+
+    } catch (error) {
+      console.error('Error during migration:', error);
     }
   }
 }

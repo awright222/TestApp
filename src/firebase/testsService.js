@@ -10,54 +10,69 @@ import {
 import { db } from './config';
 
 export class FirebaseTestsService {
-  // Save test to user's collection
-  static async saveUserTest(userId, testData) {
+  // Save test progress to user's collection (for SavedTestsService)
+  static async saveUserProgress(userId, progressData) {
     try {
-      const testId = testData.id || Date.now().toString();
-      const userTestRef = doc(db, 'users', userId, 'savedTests', testId);
+      const progressId = progressData.id || Date.now().toString();
+      const userProgressRef = doc(db, 'users', userId, 'testProgress', progressId);
       
-      await setDoc(userTestRef, {
-        ...testData,
-        id: testId,
+      await setDoc(userProgressRef, {
+        ...progressData,
+        id: progressId,
         lastModified: serverTimestamp(),
         synced: true
       });
       
-      return { success: true, id: testId };
+      return { success: true, id: progressId };
     } catch (error) {
-      console.error('Error saving test:', error);
-      throw new Error('Failed to save test to cloud');
+      console.error('Error saving test progress:', error);
+      throw new Error('Failed to save test progress to cloud');
     }
   }
 
-  // Get all user's saved tests
-  static async getUserTests(userId) {
+  // Get all user's test progress
+  static async getUserProgress(userId) {
     try {
-      const testsRef = collection(db, 'users', userId, 'savedTests');
-      const querySnapshot = await getDocs(testsRef);
+      const progressRef = collection(db, 'users', userId, 'testProgress');
+      const querySnapshot = await getDocs(progressRef);
       
-      const tests = [];
+      const progress = [];
       querySnapshot.forEach((doc) => {
-        tests.push({ id: doc.id, ...doc.data() });
+        progress.push({ id: doc.id, ...doc.data() });
       });
       
-      return tests;
+      return progress;
     } catch (error) {
-      console.error('Error loading tests:', error);
+      console.error('Error loading test progress:', error);
       return [];
     }
   }
 
-  // Delete user's test
-  static async deleteUserTest(userId, testId) {
+  // Delete user's test progress
+  static async deleteUserProgress(userId, progressId) {
     try {
-      const testRef = doc(db, 'users', userId, 'savedTests', testId);
-      await deleteDoc(testRef);
+      const progressRef = doc(db, 'users', userId, 'testProgress', progressId);
+      await deleteDoc(progressRef);
       return { success: true };
     } catch (error) {
-      console.error('Error deleting test:', error);
-      throw new Error('Failed to delete test');
+      console.error('Error deleting test progress:', error);
+      throw new Error('Failed to delete test progress');
     }
+  }
+
+  // Save test to user's collection (deprecated - keeping for backward compatibility)
+  static async saveUserTest(userId, testData) {
+    return this.saveUserProgress(userId, testData);
+  }
+
+  // Get all user's saved tests (deprecated - keeping for backward compatibility) 
+  static async getUserTests(userId) {
+    return this.getUserProgress(userId);
+  }
+
+  // Delete user's test (deprecated - keeping for backward compatibility)
+  static async deleteUserTest(userId, testId) {
+    return this.deleteUserProgress(userId, testId);
   }
 
   // Save user profile/preferences
@@ -103,7 +118,7 @@ export class FirebaseTestsService {
       let migratedCount = 0;
       
       for (const test of tests) {
-        await this.saveUserTest(userId, {
+        await this.saveUserProgress(userId, {
           ...test,
           migratedFromLocal: true
         });

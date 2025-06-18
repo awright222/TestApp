@@ -9,7 +9,7 @@ export class SavedTestsService {
     try {
       // If user is logged in, fetch from Firebase
       if (auth.currentUser) {
-        return await FirebaseTestsService.getUserTests(auth.currentUser.uid);
+        return await FirebaseTestsService.getUserProgress(auth.currentUser.uid);
       }
       
       // Otherwise, use localStorage
@@ -25,7 +25,7 @@ export class SavedTestsService {
     try {
       // If user is logged in, save to Firebase
       if (auth.currentUser) {
-        return await FirebaseTestsService.saveUserTest(auth.currentUser.uid, testData);
+        return await FirebaseTestsService.saveUserProgress(auth.currentUser.uid, testData);
       }
       
       // Otherwise, use localStorage
@@ -57,7 +57,7 @@ export class SavedTestsService {
     try {
       // If user is logged in, delete from Firebase
       if (auth.currentUser) {
-        return await FirebaseTestsService.deleteUserTest(auth.currentUser.uid, testId);
+        return await FirebaseTestsService.deleteUserProgress(auth.currentUser.uid, testId);
       }
       
       // Otherwise, use localStorage
@@ -112,7 +112,7 @@ export class SavedTestsService {
 
       // Save each test to Firebase
       for (const test of tests) {
-        await FirebaseTestsService.saveUserTest(auth.currentUser.uid, test);
+        await FirebaseTestsService.saveUserProgress(auth.currentUser.uid, test);
       }
 
       // Clear localStorage after successful migration
