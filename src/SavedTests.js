@@ -45,8 +45,19 @@ function TestCard({ test, onDelete, onLoad }) {
 
       {/* Test type badge */}
       <div className="test-type-badge-container">
-        <span className={`test-type-badge ${test.type === 'case-study' ? 'case-study' : 'practice-test'}`}>
-          {test.type === 'case-study' ? 'Case Study' : 'Practice Test'}
+        <span className={`test-type-badge ${
+          test.type === 'case-study' ? 'case-study' : 
+          test.type === 'practice-test' ? 'practice-test' : 
+          'regular'
+        }`}>
+          <span className="badge-icon">
+            {test.type === 'case-study' ? '📚' : 
+             test.type === 'practice-test' ? '⚡' : 
+             '📝'}
+          </span>
+          {test.type === 'case-study' ? 'Case Study' : 
+           test.type === 'practice-test' ? 'Practice Test' : 
+           'Regular Test'}
         </span>
       </div>
       
@@ -81,7 +92,11 @@ function TestCard({ test, onDelete, onLoad }) {
         {/* Progress bar */}
         <div className="progress-bar-container">
           <div 
-            className={`progress-bar-fill ${test.type === 'case-study' ? 'case-study' : 'practice-test'}`}
+            className={`progress-bar-fill ${
+              test.type === 'case-study' ? 'case-study' : 
+              test.type === 'practice-test' ? 'practice-test' : 
+              'regular'
+            }`}
             style={{ width: `${calculateProgress(test.progress)}%` }}
           ></div>
         </div>
@@ -94,9 +109,15 @@ function TestCard({ test, onDelete, onLoad }) {
       {/* Load test button */}
       <button
         onClick={() => onLoad(test)}
-        className={`load-test-btn ${test.type === 'case-study' ? 'case-study' : 'practice-test'}`}
+        className={`load-test-btn ${
+          test.type === 'case-study' ? 'case-study' : 
+          test.type === 'practice-test' ? 'practice-test' : 
+          'regular'
+        }`}
       >
-        {test.type === 'case-study' ? 'Continue Case Study' : 'Continue Test'}
+        {test.type === 'case-study' ? 'Continue Case Study' : 
+         test.type === 'practice-test' ? 'Continue Test' : 
+         'Continue Test'}
       </button>
     </div>
   );

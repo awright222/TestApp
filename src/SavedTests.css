@@ -74,23 +74,42 @@
 }
 
 .test-type-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
   padding: 0.4rem 0.8rem;
-  border-radius: 6px;
-  font-size: 0.8rem;
-  font-weight: 700;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  letter-spacing: 0.3px;
+  border: 1px solid;
+  backdrop-filter: blur(10px);
+  transition: all 0.2s ease;
 }
 
+.badge-icon {
+  font-size: 0.9rem;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
+}
+
+/* Modern tag styling with subtle backgrounds */
 .test-type-badge.practice-test {
-  background: linear-gradient(135deg, #669BBC 0%, #5a8aa6 100%);
-  color: #FDF0D5;
+  background: rgba(102, 155, 188, 0.12);
+  color: #669BBC;
+  border-color: rgba(102, 155, 188, 0.3);
 }
 
 .test-type-badge.case-study {
-  background: linear-gradient(135deg, #780000 0%, #a00000 100%);
+  background: rgba(255, 107, 107, 0.12);
+  color: #ff6b6b;
+  border-color: rgba(255, 107, 107, 0.3);
+}
+
+.test-type-badge.regular {
+  background: rgba(253, 240, 213, 0.12);
   color: #FDF0D5;
+  border-color: rgba(253, 240, 213, 0.3);
 }
 
 /* Test Title */
@@ -170,6 +189,10 @@
   background: linear-gradient(90deg, #780000 0%, #a00000 100%);
 }
 
+.progress-bar-fill.regular {
+  background: linear-gradient(90deg, #FDF0D5 0%, #e6d5b8 100%);
+}
+
 .progress-bar-fill::after {
   content: '';
   position: absolute;
@@ -224,6 +247,11 @@
 .load-test-btn.case-study {
   background: linear-gradient(135deg, #780000 0%, #a00000 100%);
   color: #FDF0D5;
+}
+
+.load-test-btn.regular {
+  background: linear-gradient(135deg, #FDF0D5 0%, #e6d5b8 100%);
+  color: #003049;
 }
 
 .load-test-btn:hover {
