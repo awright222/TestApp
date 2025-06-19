@@ -1,0 +1,250 @@
+/* My Created Tests Component Styles */
+
+.my-tests-container {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #FDF0D5 0%, #FFFFFF 100%);
+}
+
+.my-tests-header {
+  background: linear-gradient(135deg, #003459 0%, #669BBC 100%);
+  color: #FDF0D5;
+  padding: 2rem;
+  border-radius: 16px;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.my-tests-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.my-tests-subtitle {
+  font-size: 1.1rem;
+  margin: 0 0 1.5rem 0;
+  opacity: 0.9;
+}
+
+.my-tests-stats {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.tests-count {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.last-updated {
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.action-button {
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.action-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.action-button.import {
+  background: #FCBF49;
+  color: #003459;
+}
+
+.action-button.create {
+  background: #780000;
+  color: #FDF0D5;
+}
+
+.action-button.share {
+  background: #669BBC;
+  color: #FDF0D5;
+}
+
+.action-button.edit {
+  background: #FCBF49;
+  color: #003459;
+}
+
+.action-button.delete {
+  background: #780000;
+  color: #FDF0D5;
+}
+
+.no-tests-container {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: linear-gradient(135deg, #FDF0D5 0%, #FFFFFF 100%);
+  border-radius: 16px;
+  border: 1px solid rgba(102, 155, 188, 0.2);
+}
+
+.no-tests-icon {
+  font-size: 4rem;
+  margin-bottom: 1rem;
+}
+
+.no-tests-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #003459;
+  margin-bottom: 0.5rem;
+}
+
+.no-tests-description {
+  color: #669BBC;
+  margin-bottom: 2rem;
+  line-height: 1.6;
+}
+
+.tests-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.5rem;
+}
+
+.test-card {
+  background: #FFFFFF;
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(102, 155, 188, 0.2);
+  transition: all 0.3s ease;
+}
+
+.test-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.test-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.test-type-badge {
+  background: #FCBF49;
+  color: #003459;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.test-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #003459;
+  margin: 0.5rem 0;
+  line-height: 1.4;
+}
+
+.test-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  color: #669BBC;
+}
+
+.test-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 4rem;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #FDF0D5;
+  border-top: 4px solid #003459;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .my-tests-container {
+    padding: 1rem;
+  }
+  
+  .my-tests-title {
+    font-size: 2rem;
+  }
+  
+  .my-tests-stats {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .action-buttons {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .action-button {
+    flex: 1;
+    justify-content: center;
+    min-width: 140px;
+  }
+  
+  .tests-list {
+    grid-template-columns: 1fr;
+  }
+  
+  .test-actions {
+    justify-content: space-between;
+  }
+  
+  .action-button {
+    flex: 1;
+    min-width: 0;
+    padding: 0.5rem;
+    font-size: 0.9rem;
+  }
+}
