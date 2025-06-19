@@ -198,27 +198,6 @@ export default function MyCreatedTests() {
             📥 Import Test
           </button>
           <button
-            onClick={() => {
-              setLoading(true);
-              loadCreatedTests();
-            }}
-            style={{
-              background: '#669BBC',
-              color: '#FDF0D5',
-              border: 'none',
-              padding: '0.75rem 1.5rem',
-              borderRadius: '8px',
-              fontSize: '1rem',
-              fontWeight: '600',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem'
-            }}
-          >
-            🔄 Refresh
-          </button>
-          <button
             onClick={() => navigate('/create-test')}
             style={{
               background: '#780000',
@@ -247,7 +226,7 @@ export default function MyCreatedTests() {
           borderRadius: '16px',
           border: '1px solid rgba(102, 155, 188, 0.2)'
         }}>
-          <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>�</div>
+          <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>📝</div>
           <h3 style={{ color: '#003049', marginBottom: '1rem' }}>No tests created yet</h3>
           <p style={{ color: '#669BBC', marginBottom: '2rem', fontSize: '1.1rem' }}>
             Create your first custom test to get started!
@@ -385,7 +364,7 @@ export default function MyCreatedTests() {
                   fontSize: '0.85rem',
                   fontWeight: '500'
                 }}>
-                  � {formatDate(test.createdAt)}
+                  📅 {formatDate(test.createdAt)}
                 </span>
               </div>
 
