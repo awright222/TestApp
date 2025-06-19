@@ -28,6 +28,7 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
   const [timerMinimized, setTimerMinimized] = useState(false);
   const [timerFloating, setTimerFloating] = useState(false);
   const [timerDragging, setTimerDragging] = useState(false);
+  const [timerTimeHidden, setTimerTimeHidden] = useState(false);
   const [timerPosition, setTimerPosition] = useState({ x: window.innerWidth - 280, y: 24 });
   const timerOffset = useRef({ x: 0, y: 0 });
   const dragRef = useRef({ isDragging: false, lastUpdate: 0 });
@@ -535,6 +536,10 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
     setTimerMinimized(false);
   };
 
+  const toggleTimerTimeVisibility = () => {
+    setTimerTimeHidden(!timerTimeHidden);
+  };
+
   // Show loading screen while questions are being loaded
   if (loading) {
     return (
@@ -620,20 +625,29 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
         <div className="integrated-timer">
           <div className="timer-display">
             <div className="timer-time">
-              <span className={`timer-value ${timerTime < 300 && timerTime > 0 ? 'timer-warning' : ''} ${timerTime === 0 ? 'timer-expired' : ''}`}>
-                {formatTime(timerTime)}
+              <span className={`timer-value ${timerTime < 300 && timerTime > 0 ? 'timer-warning' : ''} ${timerTime === 0 ? 'timer-expired' : ''} ${timerTimeHidden ? 'timer-hidden' : ''}`}>
+                {timerTimeHidden ? '••:••:••' : formatTime(timerTime)}
               </span>
               {isAssessmentMode && (
-                <span className="timer-label">Time Remaining</span>
+                <span className="timer-label">{timerTimeHidden ? 'Time Hidden (Still Running)' : 'Time Remaining'}</span>
               )}
               {isPracticeMode && (
                 <span className="timer-label">
-                  {timerEnabled ? 'Practice Timer' : 'Timer Available'}
+                  {timerTimeHidden && timerEnabled ? 'Timer Hidden (Still Running)' : 
+                   timerEnabled ? 'Practice Timer' : 'Timer Available'}
                 </span>
               )}
             </div>
             
             <div className="timer-controls">
+              <button 
+                onClick={toggleTimerTimeVisibility}
+                className="timer-btn timer-hide-time"
+                title={timerTimeHidden ? 'Show time' : 'Hide time'}
+              >
+                {timerTimeHidden ? '👁️' : '🙈'}
+              </button>
+              
               <button 
                 onClick={minimizeTimer}
                 className="timer-btn timer-minimize"
@@ -720,17 +734,28 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
         >
           <div className="floating-timer-header">
             <div className="floating-timer-time">
-              <span className={`floating-timer-value ${timerTime < 300 && timerTime > 0 ? 'timer-warning' : ''} ${timerTime === 0 ? 'timer-expired' : ''}`}>
-                {formatTime(timerTime)}
+              <span className={`floating-timer-value ${timerTime < 300 && timerTime > 0 ? 'timer-warning' : ''} ${timerTime === 0 ? 'timer-expired' : ''} ${timerTimeHidden ? 'timer-hidden' : ''}`}>
+                {timerTimeHidden ? '••:••:••' : formatTime(timerTime)}
               </span>
             </div>
             <div className="floating-timer-header-controls">
               <button 
                 onClick={(e) => {
                   e.stopPropagation();
+                  toggleTimerTimeVisibility();
+                }}
+                className="floating-timer-btn floating-timer-hide-time"
+                title={timerTimeHidden ? 'Show time' : 'Hide time'}
+              >
+                {timerTimeHidden ? '👁️' : '🙈'}
+              </button>
+              
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
                   setTimerMinimized(!timerMinimized);
                 }}
-                className="floating-timer-btn"
+                className="floating-timer-btn floating-timer-minimize"
                 title={timerMinimized ? 'Expand timer' : 'Minimize timer'}
               >
                 {timerMinimized ? '🔼' : '🔽'}
