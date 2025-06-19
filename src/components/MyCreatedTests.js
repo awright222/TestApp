@@ -313,17 +313,37 @@ export default function MyCreatedTests() {
                 <button
                   onClick={() => deleteTest(test.id, test.title)}
                   style={{
-                    background: 'transparent',
+                    background: 'linear-gradient(135deg, #dc3545 0%, #c82333 100%)',
                     border: 'none',
-                    color: '#dc3545',
+                    color: 'white',
                     cursor: 'pointer',
-                    padding: '0.25rem',
-                    borderRadius: '4px',
-                    fontSize: '1.2rem'
+                    padding: '0.5rem',
+                    borderRadius: '8px',
+                    fontSize: '1rem',
+                    width: '36px',
+                    height: '36px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.2s ease',
+                    boxShadow: '0 2px 8px rgba(220, 53, 69, 0.2)'
                   }}
                   title="Delete test"
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.boxShadow = '0 4px 16px rgba(220, 53, 69, 0.4)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = '0 2px 8px rgba(220, 53, 69, 0.2)';
+                  }}
                 >
-                  🗑️
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M3 6h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6m3 0V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <line x1="10" y1="11" x2="10" y2="17" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                    <line x1="14" y1="11" x2="14" y2="17" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                  </svg>
                 </button>
               </div>
 
