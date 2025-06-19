@@ -387,9 +387,9 @@ button:hover {
   border: 2px solid #669BBC;
 }
 
-/* Saved Tests Page - Timer Button Overlap Prevention */
+/* Saved Tests Page */
 .saved-tests-page {
-  padding-top: 6rem; /* Make room for timer button */
+  padding-top: 2rem;
 }
 
 .saved-tests-header {
@@ -397,8 +397,6 @@ button:hover {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 2rem;
-  /* Ensure the header stays below the timer button */
-  margin-top: 1rem;
 }
 
 .saved-tests-header h2 {
@@ -472,10 +470,9 @@ button:hover {
   }
 }
 
-/* Hide sidebar and timer toggle on mobile, show hamburger */
+/* Hide sidebar on mobile, show hamburger */
 @media (max-width: 600px) {
-  .sidebar,
-  .timer-toggle-btn.desktop {
+  .sidebar {
     display: none !important;
   }
   .mobile-menu-btn {
@@ -598,39 +595,6 @@ button:hover {
   .sidebar-search.mobile {
     display: none !important;
   }
-}
-
-/* Timer button styles */
-.timer-toggle-btn.desktop {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  background: #780000;
-  color: #FDF0D5;
-  border: 2px solid #669BBC;
-  border-radius: 8px;
-  padding: 0.8rem;
-  font-size: 1.2rem;
-  cursor: pointer;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  transition: background 0.2s ease, transform 0.1s ease;
-  z-index: 1000;
-}
-
-.timer-toggle-btn.desktop:hover {
-  background: #669BBC;
-  color: #003049;
-  transform: scale(1.05);
-}
-
-.timer-toggle-btn.mobile {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.timer-toggle-btn.mobile svg {
-  margin-right: 0.25rem;
 }
 
 .hotspot-dropdowns > div {

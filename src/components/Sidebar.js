@@ -1,7 +1,5 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faClock } from '@fortawesome/free-regular-svg-icons';
 import { useAuth } from '../firebase/AuthContext';
 import './Sidebar.css';
 
@@ -9,9 +7,7 @@ function Sidebar({
   searchTerm, 
   setSearchTerm, 
   mobileMenuOpen, 
-  setMobileMenuOpen, 
-  showTimer, 
-  setShowTimer 
+  setMobileMenuOpen
 }) {
   const location = useLocation();
   const { user, logout } = useAuth();
@@ -53,17 +49,6 @@ function Sidebar({
                   </Link>
                 </li>
               ))}
-              <li>
-                <button
-                  className="timer-toggle-btn mobile"
-                  onClick={() => {
-                    setShowTimer(true);
-                    setMobileMenuOpen(false);
-                  }}
-                >
-                  <FontAwesomeIcon icon={faClock} /> Timer
-                </button>
-              </li>
               <li className="mobile-auth-section">
                 <div>
                   <div className="welcome-text">

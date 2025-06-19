@@ -91,22 +91,6 @@
   padding-top: 1rem;
 }
 
-.timer-toggle-btn.mobile {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  width: 100%;
-  margin: 0.2rem 0 0 0;
-  padding: 0.4rem 0.5rem;
-  font-size: 1rem;
-  border-radius: 6px;
-  background: #780000;
-  color: #FDF0D5;
-  border: none;
-  font-weight: bold;
-  box-sizing: border-box;
-}
-
 /* Desktop Sidebar */
 .sidebar {
   width: 220px;
@@ -244,8 +228,7 @@
 /* Hide mobile menu on desktop */
 @media (min-width: 601px) {
   .mobile-menu-btn,
-  .mobile-dropdown-menu,
-  .timer-toggle-btn.mobile {
+  .mobile-dropdown-menu {
     display: none !important;
   }
 }

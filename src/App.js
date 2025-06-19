@@ -2,10 +2,7 @@ import { useState } from 'react';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import './App.css';
 import { CaseStudies, CaseStudyDetail } from './CaseStudies';
-import Timer from "./Timer";
 import SavedTests from './SavedTests';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faClock } from '@fortawesome/free-regular-svg-icons';
 import { useAuth } from './firebase/AuthContext';
 import AuthModal from './components/AuthModal';
 import Landing from './components/Landing';
@@ -24,7 +21,6 @@ import Debug from './components/Debug';
 
 function App() {
   const [searchTerm, setSearchTerm] = useState('');
-  const [showTimer, setShowTimer] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const location = useLocation();
@@ -65,22 +61,7 @@ function App() {
         setSearchTerm={setSearchTerm}
         mobileMenuOpen={mobileMenuOpen}
         setMobileMenuOpen={setMobileMenuOpen}
-        showTimer={showTimer}
-        setShowTimer={setShowTimer}
       />
-
-      {/* Timer Toggle Button (desktop only) - Hide on test routes */}
-      {!showTimer && !location.pathname.includes('/practice') && !location.pathname.includes('/case-study') && !location.pathname.includes('/custom-test') && !location.pathname.includes('/shared-test') && (
-        <button
-          className="timer-toggle-btn desktop"
-          onClick={() => setShowTimer(true)}
-        >
-          <FontAwesomeIcon icon={faClock} />
-        </button>
-      )}
-      {showTimer && !location.pathname.includes('/practice') && !location.pathname.includes('/case-study') && !location.pathname.includes('/custom-test') && !location.pathname.includes('/shared-test') && (
-        <Timer onClose={() => setShowTimer(false)} />
-      )}
 
       {/* Main Content */}
       <div className="main-content">
