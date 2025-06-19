@@ -6,6 +6,10 @@ export default function TestSettings({ settings, onSettingsChange, onSave, onCan
     title: settings?.title || '',
     description: settings?.description || '',
     timeLimit: settings?.timeLimit || 0, // 0 = no limit
+    autoSubmitOnTimeout: settings?.autoSubmitOnTimeout || true,
+    showTimer: settings?.showTimer || true,
+    timerWarnings: settings?.timerWarnings || true,
+    gracePeriod: settings?.gracePeriod || 30,
     allowSaveAndReturn: settings?.allowSaveAndReturn || false,
     showExplanations: settings?.showExplanations || true,
     showCorrectAnswers: settings?.showCorrectAnswers || false,
@@ -19,6 +23,11 @@ export default function TestSettings({ settings, onSettingsChange, onSave, onCan
     showResults: settings?.showResults || true,
     allowReview: settings?.allowReview || true,
     accessCode: settings?.accessCode || '',
+    browserLockdown: settings?.browserLockdown || false,
+    fullScreenRequired: settings?.fullScreenRequired || false,
+    linearMode: settings?.linearMode || false,
+    noBacktrack: settings?.noBacktrack || false,
+    oneTimeOnly: settings?.oneTimeOnly || false,
     ...settings
   });
 
@@ -79,6 +88,55 @@ export default function TestSettings({ settings, onSettingsChange, onSave, onCan
                 <span className="input-help">0 = No time limit</span>
               </div>
             </div>
+            
+            {/* Timer Behavior Controls */}
+            {localSettings.timeLimit > 0 && (
+              <>
+                <div className="setting-group checkbox-group">
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={localSettings.autoSubmitOnTimeout}
+                      onChange={(e) => handleChange('autoSubmitOnTimeout', e.target.checked)}
+                    />
+                    Auto-submit when time expires
+                  </label>
+                </div>
+                <div className="setting-group checkbox-group">
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={localSettings.showTimer}
+                      onChange={(e) => handleChange('showTimer', e.target.checked)}
+                    />
+                    Show timer countdown to students
+                  </label>
+                </div>
+                <div className="setting-group checkbox-group">
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={localSettings.timerWarnings}
+                      onChange={(e) => handleChange('timerWarnings', e.target.checked)}
+                    />
+                    Show timer warnings (10min, 5min, 1min remaining)
+                  </label>
+                </div>
+                <div className="setting-group">
+                  <label>Grace period after time expires (seconds)</label>
+                  <select
+                    value={localSettings.gracePeriod}
+                    onChange={(e) => handleChange('gracePeriod', parseInt(e.target.value))}
+                  >
+                    <option value={0}>No grace period</option>
+                    <option value={15}>15 seconds</option>
+                    <option value={30}>30 seconds</option>
+                    <option value={60}>1 minute</option>
+                  </select>
+                </div>
+              </>
+            )}
+            
             <div className="setting-group">
               <label>Maximum Attempts</label>
               <select
@@ -246,6 +304,61 @@ export default function TestSettings({ settings, onSettingsChange, onSave, onCan
                   onChange={(e) => handleChange('isPublished', e.target.checked)}
                 />
                 Publish test (make it accessible to students)
+              </label>
+            </div>
+          </div>
+
+          {/* Security & Navigation */}
+          <div className="settings-section">
+            <h3>🔒 Security & Navigation</h3>
+            <div className="setting-group checkbox-group">
+              <label>
+                <input
+                  type="checkbox"
+                  checked={localSettings.browserLockdown}
+                  onChange={(e) => handleChange('browserLockdown', e.target.checked)}
+                />
+                Browser lockdown (prevent tab switching, right-click, copy/paste)
+              </label>
+            </div>
+            <div className="setting-group checkbox-group">
+              <label>
+                <input
+                  type="checkbox"
+                  checked={localSettings.fullScreenRequired}
+                  onChange={(e) => handleChange('fullScreenRequired', e.target.checked)}
+                />
+                Force full screen mode
+              </label>
+            </div>
+            <div className="setting-group checkbox-group">
+              <label>
+                <input
+                  type="checkbox"
+                  checked={localSettings.linearMode}
+                  onChange={(e) => handleChange('linearMode', e.target.checked)}
+                />
+                Linear mode (must answer questions in order)
+              </label>
+            </div>
+            <div className="setting-group checkbox-group">
+              <label>
+                <input
+                  type="checkbox"
+                  checked={localSettings.noBacktrack}
+                  onChange={(e) => handleChange('noBacktrack', e.target.checked)}
+                />
+                No backtrack (can't return to previous questions once submitted)
+              </label>
+            </div>
+            <div className="setting-group checkbox-group">
+              <label>
+                <input
+                  type="checkbox"
+                  checked={localSettings.oneTimeOnly}
+                  onChange={(e) => handleChange('oneTimeOnly', e.target.checked)}
+                />
+                One-time only (cannot retake once completed)
               </label>
             </div>
           </div>

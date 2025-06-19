@@ -792,7 +792,7 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
       // Remove notification after 3 seconds
       setTimeout(() => {
         const elem = document.getElementById('lockdown-notification');
-        if (elem) elem.remove();
+        if elem) elem.remove();
       }, 3000);
 
       return () => {

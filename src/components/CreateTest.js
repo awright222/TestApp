@@ -54,6 +54,10 @@ export default function CreateTest() {
   // Settings states - these should be specific to this test instance
   const [testSettings, setTestSettings] = useState({
     timeLimit: 0, // 0 = no limit
+    autoSubmitOnTimeout: true,
+    showTimer: true,
+    timerWarnings: true,
+    gracePeriod: 30,
     allowSaveAndReturn: false,
     showExplanations: true,
     showCorrectAnswers: false,
@@ -67,7 +71,13 @@ export default function CreateTest() {
     showResults: true,
     allowReview: true,
     accessCode: '',
-    visibility: 'private' // 'private', 'public', 'unlisted'
+    visibility: 'private', // 'private', 'public', 'unlisted'
+    // Security & Navigation settings
+    browserLockdown: false,
+    fullScreenRequired: false,
+    linearMode: false,
+    noBacktrack: false,
+    oneTimeOnly: false
   });
 
   // Reset settings when creating a new test (not editing)
@@ -87,6 +97,10 @@ export default function CreateTest() {
         // Reset to defaults for new test
         setTestSettings({
           timeLimit: 0,
+          autoSubmitOnTimeout: true,
+          showTimer: true,
+          timerWarnings: true,
+          gracePeriod: 30,
           allowSaveAndReturn: false,
           showExplanations: true,
           showCorrectAnswers: false,
@@ -100,7 +114,13 @@ export default function CreateTest() {
           showResults: true,
           allowReview: true,
           accessCode: '',
-          visibility: 'private'
+          visibility: 'private',
+          // Security & Navigation settings
+          browserLockdown: false,
+          fullScreenRequired: false,
+          linearMode: false,
+          noBacktrack: false,
+          oneTimeOnly: false
         });
       }
     }
@@ -1804,6 +1824,98 @@ Role: Admin","Proper configuration requires setting the department and role corr
                       placeholder="Leave empty for no access code"
                     />
                     <small>Require test takers to enter this code</small>
+                  </label>
+                </div>
+              </div>
+
+              {/* Timer Settings */}
+              <div className="settings-section">
+                <h3>⏰ Timer Settings</h3>
+                <div className="checkbox-group">
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={testSettings.autoSubmit}
+                      onChange={(e) => setTestSettings({...testSettings, autoSubmit: e.target.checked})}
+                    />
+                    <span>Auto-submit when time expires</span>
+                  </label>
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={testSettings.showTimer}
+                      onChange={(e) => setTestSettings({...testSettings, showTimer: e.target.checked})}
+                    />
+                    <span>Show timer to students</span>
+                  </label>
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={testSettings.timerWarnings}
+                      onChange={(e) => setTestSettings({...testSettings, timerWarnings: e.target.checked})}
+                    />
+                    <span>Show timer warnings (10, 5, 1 min remaining)</span>
+                  </label>
+                </div>
+                <div className="setting-group">
+                  <label>
+                    <span>Grace Period (seconds)</span>
+                    <input
+                      type="number"
+                      min="0"
+                      max="300"
+                      value={testSettings.gracePeriod}
+                      onChange={(e) => setTestSettings({...testSettings, gracePeriod: parseInt(e.target.value) || 0})}
+                      placeholder="0"
+                    />
+                    <small>Extra time after expiration to finish current answer</small>
+                  </label>
+                </div>
+              </div>
+
+              {/* Security & Navigation Settings */}
+              <div className="settings-section">
+                <h3>🔒 Security & Navigation</h3>
+                <div className="checkbox-group">
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={testSettings.browserLockdown}
+                      onChange={(e) => setTestSettings({...testSettings, browserLockdown: e.target.checked})}
+                    />
+                    <span>Browser lockdown (disable copy/paste, right-click, tab switching)</span>
+                  </label>
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={testSettings.fullScreenRequired}
+                      onChange={(e) => setTestSettings({...testSettings, fullScreenRequired: e.target.checked})}
+                    />
+                    <span>Require full screen mode</span>
+                  </label>
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={testSettings.linearMode}
+                      onChange={(e) => setTestSettings({...testSettings, linearMode: e.target.checked})}
+                    />
+                    <span>Linear mode (must answer questions in order)</span>
+                  </label>
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={testSettings.noBacktrack}
+                      onChange={(e) => setTestSettings({...testSettings, noBacktrack: e.target.checked})}
+                    />
+                    <span>No backtracking (cannot return to previous questions)</span>
+                  </label>
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={testSettings.oneTimeOnly}
+                      onChange={(e) => setTestSettings({...testSettings, oneTimeOnly: e.target.checked})}
+                    />
+                    <span>One-time only (test can only be taken once)</span>
                   </label>
                 </div>
               </div>

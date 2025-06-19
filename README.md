@@ -121,3 +121,20 @@ Advanced analytics and user insights
 ✅ Clear Communication: Users understand when/why login is needed
 ✅ No Data Loss: Migration preserves all existing data
 ✅ Seamless Experience: Automatic login detection and redirection
+
+Timer Settings:
+✅ Auto-submit when time expires
+✅ Show/hide timer to students
+✅ Timer warnings at 10, 5, and 1 minute
+✅ Grace period after time expires
+Security & Navigation:
+✅ Browser lockdown (disables copy/paste, right-click, tab switching)
+✅ Full screen requirement
+✅ Linear mode (answer in order)
+✅ No backtracking
+✅ One-time only tests
+Test Taking Experience:
+✅ Consolidated UI with compact controls
+✅ All security restrictions enforced during test taking
+✅ Timer countdown with warnings and auto-submit
+✅ Navigation restrictions based on test settings
