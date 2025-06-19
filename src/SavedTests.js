@@ -3,7 +3,6 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { SavedTestsService } from './SavedTestsService';
 import { useAuth } from './firebase/AuthContext';
 import SearchResults from './components/SearchResults';
-import { SavedTestMigration } from './utils/savedTestMigration';
 import './SavedTests.css';
 
 function TestCard({ test, onDelete, onLoad }) {
@@ -142,7 +141,6 @@ function TestCard({ test, onDelete, onLoad }) {
 export default function SavedTests({ onLoadTest, searchTerm, onClearSearch }) {
   const [savedTests, setSavedTests] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [migrating, setMigrating] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
@@ -239,28 +237,6 @@ export default function SavedTests({ onLoadTest, searchTerm, onClearSearch }) {
     }
   };
 
-  const handleMigrateSavedTests = async () => {
-    if (!window.confirm('This will analyze your saved tests and try to fix any missing original test titles. Continue?')) {
-      return;
-    }
-
-    setMigrating(true);
-    try {
-      const fixedCount = await SavedTestMigration.fixAllSavedTests();
-      if (fixedCount > 0) {
-        alert(`✅ Fixed ${fixedCount} saved test${fixedCount !== 1 ? 's' : ''}! The test titles should now display correctly.`);
-        loadSavedTests(); // Refresh the list
-      } else {
-        alert('ℹ️ All saved tests already have proper title metadata.');
-      }
-    } catch (error) {
-      console.error('Migration error:', error);
-      alert('❌ Failed to migrate saved tests. Check the console for details.');
-    } finally {
-      setMigrating(false);
-    }
-  };
-
   if (loading) {
     return <div className="loading-state">Loading saved tests...</div>;
   }
@@ -269,30 +245,9 @@ export default function SavedTests({ onLoadTest, searchTerm, onClearSearch }) {
     <div className="saved-tests-page">
       <div className="saved-tests-header">
         <h2>Saved Tests</h2>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-          <p style={{ color: '#669BBC', margin: 0, fontSize: '0.9rem' }}>
-            {savedTests.length} saved test{savedTests.length !== 1 ? 's' : ''} found
-          </p>
-          {savedTests.length > 0 && (
-            <button
-              onClick={handleMigrateSavedTests}
-              disabled={migrating}
-              style={{
-                background: '#28a745',
-                color: 'white',
-                border: 'none',
-                padding: '0.5rem 1rem',
-                borderRadius: '6px',
-                cursor: migrating ? 'not-allowed' : 'pointer',
-                fontSize: '0.85rem',
-                opacity: migrating ? 0.6 : 1
-              }}
-              title="Fix saved tests with missing original test titles"
-            >
-              {migrating ? '🔄 Fixing...' : '🔧 Fix Test Titles'}
-            </button>
-          )}
-        </div>
+        <p style={{ color: '#669BBC', margin: 0, fontSize: '0.9rem' }}>
+          {savedTests.length} saved test{savedTests.length !== 1 ? 's' : ''} found
+        </p>
       </div>
 
       {savedTests.length === 0 ? (

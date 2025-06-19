@@ -18,7 +18,6 @@ import PracticeTestContainer from './components/PracticeTestContainer';
 import SharedTestAccess from './components/SharedTestAccess';
 import CrossDeviceDebug from './components/CrossDeviceDebug';
 import SaveTestDebug from './components/SaveTestDebug';
-import SavedTestDebugger from './components/SavedTestDebugger';
 import NoAuthDebug from './components/NoAuthDebug';
 import Sidebar from './components/Sidebar';
 import Debug from './components/Debug';
@@ -135,7 +134,6 @@ function App() {
           <Route path="/debug" element={<Debug />} />
           <Route path="/debug/cross-device" element={<CrossDeviceDebug />} />
           <Route path="/debug/save-test" element={<SaveTestDebug />} />
-          <Route path="/debug/saved-tests" element={<SavedTestDebugger />} />
           <Route path="/debug/clear" element={
             <div style={{ padding: '2rem', textAlign: 'center' }}>
               <h2>Debug Tools</h2>

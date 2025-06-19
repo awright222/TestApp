@@ -5,7 +5,6 @@ import TestSelector from './TestSelector';
 import PracticeTest from './PracticeTest';
 import { CreatedTestsService } from '../services/CreatedTestsService';
 import { useAuth } from '../firebase/AuthContext';
-import { TestTitleInference } from '../utils/testTitleInference';
 
 function PracticeTestContainer({ 
   searchTerm, 
@@ -60,16 +59,9 @@ function PracticeTestContainer({
       }
       
       // Transform saved test to the expected format and include progress
-      // Use the TestTitleInference utility to get the best possible original title
-      const inferredTitle = TestTitleInference.inferTitle(savedTest);
-      
       // Determine if we have a reliable original title vs. just the save name
-      const hasReliableOriginalTitle = (
-        savedTest.originalTest?.title || 
-        inferredTitle !== savedTest.title
-      );
-      
-      const originalTitle = savedTest.originalTest?.title || inferredTitle;
+      const hasReliableOriginalTitle = !!savedTest.originalTest?.title;
+      const originalTitle = savedTest.originalTest?.title || savedTest.title;
       
       const transformedTest = {
         title: originalTitle,
