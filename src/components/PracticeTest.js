@@ -291,9 +291,6 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
           ← Back to Tests
         </button>
         <div className="test-info">
-          <div className="test-level">
-            {selectedTest.icon} {selectedTest.difficulty} Level
-          </div>
           <h1 className="test-title">{selectedTest.title}</h1>
         </div>
       </div>
