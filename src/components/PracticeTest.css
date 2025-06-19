@@ -1513,3 +1513,280 @@
     padding: 0.3rem;
   }
 }
+
+/* Mark for Review Feature Styles */
+.review-button {
+  background: #ffc107;
+  color: #212529;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-left: 1rem;
+  transition: all 0.2s ease;
+}
+
+.review-button:hover {
+  background: #e0a800;
+  transform: translateY(-1px);
+}
+
+.question-header-buttons {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.mark-review-btn {
+  background: #669BBC;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mark-review-btn:hover {
+  background: #5a8aa6;
+  transform: translateY(-1px);
+}
+
+.mark-review-btn.marked {
+  background: #ffc107;
+  color: #212529;
+}
+
+.mark-review-btn.marked:hover {
+  background: #e0a800;
+}
+
+.question-notes-section {
+  background: #fff9c4;
+  border: 1px solid #f7d794;
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 1rem 0;
+}
+
+.notes-label {
+  display: block;
+  font-weight: 600;
+  color: #8b6914;
+  margin-bottom: 0.5rem;
+}
+
+.question-notes-textarea {
+  width: 100%;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 0.5rem;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 60px;
+}
+
+.question-notes-textarea:focus {
+  outline: none;
+  border-color: #669BBC;
+  box-shadow: 0 0 0 2px rgba(102, 155, 188, 0.2);
+}
+
+/* Review Panel Modal */
+.review-panel-modal {
+  max-width: 800px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.review-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem 1.5rem 1rem 1.5rem;
+  border-bottom: 1px solid #eee;
+}
+
+.review-panel-header h3 {
+  margin: 0;
+  color: #003049;
+}
+
+.review-panel-content {
+  padding: 1.5rem;
+}
+
+.no-marked-questions {
+  text-align: center;
+  color: #669BBC;
+  font-style: italic;
+}
+
+.no-marked-questions p {
+  margin: 0.5rem 0;
+}
+
+.marked-questions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.marked-question-item {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  padding: 1rem;
+  transition: box-shadow 0.2s ease;
+}
+
+.marked-question-item:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.marked-question-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.question-number {
+  font-weight: bold;
+  color: #669BBC;
+}
+
+.marked-question-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.jump-to-question-btn {
+  background: #669BBC;
+  color: white;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.jump-to-question-btn:hover {
+  background: #5a8aa6;
+}
+
+.unmark-question-btn {
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 0.4rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.unmark-question-btn:hover {
+  background: #c82333;
+}
+
+.marked-question-text {
+  color: #495057;
+  margin-bottom: 0.5rem;
+  line-height: 1.4;
+}
+
+.marked-question-note {
+  background: #fff9c4;
+  border: 1px solid #f7d794;
+  border-radius: 4px;
+  padding: 0.5rem;
+  margin: 0.5rem 0;
+  font-size: 0.9rem;
+}
+
+.marked-question-note strong {
+  color: #8b6914;
+}
+
+.marked-question-status {
+  margin-top: 0.5rem;
+}
+
+.answered-status {
+  color: #28a745;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.unanswered-status {
+  color: #ffc107;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.review-panel-footer {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #eee;
+  text-align: center;
+}
+
+.clear-all-marks-btn {
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.clear-all-marks-btn:hover {
+  background: #c82333;
+}
+
+/* Responsive adjustments for mark for review */
+@media (max-width: 768px) {
+  .question-header-buttons {
+    flex-direction: column;
+    gap: 0.3rem;
+    align-items: stretch;
+  }
+  
+  .mark-review-btn, .info-btn {
+    font-size: 0.8rem;
+    padding: 0.4rem 0.8rem;
+  }
+  
+  .review-button {
+    font-size: 0.8rem;
+    padding: 0.3rem 0.6rem;
+    margin-left: 0.5rem;
+  }
+  
+  .review-panel-modal {
+    max-width: 95vw;
+    margin: 1rem;
+  }
+  
+  .marked-question-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .marked-question-actions {
+    align-self: stretch;
+  }
+  
+  .jump-to-question-btn, .unmark-question-btn {
+    flex: 1;
+  }
+}

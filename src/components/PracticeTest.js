@@ -20,6 +20,11 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
   const [testCompleted, setTestCompleted] = useState(false);
   const [showFinishConfirmation, setShowFinishConfirmation] = useState(false);
   
+  // Mark for Review feature states
+  const [markedQuestions, setMarkedQuestions] = useState([]);
+  const [questionNotes, setQuestionNotes] = useState({});
+  const [showReviewPanel, setShowReviewPanel] = useState(false);
+  
   // Timer state
   const [timerEnabled, setTimerEnabled] = useState(false);
   const [timerTime, setTimerTime] = useState(0); // in seconds
@@ -66,12 +71,14 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
               // Set the current saved test info for the SaveModal
               if (selectedTest.savedTestInfo) {
                 setCurrentSavedTest(selectedTest.savedTestInfo);
-              }
-              // Restore saved progress
-              setCurrent(selectedTest.savedProgress.current || 0);
-              setUserAnswers(selectedTest.savedProgress.userAnswers || filtered.map(getInitialUserAnswer));
-              setQuestionScore(selectedTest.savedProgress.questionScore || Array(filtered.length).fill(null));
-              setQuestionSubmitted(selectedTest.savedProgress.questionSubmitted || Array(filtered.length).fill(false));
+              }          // Restore saved progress
+          setCurrent(selectedTest.savedProgress.current || 0);
+          setUserAnswers(selectedTest.savedProgress.userAnswers || filtered.map(getInitialUserAnswer));
+          setQuestionScore(selectedTest.savedProgress.questionScore || Array(filtered.length).fill(null));
+          setQuestionSubmitted(selectedTest.savedProgress.questionSubmitted || Array(filtered.length).fill(false));
+          // Restore marked questions and notes
+          setMarkedQuestions(selectedTest.savedProgress.markedQuestions || []);
+          setQuestionNotes(selectedTest.savedProgress.questionNotes || {});
             } else {
               // Initialize fresh state
               setUserAnswers(filtered.map(getInitialUserAnswer));
@@ -105,6 +112,9 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
           setUserAnswers(selectedTest.savedProgress.userAnswers || questionArray.map(getInitialUserAnswer));
           setQuestionScore(selectedTest.savedProgress.questionScore || Array(questionArray.length).fill(null));
           setQuestionSubmitted(selectedTest.savedProgress.questionSubmitted || Array(questionArray.length).fill(false));
+          // Restore marked questions and notes
+          setMarkedQuestions(selectedTest.savedProgress.markedQuestions || []);
+          setQuestionNotes(selectedTest.savedProgress.questionNotes || {});
         } else {
           console.log('PracticeTest: Initializing fresh state');
           // Initialize fresh state
@@ -260,13 +270,50 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
     return arr;
   }
 
+  // Mark for Review functions
+  const toggleMarkQuestion = (questionIndex = current) => {
+    setMarkedQuestions(prev => {
+      const isMarked = prev.includes(questionIndex);
+      if (isMarked) {
+        // Remove from marked questions and clear any notes
+        setQuestionNotes(prevNotes => {
+          const updated = { ...prevNotes };
+          delete updated[questionIndex];
+          return updated;
+        });
+        return prev.filter(index => index !== questionIndex);
+      } else {
+        // Add to marked questions
+        return [...prev, questionIndex];
+      }
+    });
+  };
+
+  const updateQuestionNote = (questionIndex, note) => {
+    setQuestionNotes(prev => ({
+      ...prev,
+      [questionIndex]: note
+    }));
+  };
+
+  const clearAllMarks = () => {
+    setMarkedQuestions([]);
+    setQuestionNotes({});
+  };
+
+  const isQuestionMarked = (questionIndex) => {
+    return markedQuestions.includes(questionIndex);
+  };
+
   // Handle saving progress
   const handleSaveProgress = async (saveData) => {
     try {
       // Use the progress data from SaveModal (it has the correct structure with totalQuestions and completedQuestions)
       const progressData = {
         ...saveData.progress, // Use SaveModal's progress structure
-        questions: questions.map(q => ({ ...q })) // Add questions array for backward compatibility
+        questions: questions.map(q => ({ ...q })), // Add questions array for backward compatibility
+        markedQuestions: markedQuestions, // Save marked questions
+        questionNotes: questionNotes // Save question notes
       };
       
       // Create the complete saved test object
@@ -933,6 +980,15 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
       <div className="question-counter">
         <div className="question-count-display">
           <span className="current-question">Question {current + 1} of {questions.length}</span>
+          {markedQuestions.length > 0 && (
+            <button 
+              onClick={() => setShowReviewPanel(true)}
+              className="review-button"
+              title={`${markedQuestions.length} question(s) marked for review`}
+            >
+              📌 Review ({markedQuestions.length})
+            </button>
+          )}
         </div>
         <div className="question-jump-container">
           <input
@@ -957,20 +1013,45 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
       <div className="question-text">
         <div className="question-header">
           <strong>{q.question_text}</strong>
-          <button
-            className="info-btn"
-            onClick={() => setShowModal(true)}
-            aria-label="Show explanation"
-            title="Show explanation and correct answer"
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
-              <path d="M12 16v-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-              <path d="M12 8h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-            </svg>
-          </button>
+          <div className="question-header-buttons">
+            <button
+              onClick={() => toggleMarkQuestion(current)}
+              className={`mark-review-btn ${isQuestionMarked(current) ? 'marked' : ''}`}
+              title={isQuestionMarked(current) ? 'Remove mark for review' : 'Mark for review'}
+            >
+              {isQuestionMarked(current) ? '📌 Marked' : '📌 Mark'}
+            </button>
+            <button
+              className="info-btn"
+              onClick={() => setShowModal(true)}
+              aria-label="Show explanation"
+              title="Show explanation and correct answer"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
+                <path d="M12 16v-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                <path d="M12 8h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* Notes Section for Marked Questions */}
+      {isQuestionMarked(current) && (
+        <div className="question-notes-section">
+          <label className="notes-label">
+            📝 Notes for this question:
+          </label>
+          <textarea
+            className="question-notes-textarea"
+            placeholder="Add your notes about this question..."
+            value={questionNotes[current] || ''}
+            onChange={(e) => updateQuestionNote(current, e.target.value)}
+            rows="3"
+          />
+        </div>
+      )}
 
       {/* Multiple Choice Questions */}
       {q.question_type?.toLowerCase() === 'multiple choice' && (
@@ -1267,6 +1348,95 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
                   {allQuestionsAttempted() ? '✅ Submit Test' : '📝 Submit Anyway'}
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Review Panel Modal */}
+      {showReviewPanel && (
+        <div className="modal-overlay" onClick={() => setShowReviewPanel(false)}>
+          <div className="modal-content review-panel-modal" onClick={e => e.stopPropagation()}>
+            <div className="review-panel-header">
+              <h3>📌 Marked Questions for Review</h3>
+              <button 
+                className="modal-close" 
+                onClick={() => setShowReviewPanel(false)}
+                aria-label="Close review panel"
+              >
+                &times;
+              </button>
+            </div>
+            
+            <div className="review-panel-content">
+              {markedQuestions.length === 0 ? (
+                <div className="no-marked-questions">
+                  <p>No questions marked for review yet.</p>
+                  <p>Use the "📌 Mark" button on any question to add it here.</p>
+                </div>
+              ) : (
+                <div className="marked-questions-list">
+                  {markedQuestions.map(questionIndex => {
+                    const question = questions[questionIndex];
+                    const note = questionNotes[questionIndex];
+                    return (
+                      <div key={questionIndex} className="marked-question-item">
+                        <div className="marked-question-header">
+                          <span className="question-number">Question {questionIndex + 1}</span>
+                          <div className="marked-question-actions">
+                            <button 
+                              onClick={() => {
+                                jumpToQuestion(questionIndex);
+                                setShowReviewPanel(false);
+                              }}
+                              className="jump-to-question-btn"
+                            >
+                              Go to Question
+                            </button>
+                            <button 
+                              onClick={() => toggleMarkQuestion(questionIndex)}
+                              className="unmark-question-btn"
+                              title="Remove mark"
+                            >
+                              🗑️
+                            </button>
+                          </div>
+                        </div>
+                        
+                        <div className="marked-question-text">
+                          {question.question_text.substring(0, 100)}
+                          {question.question_text.length > 100 ? '...' : ''}
+                        </div>
+                        
+                        {note && (
+                          <div className="marked-question-note">
+                            <strong>Your Note:</strong> {note}
+                          </div>
+                        )}
+                        
+                        <div className="marked-question-status">
+                          {questionSubmitted[questionIndex] ? (
+                            <span className="answered-status">✅ Answered</span>
+                          ) : (
+                            <span className="unanswered-status">⏳ Not answered yet</span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+              
+              {markedQuestions.length > 0 && (
+                <div className="review-panel-footer">
+                  <button 
+                    onClick={clearAllMarks}
+                    className="clear-all-marks-btn"
+                  >
+                    Clear All Marks
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>

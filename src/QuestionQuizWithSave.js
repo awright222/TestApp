@@ -22,6 +22,11 @@ export default function QuestionQuizWithSave({
   );
   const [showModal, setShowModal] = useState(false);
   const [showSaveModal, setShowSaveModal] = useState(false);
+  
+  // Mark for Review feature states
+  const [markedQuestions, setMarkedQuestions] = useState(initialProgress?.markedQuestions || []);
+  const [questionNotes, setQuestionNotes] = useState(initialProgress?.questionNotes || {});
+  const [showReviewPanel, setShowReviewPanel] = useState(false);
 
   function getChoiceLabel(choice) {
     const match = choice.match(/^([A-Z])\./);
@@ -104,6 +109,45 @@ export default function QuestionQuizWithSave({
   const prevQuestion = () => setCurrent(c => Math.max(0, c - 1));
   const nextQuestion = () => setCurrent(c => Math.min(questions.length - 1, c + 1));
 
+  // Mark for Review functions
+  const toggleMarkQuestion = (questionIndex = current) => {
+    setMarkedQuestions(prev => {
+      const isMarked = prev.includes(questionIndex);
+      if (isMarked) {
+        // Remove from marked questions and clear any notes
+        setQuestionNotes(prevNotes => {
+          const updated = { ...prevNotes };
+          delete updated[questionIndex];
+          return updated;
+        });
+        return prev.filter(index => index !== questionIndex);
+      } else {
+        // Add to marked questions
+        return [...prev, questionIndex];
+      }
+    });
+  };
+
+  const updateQuestionNote = (questionIndex, note) => {
+    setQuestionNotes(prev => ({
+      ...prev,
+      [questionIndex]: note
+    }));
+  };
+
+  const clearAllMarks = () => {
+    setMarkedQuestions([]);
+    setQuestionNotes({});
+  };
+
+  const isQuestionMarked = (questionIndex) => {
+    return markedQuestions.includes(questionIndex);
+  };
+
+  const jumpToQuestion = (questionIndex) => {
+    setCurrent(questionIndex);
+  };
+
   // Handle answer change for multiple choice (allow multiple selections up to the number of correct answers)
   const handleChoiceChange = (choice) => {
     const currentAnswers = Array.isArray(userAnswers[current]) ? userAnswers[current] : [];
@@ -149,7 +193,16 @@ export default function QuestionQuizWithSave({
 
   const handleSave = (saveData) => {
     if (onSaveProgress) {
-      onSaveProgress(saveData);
+      // Include marked questions and notes in the save data
+      const enhancedSaveData = {
+        ...saveData,
+        progress: {
+          ...saveData.progress,
+          markedQuestions: markedQuestions,
+          questionNotes: questionNotes
+        }
+      };
+      onSaveProgress(enhancedSaveData);
     }
   };
 
@@ -175,16 +228,80 @@ export default function QuestionQuizWithSave({
         <div className="question-header">
           <h2>
             Question {current + 1} of {questions.length}
+            {markedQuestions.length > 0 && (
+              <button 
+                onClick={() => setShowReviewPanel(true)}
+                className="review-button"
+                title={`${markedQuestions.length} question(s) marked for review`}
+                style={{ marginLeft: '1rem', fontSize: '0.8rem' }}
+              >
+                📌 Review ({markedQuestions.length})
+              </button>
+            )}
           </h2>
-          <button
-            className="info-btn"
-            onClick={() => setShowModal(true)}
-            aria-label="Show explanation"
-            title="Show explanation"
-          >
-            <span className="info-circle">i</span>
-          </button>
+          <div className="question-header-buttons">
+            <button
+              onClick={() => toggleMarkQuestion(current)}
+              className={`mark-review-btn ${isQuestionMarked(current) ? 'marked' : ''}`}
+              title={isQuestionMarked(current) ? 'Remove mark for review' : 'Mark for review'}
+              style={{ 
+                background: isQuestionMarked(current) ? '#ffc107' : '#669BBC',
+                color: isQuestionMarked(current) ? '#212529' : 'white',
+                border: 'none',
+                padding: '0.4rem 0.8rem',
+                borderRadius: '4px',
+                fontSize: '0.8rem',
+                cursor: 'pointer',
+                marginRight: '0.5rem'
+              }}
+            >
+              {isQuestionMarked(current) ? '📌 Marked' : '📌 Mark'}
+            </button>
+            <button
+              className="info-btn"
+              onClick={() => setShowModal(true)}
+              aria-label="Show explanation"
+              title="Show explanation"
+            >
+              <span className="info-circle">i</span>
+            </button>
+          </div>
         </div>
+        
+        {/* Notes Section for Marked Questions */}
+        {isQuestionMarked(current) && (
+          <div className="question-notes-section" style={{
+            background: '#fff9c4',
+            border: '1px solid #f7d794',
+            borderRadius: '8px',
+            padding: '1rem',
+            margin: '1rem 0'
+          }}>
+            <label style={{
+              display: 'block',
+              fontWeight: '600',
+              color: '#8b6914',
+              marginBottom: '0.5rem'
+            }}>
+              📝 Notes for this question:
+            </label>
+            <textarea
+              placeholder="Add your notes about this question..."
+              value={questionNotes[current] || ''}
+              onChange={(e) => updateQuestionNote(current, e.target.value)}
+              rows="3"
+              style={{
+                width: '100%',
+                border: '1px solid #ddd',
+                borderRadius: '4px',
+                padding: '0.5rem',
+                fontFamily: 'inherit',
+                resize: 'vertical'
+              }}
+            />
+          </div>
+        )}
+        
         <p>{q.question_text}</p>
 
         {/* Multiple Choice */}
@@ -340,6 +457,161 @@ export default function QuestionQuizWithSave({
           </div>
         )}
       </div>
+
+      {/* Review Panel Modal */}
+      {showReviewPanel && (
+        <div className="modal-overlay" onClick={() => setShowReviewPanel(false)}>
+          <div className="modal-content review-panel-modal" onClick={e => e.stopPropagation()} style={{
+            maxWidth: '800px',
+            maxHeight: '80vh',
+            overflowY: 'auto'
+          }}>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: '1.5rem 1.5rem 1rem 1.5rem',
+              borderBottom: '1px solid #eee'
+            }}>
+              <h3 style={{ margin: 0, color: '#003049' }}>📌 Marked Questions for Review</h3>
+              <button 
+                className="modal-close" 
+                onClick={() => setShowReviewPanel(false)}
+                aria-label="Close review panel"
+              >
+                &times;
+              </button>
+            </div>
+            
+            <div style={{ padding: '1.5rem' }}>
+              {markedQuestions.length === 0 ? (
+                <div style={{ textAlign: 'center', color: '#669BBC', fontStyle: 'italic' }}>
+                  <p>No questions marked for review yet.</p>
+                  <p>Use the "📌 Mark" button on any question to add it here.</p>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  {markedQuestions.map(questionIndex => {
+                    const question = questions[questionIndex];
+                    const note = questionNotes[questionIndex];
+                    return (
+                      <div key={questionIndex} style={{
+                        background: '#f8f9fa',
+                        border: '1px solid #dee2e6',
+                        borderRadius: '8px',
+                        padding: '1rem'
+                      }}>
+                        <div style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          marginBottom: '0.5rem'
+                        }}>
+                          <span style={{ fontWeight: 'bold', color: '#669BBC' }}>
+                            Question {questionIndex + 1}
+                          </span>
+                          <div style={{ display: 'flex', gap: '0.5rem' }}>
+                            <button 
+                              onClick={() => {
+                                jumpToQuestion(questionIndex);
+                                setShowReviewPanel(false);
+                              }}
+                              style={{
+                                background: '#669BBC',
+                                color: 'white',
+                                border: 'none',
+                                padding: '0.4rem 0.8rem',
+                                borderRadius: '4px',
+                                fontSize: '0.85rem',
+                                cursor: 'pointer'
+                              }}
+                            >
+                              Go to Question
+                            </button>
+                            <button 
+                              onClick={() => toggleMarkQuestion(questionIndex)}
+                              style={{
+                                background: '#dc3545',
+                                color: 'white',
+                                border: 'none',
+                                padding: '0.4rem 0.6rem',
+                                borderRadius: '4px',
+                                fontSize: '0.85rem',
+                                cursor: 'pointer'
+                              }}
+                              title="Remove mark"
+                            >
+                              🗑️
+                            </button>
+                          </div>
+                        </div>
+                        
+                        <div style={{
+                          color: '#495057',
+                          marginBottom: '0.5rem',
+                          lineHeight: '1.4'
+                        }}>
+                          {question.question_text.substring(0, 100)}
+                          {question.question_text.length > 100 ? '...' : ''}
+                        </div>
+                        
+                        {note && (
+                          <div style={{
+                            background: '#fff9c4',
+                            border: '1px solid #f7d794',
+                            borderRadius: '4px',
+                            padding: '0.5rem',
+                            margin: '0.5rem 0',
+                            fontSize: '0.9rem'
+                          }}>
+                            <strong style={{ color: '#8b6914' }}>Your Note:</strong> {note}
+                          </div>
+                        )}
+                        
+                        <div style={{ marginTop: '0.5rem' }}>
+                          {questionSubmitted[questionIndex] ? (
+                            <span style={{ color: '#28a745', fontSize: '0.85rem', fontWeight: '600' }}>
+                              ✅ Answered
+                            </span>
+                          ) : (
+                            <span style={{ color: '#ffc107', fontSize: '0.85rem', fontWeight: '600' }}>
+                              ⏳ Not answered yet
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+              
+              {markedQuestions.length > 0 && (
+                <div style={{
+                  marginTop: '1.5rem',
+                  paddingTop: '1rem',
+                  borderTop: '1px solid #eee',
+                  textAlign: 'center'
+                }}>
+                  <button 
+                    onClick={clearAllMarks}
+                    style={{
+                      background: '#dc3545',
+                      color: 'white',
+                      border: 'none',
+                      padding: '0.6rem 1.2rem',
+                      borderRadius: '6px',
+                      fontWeight: '600',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Clear All Marks
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Save Modal */}
       <SaveModal
