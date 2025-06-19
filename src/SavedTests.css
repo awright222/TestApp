@@ -5,6 +5,15 @@
   margin: 0 auto;
 }
 
+.saved-tests-h/* Test Title */
+.test-card-title {
+  margin: 0 2rem 1rem 0;
+  color: #FDF0D5;
+  font-size: 1.3rem;
+  line-height: 1.4;
+  font-weight: 700;
+}
+
 .saved-tests-header h2 {
   color: #003049;
   font-size: 2rem;
@@ -67,54 +76,61 @@
 
 /* Test Type Badge */
 .test-type-badge-container {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  z-index: 10;
 }
 
 .test-type-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.4rem 0.8rem;
-  border-radius: 20px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-  border: 1px solid;
-  backdrop-filter: blur(10px);
-  transition: all 0.2s ease;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 0.3rem !important;
+  padding: 0.5rem 1rem !important;
+  border-radius: 20px !important;
+  font-size: 0.8rem !important;
+  font-weight: 600 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  border: 1px solid !important;
+  backdrop-filter: blur(10px) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+  white-space: nowrap !important;
+  transition: all 0.3s ease !important;
+  min-width: auto !important;
+  width: auto !important;
+  max-width: none !important;
+  margin: 0 !important;
 }
 
 .badge-icon {
-  font-size: 0.9rem;
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
+  font-size: 0.9rem !important;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3)) !important;
+  margin: 0 !important;
 }
 
-/* Modern tag styling with subtle backgrounds */
+/* Modern tag styling with unique color coding for each test type */
 .test-type-badge.practice-test {
-  background: rgba(102, 155, 188, 0.12);
-  color: #669BBC;
-  border-color: rgba(102, 155, 188, 0.3);
+  background: rgba(102, 155, 188, 0.2) !important;
+  color: #669BBC !important;
+  border-color: rgba(102, 155, 188, 0.3) !important;
 }
 
 .test-type-badge.case-study {
-  background: rgba(255, 107, 107, 0.12);
-  color: #ff6b6b;
-  border-color: rgba(255, 107, 107, 0.3);
+  background: rgba(255, 107, 107, 0.2) !important;
+  color: #ff6b6b !important;
+  border-color: rgba(255, 107, 107, 0.3) !important;
 }
 
 .test-type-badge.regular {
-  background: rgba(253, 240, 213, 0.12);
-  color: #FDF0D5;
-  border-color: rgba(253, 240, 213, 0.3);
+  background: rgba(253, 240, 213, 0.2) !important;
+  color: #FDF0D5 !important;
+  border-color: rgba(253, 240, 213, 0.3) !important;
 }
 
 /* Test Title */
 .test-card-title {
-  margin: 0 2rem 1rem 0;
+  margin: 2.8rem 2rem 1rem 0; /* Increased top margin for larger badge */
   color: #FDF0D5;
   font-size: 1.3rem;
   line-height: 1.4;
@@ -186,7 +202,7 @@
 }
 
 .progress-bar-fill.case-study {
-  background: linear-gradient(90deg, #780000 0%, #a00000 100%);
+  background: linear-gradient(90deg, #ff6b6b 0%, #e55555 100%);
 }
 
 .progress-bar-fill.regular {
@@ -200,8 +216,9 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.3) 50%, transparent 100%);
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.5) 50%, transparent 100%);
   animation: shimmer 2s ease-in-out infinite;
+  z-index: 1;
 }
 
 @keyframes shimmer {
@@ -245,7 +262,7 @@
 }
 
 .load-test-btn.case-study {
-  background: linear-gradient(135deg, #780000 0%, #a00000 100%);
+  background: linear-gradient(135deg, #ff6b6b 0%, #e55555 100%);
   color: #FDF0D5;
 }
 

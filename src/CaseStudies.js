@@ -121,13 +121,20 @@ export function CaseStudyDetail() {
   // Save progress function
   const handleSaveProgress = async (saveData) => {
     try {
-      // Add case study specific information
+      // Add case study specific information and include questions
       const caseStudySaveData = {
         ...saveData,
         type: 'case-study',
         caseStudyId: id,
         caseStudyTitle: meta?.title || 'Case Study',
-        title: `${meta?.title || 'Case Study'} - ${saveData.title}`
+        title: `${meta?.title || 'Case Study'} - ${saveData.title}`,
+        questions: questions.map(q => ({ ...q })), // Include the questions array
+        // Include original case study metadata
+        originalTest: {
+          caseStudyId: id,
+          caseStudyTitle: meta?.title || 'Case Study',
+          type: 'case-study'
+        }
       };
       
       await SavedTestsService.saveTest(caseStudySaveData);
