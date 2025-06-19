@@ -195,7 +195,6 @@
   transition: width 0.3s ease;
   border-radius: 5px;
   position: relative;
-  min-width: 20px; /* Ensure minimum width to see shimmer effect */
 }
 
 .progress-bar-fill.practice-test {
@@ -210,7 +209,8 @@
   background: linear-gradient(90deg, #FDF0D5 0%, #e6d5b8 100%);
 }
 
-.progress-bar-fill::after {
+/* Only show shimmer when there's actual progress (width > 0) */
+.progress-bar-fill:not([style*="width: 0%"])::after {
   content: '';
   position: absolute;
   top: 0;
