@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { CreatedTestsService } from '../services/CreatedTestsService';
 import ShareTest from './ShareTest';
+import './MyCreatedTests.css';
 
 export default function MyCreatedTests() {
   const navigate = useNavigate();
@@ -10,6 +11,7 @@ export default function MyCreatedTests() {
   const [loading, setLoading] = useState(true);
   const [lastRefresh, setLastRefresh] = useState(Date.now());
   const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [exportModalOpen, setExportModalOpen] = useState(false);
   const [selectedTest, setSelectedTest] = useState(null);
 
   useEffect(() => {
@@ -62,6 +64,11 @@ export default function MyCreatedTests() {
   };
 
   const exportTest = (test) => {
+    setSelectedTest(test);
+    setExportModalOpen(true);
+  };
+
+  const exportTestAsJSON = (test) => {
     try {
       const exportData = {
         id: test.id,
@@ -86,10 +93,169 @@ export default function MyCreatedTests() {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
       
-      alert('Test exported successfully!');
+      alert('Test exported as JSON successfully!');
     } catch (error) {
-      console.error('Export failed:', error);
-      alert('Failed to export test. Please try again.');
+      console.error('JSON export failed:', error);
+      alert('Failed to export test as JSON. Please try again.');
+    }
+  };
+
+  const exportTestAsCSV = (test) => {
+    try {
+      let csvContent = "Question Number,Question Text,Correct Answer,Option A,Option B,Option C,Option D,Explanation\n";
+      
+      test.questions.forEach((question, index) => {
+        const questionNum = index + 1;
+        const questionText = `"${(question.question || '').replace(/"/g, '""')}"`;
+        const correctAnswer = question.correctAnswer || '';
+        const optionA = question.options && question.options[0] ? `"${question.options[0].replace(/"/g, '""')}"` : '';
+        const optionB = question.options && question.options[1] ? `"${question.options[1].replace(/"/g, '""')}"` : '';
+        const optionC = question.options && question.options[2] ? `"${question.options[2].replace(/"/g, '""')}"` : '';
+        const optionD = question.options && question.options[3] ? `"${question.options[3].replace(/"/g, '""')}"` : '';
+        const explanation = `"${(question.explanation || '').replace(/"/g, '""')}"`;
+        
+        csvContent += `${questionNum},${questionText},${correctAnswer},${optionA},${optionB},${optionC},${optionD},${explanation}\n`;
+      });
+      
+      const dataBlob = new Blob([csvContent], { type: 'text/csv' });
+      const url = URL.createObjectURL(dataBlob);
+      
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${test.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_export.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      
+      alert('Test exported as CSV successfully!');
+    } catch (error) {
+      console.error('CSV export failed:', error);
+      alert('Failed to export test as CSV. Please try again.');
+    }
+  };
+
+  const exportTestAsPDF = (test) => {
+    try {
+      // Create HTML content for the test
+      let htmlContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>${test.title}</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
+            .header { border-bottom: 2px solid #003049; padding-bottom: 10px; margin-bottom: 20px; }
+            .title { color: #003049; font-size: 24px; margin: 0; }
+            .question { margin-bottom: 25px; page-break-inside: avoid; }
+            .question-number { font-weight: bold; color: #003049; }
+            .question-text { margin: 8px 0; }
+            .options { margin: 10px 0; }
+            .option { margin: 5px 0; padding-left: 20px; }
+            .correct { color: #28a745; font-weight: bold; }
+            .explanation { background: #f8f9fa; padding: 10px; border-left: 4px solid #669BBC; margin: 10px 0; }
+            .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #ccc; font-size: 12px; color: #666; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1 class="title">${test.title}</h1>
+            <p><strong>Total Questions:</strong> ${test.questions?.length || 0}</p>
+            <p><strong>Exported:</strong> ${new Date().toLocaleDateString()}</p>
+          </div>
+      `;
+
+      test.questions.forEach((question, index) => {
+        htmlContent += `
+          <div class="question">
+            <div class="question-number">Question ${index + 1}:</div>
+            <div class="question-text">${question.question || ''}</div>
+        `;
+
+        if (question.options && question.options.length > 0) {
+          htmlContent += '<div class="options">';
+          question.options.forEach((option, optIndex) => {
+            const letter = String.fromCharCode(65 + optIndex); // A, B, C, D
+            const isCorrect = question.correctAnswer === letter;
+            htmlContent += `<div class="option ${isCorrect ? 'correct' : ''}">${letter}. ${option}</div>`;
+          });
+          htmlContent += '</div>';
+        }
+
+        if (question.explanation) {
+          htmlContent += `<div class="explanation"><strong>Explanation:</strong> ${question.explanation}</div>`;
+        }
+
+        htmlContent += '</div>';
+      });
+
+      htmlContent += `
+          <div class="footer">
+            <p>Generated by Test Builder App - ${new Date().toLocaleDateString()}</p>
+          </div>
+        </body>
+        </html>
+      `;
+
+      // Create a new window and print
+      const printWindow = window.open('', '_blank');
+      printWindow.document.write(htmlContent);
+      printWindow.document.close();
+      
+      // Wait for content to load, then print
+      setTimeout(() => {
+        printWindow.print();
+        alert('PDF export initiated! Use your browser\'s print dialog to save as PDF.');
+      }, 500);
+      
+    } catch (error) {
+      console.error('PDF export failed:', error);
+      alert('Failed to export test as PDF. Please try again.');
+    }
+  };
+
+  const exportTestAsWord = (test) => {
+    try {
+      let docContent = `${test.title}\n\n`;
+      docContent += `Total Questions: ${test.questions?.length || 0}\n`;
+      docContent += `Exported: ${new Date().toLocaleDateString()}\n\n`;
+      docContent += '='.repeat(50) + '\n\n';
+
+      test.questions.forEach((question, index) => {
+        docContent += `Question ${index + 1}:\n`;
+        docContent += `${question.question || ''}\n\n`;
+
+        if (question.options && question.options.length > 0) {
+          question.options.forEach((option, optIndex) => {
+            const letter = String.fromCharCode(65 + optIndex);
+            const isCorrect = question.correctAnswer === letter;
+            docContent += `${letter}. ${option}${isCorrect ? ' ✓ (CORRECT)' : ''}\n`;
+          });
+          docContent += '\n';
+        }
+
+        if (question.explanation) {
+          docContent += `Explanation: ${question.explanation}\n`;
+        }
+
+        docContent += '\n' + '-'.repeat(30) + '\n\n';
+      });
+
+      const dataBlob = new Blob([docContent], { type: 'text/plain' });
+      const url = URL.createObjectURL(dataBlob);
+      
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${test.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_export.txt`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      
+      alert('Test exported as text file successfully! You can open this in Word or any text editor.');
+    } catch (error) {
+      console.error('Word export failed:', error);
+      alert('Failed to export test as text file. Please try again.');
     }
   };
 
@@ -489,6 +655,382 @@ export default function MyCreatedTests() {
             setSelectedTest(null);
           }}
         />
+      )}
+
+      {/* Export Modal */}
+      {exportModalOpen && selectedTest && (
+        <div className="export-modal-overlay" onClick={() => setExportModalOpen(false)}>
+          <div className="export-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="export-modal-header">
+              <div className="export-header-content">
+                <div className="export-icon-large">📤</div>
+                <div>
+                  <h3>Export Test</h3>
+                  <p className="export-test-name">{selectedTest.title}</p>
+                </div>
+              </div>
+              <button 
+                className="export-close-btn"
+                onClick={() => setExportModalOpen(false)}
+              >
+                ×
+              </button>
+            </div>
+            
+            <div className="export-modal-content">
+              <div className="export-description" style={{
+                textAlign: 'center',
+                marginBottom: '1.5rem',
+                paddingBottom: '1rem',
+                borderBottom: '2px solid #f1f3f4',
+                position: 'relative'
+              }}>
+                <div style={{
+                  position: 'absolute',
+                  bottom: '-2px',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  width: '60px',
+                  height: '2px',
+                  background: 'linear-gradient(90deg, #669BBC, #003049)',
+                  borderRadius: '1px'
+                }}></div>
+                <p style={{
+                  margin: 0,
+                  color: '#003049',
+                  fontSize: '1.1rem',
+                  fontWeight: '600'
+                }}>Export your test in your preferred format</p>
+              </div>
+              
+              <div className="export-section-title" style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.75rem',
+                marginBottom: '1rem',
+                padding: '0.75rem 1rem',
+                background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
+                borderRadius: '8px',
+                borderLeft: '4px solid #669BBC'
+              }}>
+                <div className="export-section-title-icon" style={{ fontSize: '1.25rem' }}>📁</div>
+                <h4 className="export-section-title-text" style={{
+                  fontSize: '1rem',
+                  fontWeight: '600',
+                  color: '#003049',
+                  margin: 0
+                }}>Choose Export Format</h4>
+              </div>
+              
+              <div className="export-format-grid" style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.75rem',
+                marginBottom: '2rem'
+              }}>
+                <div 
+                  className="export-format-card csv"
+                  style={{
+                    background: 'white',
+                    border: '2px solid #e9ecef',
+                    borderRadius: '12px',
+                    padding: '1.25rem 1.5rem',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '1rem',
+                    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.04)',
+                    position: 'relative'
+                  }}
+                  onClick={() => {
+                    exportTestAsCSV(selectedTest);
+                    setExportModalOpen(false);
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = '#28a745';
+                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(40, 167, 69, 0.15)';
+                    e.currentTarget.style.transform = 'translateX(4px)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = '#e9ecef';
+                    e.currentTarget.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.04)';
+                    e.currentTarget.style.transform = 'translateX(0)';
+                  }}
+                >
+                  <div className="export-format-icon" style={{
+                    fontSize: '2rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '48px',
+                    height: '48px',
+                    borderRadius: '8px',
+                    flexShrink: 0,
+                    background: 'rgba(40, 167, 69, 0.1)',
+                    color: '#28a745'
+                  }}>📊</div>
+                  <div className="export-format-info" style={{ flex: 1, minWidth: 0 }}>
+                    <h4 style={{
+                      margin: '0 0 0.25rem 0',
+                      fontSize: '1.1rem',
+                      fontWeight: '600',
+                      color: '#003049'
+                    }}>Excel/CSV Spreadsheet</h4>
+                    <p style={{
+                      margin: 0,
+                      fontSize: '0.9rem',
+                      color: '#6c757d',
+                      lineHeight: '1.3'
+                    }}>Perfect for editing questions and answers in Excel or Google Sheets</p>
+                  </div>
+                  <div style={{
+                    position: 'absolute',
+                    right: '1rem',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    width: '8px',
+                    height: '8px',
+                    borderRight: '2px solid #ccc',
+                    borderBottom: '2px solid #ccc',
+                    transform: 'translateY(-50%) rotate(-45deg)',
+                    transition: 'all 0.2s ease'
+                  }}></div>
+                </div>
+
+                <div 
+                  className="export-format-card pdf"
+                  style={{
+                    background: 'white',
+                    border: '2px solid #e9ecef',
+                    borderRadius: '12px',
+                    padding: '1.25rem 1.5rem',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '1rem',
+                    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.04)',
+                    position: 'relative'
+                  }}
+                  onClick={() => {
+                    exportTestAsPDF(selectedTest);
+                    setExportModalOpen(false);
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = '#dc3545';
+                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(220, 53, 69, 0.15)';
+                    e.currentTarget.style.transform = 'translateX(4px)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = '#e9ecef';
+                    e.currentTarget.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.04)';
+                    e.currentTarget.style.transform = 'translateX(0)';
+                  }}
+                >
+                  <div className="export-format-icon" style={{
+                    fontSize: '2rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '48px',
+                    height: '48px',
+                    borderRadius: '8px',
+                    flexShrink: 0,
+                    background: 'rgba(220, 53, 69, 0.1)',
+                    color: '#dc3545'
+                  }}>📄</div>
+                  <div className="export-format-info" style={{ flex: 1, minWidth: 0 }}>
+                    <h4 style={{
+                      margin: '0 0 0.25rem 0',
+                      fontSize: '1.1rem',
+                      fontWeight: '600',
+                      color: '#003049'
+                    }}>PDF Document</h4>
+                    <p style={{
+                      margin: 0,
+                      fontSize: '0.9rem',
+                      color: '#6c757d',
+                      lineHeight: '1.3'
+                    }}>Print-ready format for physical distribution or sharing</p>
+                  </div>
+                  <div style={{
+                    position: 'absolute',
+                    right: '1rem',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    width: '8px',
+                    height: '8px',
+                    borderRight: '2px solid #ccc',
+                    borderBottom: '2px solid #ccc',
+                    transform: 'translateY(-50%) rotate(-45deg)',
+                    transition: 'all 0.2s ease'
+                  }}></div>
+                </div>
+
+                <div 
+                  className="export-format-card word"
+                  style={{
+                    background: 'white',
+                    border: '2px solid #e9ecef',
+                    borderRadius: '12px',
+                    padding: '1.25rem 1.5rem',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '1rem',
+                    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.04)',
+                    position: 'relative'
+                  }}
+                  onClick={() => {
+                    exportTestAsWord(selectedTest);
+                    setExportModalOpen(false);
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = '#007bff';
+                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 123, 255, 0.15)';
+                    e.currentTarget.style.transform = 'translateX(4px)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = '#e9ecef';
+                    e.currentTarget.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.04)';
+                    e.currentTarget.style.transform = 'translateX(0)';
+                  }}
+                >
+                  <div className="export-format-icon" style={{
+                    fontSize: '2rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '48px',
+                    height: '48px',
+                    borderRadius: '8px',
+                    flexShrink: 0,
+                    background: 'rgba(0, 123, 255, 0.1)',
+                    color: '#007bff'
+                  }}>📝</div>
+                  <div className="export-format-info" style={{ flex: 1, minWidth: 0 }}>
+                    <h4 style={{
+                      margin: '0 0 0.25rem 0',
+                      fontSize: '1.1rem',
+                      fontWeight: '600',
+                      color: '#003049'
+                    }}>Text/Word Document</h4>
+                    <p style={{
+                      margin: 0,
+                      fontSize: '0.9rem',
+                      color: '#6c757d',
+                      lineHeight: '1.3'
+                    }}>Easy to edit in Microsoft Word or any text editor</p>
+                  </div>
+                  <div style={{
+                    position: 'absolute',
+                    right: '1rem',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    width: '8px',
+                    height: '8px',
+                    borderRight: '2px solid #ccc',
+                    borderBottom: '2px solid #ccc',
+                    transform: 'translateY(-50%) rotate(-45deg)',
+                    transition: 'all 0.2s ease'
+                  }}></div>
+                </div>
+
+                <div 
+                  className="export-format-card json"
+                  style={{
+                    background: 'white',
+                    border: '2px solid #e9ecef',
+                    borderRadius: '12px',
+                    padding: '1.25rem 1.5rem',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '1rem',
+                    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.04)',
+                    position: 'relative'
+                  }}
+                  onClick={() => {
+                    exportTestAsJSON(selectedTest);
+                    setExportModalOpen(false);
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = '#6c757d';
+                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(108, 117, 125, 0.15)';
+                    e.currentTarget.style.transform = 'translateX(4px)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = '#e9ecef';
+                    e.currentTarget.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.04)';
+                    e.currentTarget.style.transform = 'translateX(0)';
+                  }}
+                >
+                  <div className="export-format-icon" style={{
+                    fontSize: '2rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '48px',
+                    height: '48px',
+                    borderRadius: '8px',
+                    flexShrink: 0,
+                    background: 'rgba(108, 117, 125, 0.1)',
+                    color: '#6c757d'
+                  }}>⚙️</div>
+                  <div className="export-format-info" style={{ flex: 1, minWidth: 0 }}>
+                    <h4 style={{
+                      margin: '0 0 0.25rem 0',
+                      fontSize: '1.1rem',
+                      fontWeight: '600',
+                      color: '#003049'
+                    }}>JSON Backup</h4>
+                    <p style={{
+                      margin: 0,
+                      fontSize: '0.9rem',
+                      color: '#6c757d',
+                      lineHeight: '1.3'
+                    }}>Complete backup file for importing into other systems</p>
+                  </div>
+                  <div style={{
+                    position: 'absolute',
+                    right: '1rem',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    width: '8px',
+                    height: '8px',
+                    borderRight: '2px solid #ccc',
+                    borderBottom: '2px solid #ccc',
+                    transform: 'translateY(-50%) rotate(-45deg)',
+                    transition: 'all 0.2s ease'
+                  }}></div>
+                </div>
+              </div>
+
+              <div className="export-tip" style={{
+                background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
+                border: '1px solid #e0e7ff',
+                borderRadius: '12px',
+                padding: '1.25rem',
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: '0.75rem',
+                fontSize: '0.95rem',
+                lineHeight: '1.5',
+                color: '#495057'
+              }}>
+                <div className="export-tip-icon" style={{
+                  fontSize: '1.25rem',
+                  flexShrink: 0,
+                  marginTop: '0.125rem'
+                }}>💡</div>
+                <span><strong style={{ color: '#003049', fontWeight: '600' }}>Quick Tip:</strong> Use <strong>Excel/CSV</strong> for bulk editing, <strong>PDF</strong> for printing, or <strong>JSON</strong> for backup.</span>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
