@@ -5,6 +5,7 @@ import TestSelector from './TestSelector';
 import PracticeTest from './PracticeTest';
 import { CreatedTestsService } from '../services/CreatedTestsService';
 import { useAuth } from '../firebase/AuthContext';
+import { TestTitleInference } from '../utils/testTitleInference';
 
 function PracticeTestContainer({ 
   searchTerm, 
@@ -22,16 +23,8 @@ function PracticeTestContainer({
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    console.log('=== PracticeTestContainer useEffect triggered ===');
-    console.log('testId from params:', testId);
-    console.log('location.state:', location.state);
-    console.log('location.pathname:', location.pathname);
-    console.log('test prop:', test);
-    console.log('isSharedTest:', isSharedTest);
-    
     // If test is passed as prop (for shared tests), use it directly
     if (test && isSharedTest) {
-      console.log('=== Using shared test from props ===');
       const transformedTest = {
         title: test.title,
         color: test.color || '#669BBC',
@@ -42,7 +35,6 @@ function PracticeTestContainer({
         isSharedTest: true,
         sharedTestInfo
       };
-      console.log('Transformed shared test:', transformedTest);
       setSelectedTest(transformedTest);
       return;
     }
@@ -50,24 +42,13 @@ function PracticeTestContainer({
     // Check if we have a saved test from navigation state
     if (location.state?.savedTest) {
       const savedTest = location.state.savedTest;
-      console.log('=== Loading saved test ===');
-      console.log('Full savedTest object:', savedTest);
-      console.log('savedTest.questions:', savedTest.questions);
-      console.log('savedTest.progress:', savedTest.progress);
-      console.log('savedTest.progress?.questions:', savedTest.progress?.questions);
       
       // Extract questions and progress from saved test structure
       const questions = savedTest.questions || savedTest.progress?.questions || [];
       const progress = savedTest.progress || null;
       
-      console.log('Extracted questions:', questions);
-      console.log('Questions length:', questions.length);
-      console.log('Extracted progress:', progress);
-      
       if (questions.length === 0) {
         console.error('❌ No questions found in saved test');
-        console.error('savedTest structure:', Object.keys(savedTest));
-        console.error('Full savedTest:', JSON.stringify(savedTest, null, 2));
         
         const errorMessage = 'This saved test is missing question data and cannot be continued. This can happen if the test was saved incorrectly or corrupted. Please delete this test and create a new one.';
         setSelectedTest({ 
@@ -78,34 +59,41 @@ function PracticeTestContainer({
         return;
       }
       
-      console.log('✅ Questions found, transforming test...');
-      
       // Transform saved test to the expected format and include progress
+      // Use the TestTitleInference utility to get the best possible original title
+      const inferredTitle = TestTitleInference.inferTitle(savedTest);
+      
+      // Determine if we have a reliable original title vs. just the save name
+      const hasReliableOriginalTitle = (
+        savedTest.originalTest?.title || 
+        inferredTitle !== savedTest.title
+      );
+      
+      const originalTitle = savedTest.originalTest?.title || inferredTitle;
+      
       const transformedTest = {
-        title: savedTest.title,
+        title: originalTitle,
         color: savedTest.originalTest?.color || '#669BBC',
         questions: questions,
         savedProgress: progress,
         savedTestInfo: {
           id: savedTest.id,
-          title: savedTest.title,
+          title: savedTest.title, // This is the save name
           dateCreated: savedTest.dateCreated,
           dateModified: savedTest.dateModified
         },
-        isSavedTest: true
+        originalTest: savedTest.originalTest, // Include original test metadata
+        isSavedTest: true,
+        // Flag to indicate if we should show the save name separately
+        showSaveName: hasReliableOriginalTitle && originalTitle !== savedTest.title
       };
       
-      console.log('Transformed test:', transformedTest);
       setSelectedTest(transformedTest);
       return;
     }
-
-    console.log('No saved test in location.state, checking for custom test...');
-    console.log('testId:', testId);
     
     // If no saved test, proceed with custom test loading logic
     const loadCustomTest = async () => {
-      console.log('Loading custom test with ID:', testId);
       setLoading(true);
       try {
         const customTest = await CreatedTestsService.getTestById(testId);
@@ -123,7 +111,6 @@ function PracticeTestContainer({
           };
           setSelectedTest(transformedTest);
         } else {
-          console.log('Custom test not found:', { testId, customTest, user: user?.email });
           // Instead of alert, show an error state with auth context
           const errorMessage = user 
             ? 'Test not found in your account' 

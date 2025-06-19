@@ -595,26 +595,32 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
 
   return (
     <div className="practice-test">
-      {/* Header with Back Button */}
+      {/* Clean Header */}
       <div className="practice-test-header">
-        <button onClick={onBackToSelection} className="back-to-tests-btn">
-          ← Back to Tests
-        </button>
-        <div className="test-info">
-          <h1 className="test-title">{selectedTest.title}</h1>
-          <div className="test-mode-indicator">
+        <div className="header-top">
+          <button onClick={onBackToSelection} className="back-to-tests-btn">
+            ← Back to Tests
+          </button>
+          <div className="mode-info">
             <span className={`mode-badge ${isAssessmentMode ? 'assessment-mode' : 'practice-mode'}`}>
               {isAssessmentMode ? '📝 Assessment Mode' : '🎯 Practice Mode'}
             </span>
-            {isAssessmentMode && (
-              <span className="mode-description">
-                Answer all questions, then submit for final score
-              </span>
-            )}
-            {isPracticeMode && (
-              <span className="mode-description">
-                Get immediate feedback as you submit each answer
-              </span>
+            <p className="mode-description">
+              {isAssessmentMode 
+                ? 'Answer all questions, then submit for final score' 
+                : 'Get immediate feedback as you submit each answer'}
+            </p>
+          </div>
+        </div>
+        <div className="header-bottom">
+          <div className="test-info">
+            <h1 className="test-title">
+              {selectedTest.title}
+            </h1>
+            {selectedTest.isSavedTest && currentSavedTest && selectedTest.showSaveName && (
+              <p className="saved-test-info">
+                Save: <span className="save-name">{currentSavedTest.title}</span>
+              </p>
             )}
           </div>
         </div>
