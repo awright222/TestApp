@@ -15,6 +15,7 @@ import MyCreatedTests from './components/MyCreatedTests';
 import CreateTest from './components/CreateTest';
 // import TakeTest from './components/TakeTest';
 import PracticeTestContainer from './components/PracticeTestContainer';
+import SharedTestAccess from './components/SharedTestAccess';
 import CrossDeviceDebug from './components/CrossDeviceDebug';
 import SaveTestDebug from './components/SaveTestDebug';
 import NoAuthDebug from './components/NoAuthDebug';
@@ -103,6 +104,7 @@ function App() {
             } 
           />
           <Route path="/shared-tests" element={<SharedTests />} />
+          <Route path="/shared-test/:testId" element={<SharedTestAccess />} />
           <Route path="/my-tests" element={<MyCreatedTests />} />
           <Route path="/create-test" element={<CreateTest />} />
           <Route path="/create-test/:testId" element={<CreateTest />} />

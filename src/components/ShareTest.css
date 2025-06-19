@@ -1,0 +1,408 @@
+/* ShareTest.css */
+.share-test-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.share-test-content {
+  background: white;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 700px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.share-test-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2rem 2rem 1rem 2rem;
+  border-bottom: 2px solid #f0f0f0;
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 10;
+}
+
+.share-test-header h2 {
+  color: #003049;
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  color: #666;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+}
+
+.close-btn:hover {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.share-test-body {
+  padding: 1rem 2rem 2rem 2rem;
+}
+
+/* Sections */
+.share-section {
+  margin-bottom: 2.5rem;
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-radius: 12px;
+  border-left: 4px solid #669BBC;
+}
+
+.share-section h3 {
+  color: #003049;
+  margin: 0 0 1.5rem 0;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.share-section h3::before {
+  content: '🔗';
+  font-size: 1.1rem;
+}
+
+.share-section:first-child h3::before {
+  content: '🔒';
+}
+
+.share-section:last-child h3::before {
+  content: '📧';
+}
+
+/* Settings */
+.setting-group {
+  margin-bottom: 1.5rem;
+}
+
+.setting-group label {
+  display: block;
+  color: #003049;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+/* Toggle Switch */
+.toggle-label {
+  display: flex !important;
+  align-items: center !important;
+  gap: 1rem !important;
+  cursor: pointer;
+  margin-bottom: 1rem !important;
+}
+
+.toggle-label input[type="checkbox"] {
+  display: none;
+}
+
+.toggle-slider {
+  width: 50px;
+  height: 24px;
+  background: #ccc;
+  border-radius: 12px;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.toggle-slider::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  background: white;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.toggle-label input[type="checkbox"]:checked + .toggle-slider {
+  background: #669BBC;
+}
+
+.toggle-label input[type="checkbox"]:checked + .toggle-slider::after {
+  transform: translateX(26px);
+}
+
+/* Form Inputs */
+.deadline-input,
+.attempts-input,
+.share-url-input,
+.email-list-input,
+.custom-message-input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid #e5e5e5;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.2s ease;
+}
+
+.deadline-input:focus,
+.attempts-input:focus,
+.share-url-input:focus,
+.email-list-input:focus,
+.custom-message-input:focus {
+  outline: none;
+  border-color: #669BBC;
+}
+
+.attempts-input {
+  width: 100px;
+}
+
+/* Share Methods */
+.share-method {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e5e5e5;
+}
+
+.share-method h4 {
+  color: #003049;
+  margin: 0 0 0.5rem 0;
+  font-size: 1.1rem;
+}
+
+.share-method p {
+  color: #666;
+  margin: 0 0 1rem 0;
+  font-size: 0.9rem;
+}
+
+/* Share Code Display */
+.share-code-display {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.share-code {
+  font-size: 1.5rem;
+  font-weight: 700;
+  font-family: 'Courier New', monospace;
+  color: #003049;
+  background: #FDF0D5;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  border: 2px solid #669BBC;
+  letter-spacing: 0.2em;
+}
+
+/* Share URL Display */
+.share-url-display {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.share-url-input {
+  flex: 1;
+  font-family: monospace;
+  font-size: 0.9rem;
+  background: #f8f9fa;
+}
+
+/* QR Code */
+.qr-code-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.qr-code {
+  width: 200px;
+  height: 200px;
+  border: 2px solid #e5e5e5;
+  border-radius: 8px;
+}
+
+.qr-loading {
+  width: 200px;
+  height: 200px;
+  background: #f0f0f0;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+  font-weight: 600;
+}
+
+/* Buttons */
+.copy-btn,
+.save-settings-btn,
+.send-invitations-btn {
+  background: #669BBC;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.95rem;
+}
+
+.copy-btn:hover,
+.save-settings-btn:hover,
+.send-invitations-btn:hover {
+  background: #5a8aa6;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 155, 188, 0.3);
+}
+
+.save-settings-btn {
+  background: #28a745;
+  margin-top: 1rem;
+}
+
+.save-settings-btn:hover {
+  background: #218838;
+}
+
+.send-invitations-btn {
+  background: #dc3545;
+  width: 100%;
+  margin-top: 1rem;
+}
+
+.send-invitations-btn:hover {
+  background: #c82333;
+}
+
+/* Email Form */
+.email-invitation-form {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  border: 1px solid #e5e5e5;
+}
+
+.email-invitation-form label {
+  display: block;
+  margin-bottom: 0.5rem;
+  margin-top: 1rem;
+}
+
+.email-invitation-form label:first-child {
+  margin-top: 0;
+}
+
+/* Analytics Section */
+.analytics-section {
+  background: linear-gradient(135deg, #f8f9ff 0%, #e8f4f8 100%);
+  border: 2px solid #669BBC;
+}
+
+.analytics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.analytics-card {
+  background: white;
+  padding: 1rem;
+  border-radius: 8px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(102, 155, 188, 0.2);
+}
+
+.analytics-number {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #003049;
+  margin-bottom: 0.5rem;
+}
+
+.analytics-label {
+  color: #669BBC;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.analytics-detail {
+  background: white;
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  border: 1px solid rgba(102, 155, 188, 0.2);
+  color: #003049;
+  font-weight: 500;
+  margin-bottom: 1rem;
+}
+
+.refresh-analytics-btn {
+  background: #669BBC;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.refresh-analytics-btn:hover {
+  background: #557a99;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .share-test-content {
+    width: 95%;
+    margin: 1rem;
+  }
+  
+  .share-test-header {
+    padding: 1.5rem 1rem 1rem 1rem;
+  }
+  
+  .share-test-body {
+    padding: 1rem;
+  }
+  
+  .share-section {
+    padding: 1rem;
+  }
+  
+  .share-code-display {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .share-url-display {
+    flex-direction: column;
+  }
+  
+  .share-code {
+    text-align: center;
+    font-size: 1.2rem;
+  }
+}

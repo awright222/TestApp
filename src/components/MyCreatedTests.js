@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { CreatedTestsService } from '../services/CreatedTestsService';
+import ShareTest from './ShareTest';
 
 export default function MyCreatedTests() {
   const navigate = useNavigate();
@@ -8,6 +9,8 @@ export default function MyCreatedTests() {
   const [createdTests, setCreatedTests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [lastRefresh, setLastRefresh] = useState(Date.now());
+  const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [selectedTest, setSelectedTest] = useState(null);
 
   useEffect(() => {
     console.log('MyCreatedTests component mounted');
@@ -88,6 +91,11 @@ export default function MyCreatedTests() {
       console.error('Export failed:', error);
       alert('Failed to export test. Please try again.');
     }
+  };
+
+  const shareTest = (test) => {
+    setSelectedTest(test);
+    setShareModalOpen(true);
   };
 
   const importTest = () => {
@@ -436,6 +444,22 @@ export default function MyCreatedTests() {
                   ✏️ Edit
                 </button>
                 <button
+                  onClick={() => shareTest(test)}
+                  style={{
+                    background: 'transparent',
+                    color: '#669BBC',
+                    border: '2px solid #669BBC',
+                    padding: '0.5rem 1rem',
+                    borderRadius: '6px',
+                    fontSize: '0.9rem',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    flex: 1
+                  }}
+                >
+                  🔗 Share
+                </button>
+                <button
                   onClick={() => exportTest(test)}
                   style={{
                     background: 'transparent',
@@ -455,6 +479,17 @@ export default function MyCreatedTests() {
             </div>
           ))}
         </div>
+      )}
+
+      {/* Share Modal */}
+      {shareModalOpen && selectedTest && (
+        <ShareTest
+          test={selectedTest}
+          onClose={() => {
+            setShareModalOpen(false);
+            setSelectedTest(null);
+          }}
+        />
       )}
     </div>
   );

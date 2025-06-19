@@ -6,7 +6,14 @@ import PracticeTest from './PracticeTest';
 import { CreatedTestsService } from '../services/CreatedTestsService';
 import { useAuth } from '../firebase/AuthContext';
 
-function PracticeTestContainer({ searchTerm, onClearSearch }) {
+function PracticeTestContainer({ 
+  searchTerm, 
+  onClearSearch, 
+  test, 
+  onTestComplete, 
+  isSharedTest = false, 
+  sharedTestInfo = null 
+}) {
   const { testId } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
@@ -19,6 +26,26 @@ function PracticeTestContainer({ searchTerm, onClearSearch }) {
     console.log('testId from params:', testId);
     console.log('location.state:', location.state);
     console.log('location.pathname:', location.pathname);
+    console.log('test prop:', test);
+    console.log('isSharedTest:', isSharedTest);
+    
+    // If test is passed as prop (for shared tests), use it directly
+    if (test && isSharedTest) {
+      console.log('=== Using shared test from props ===');
+      const transformedTest = {
+        title: test.title,
+        color: test.color || '#669BBC',
+        questions: test.questions.map((q, index) => ({
+          ...q,
+          id: index + 1
+        })),
+        isSharedTest: true,
+        sharedTestInfo
+      };
+      console.log('Transformed shared test:', transformedTest);
+      setSelectedTest(transformedTest);
+      return;
+    }
     
     // Check if we have a saved test from navigation state
     if (location.state?.savedTest) {
@@ -115,7 +142,7 @@ function PracticeTestContainer({ searchTerm, onClearSearch }) {
     if (testId) {
       loadCustomTest();
     }
-  }, [testId, navigate, location.state, user]);
+  }, [testId, navigate, location.state, user, test, isSharedTest, sharedTestInfo]);
 
   const handleBackToSelection = () => {
     if (testId) {
@@ -292,6 +319,7 @@ function PracticeTestContainer({ searchTerm, onClearSearch }) {
         onBackToSelection={handleBackToSelection}
         searchTerm={searchTerm}
         onClearSearch={onClearSearch}
+        onTestComplete={onTestComplete}
       />
     </div>
   );

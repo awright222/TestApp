@@ -5,7 +5,7 @@ import SaveModal from '../SaveModal';
 import SearchResults from './SearchResults';
 import './PracticeTest.css';
 
-function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSearch }) {
+function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSearch, onTestComplete }) {
   const [questions, setQuestions] = useState([]);
   const [originalQuestions, setOriginalQuestions] = useState([]);
   const [current, setCurrent] = useState(0);
@@ -22,6 +22,11 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
     if (selectedTest) {
       console.log('PracticeTest: Loading selectedTest:', selectedTest);
       setLoading(true);
+      
+      // Set start time for shared tests
+      if (selectedTest.isSharedTest && !selectedTest.startTime) {
+        selectedTest.startTime = Date.now();
+      }
       
       // Handle different test sources
       if (selectedTest.csvUrl) {
@@ -253,6 +258,31 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
     setQuestionScore(prev => {
       const updated = [...prev];
       updated[current] = points;
+      
+      // Check if test is completed and call completion callback
+      const newScore = [...updated];
+      newScore[current] = points;
+      
+      // Check if all questions have been attempted
+      const allAnswered = newScore.every(score => score !== null);
+      if (allAnswered && onTestComplete && selectedTest?.isSharedTest) {
+        const totalQuestions = questions.length;
+        const correctAnswers = newScore.reduce((sum, val) => sum + (val || 0), 0);
+        const score = Math.round((correctAnswers / totalQuestions) * 100);
+        
+        // Calculate time spent (if we have start time)
+        const timeSpent = selectedTest.startTime ? 
+          Math.floor((Date.now() - selectedTest.startTime) / 1000) : 0;
+        
+        onTestComplete({
+          score,
+          totalQuestions,
+          correctAnswers,
+          timeSpent,
+          completedAt: new Date().toISOString()
+        });
+      }
+      
       return updated;
     });
   };
