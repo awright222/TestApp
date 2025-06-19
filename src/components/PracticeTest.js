@@ -904,10 +904,30 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
         </div>
       )}
 
-      <div className="score-display">
-        <div className="score-info">
-          <span className="current-score">
-            Score: {runningScore} / {
+      {/* Ultra-Compact Test Navigation & Controls */}
+      <div className="compact-test-bar">
+        <div className="test-bar-left">
+          <div className="question-nav">
+            <span className="current-question">Q {current + 1}/{questions.length}</span>
+            <input
+              id="practice-question-jump"
+              type="number"
+              min="1"
+              max={questions.length}
+              value={current + 1}
+              onChange={(e) => {
+                const questionNum = parseInt(e.target.value);
+                if (questionNum >= 1 && questionNum <= questions.length) {
+                  setCurrent(questionNum - 1);
+                }
+              }}
+              className="question-jump-input compact"
+              title="Jump to question"
+              placeholder={`1-${questions.length}`}
+            />
+          </div>
+          <div className="score-compact">
+            Score: {runningScore}/{
               questions.reduce((sum, q) => {
                 if (q.question_type?.toLowerCase() === 'multiple choice') {
                   return sum + q.correct_answer.split(',').length;
@@ -917,96 +937,85 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
                 return sum + 1;
               }, 0)
             }
-          </span>
+          </div>
         </div>
         
-        {!testCompleted && (
-          <div className="finish-test-section">
-            {allQuestionsAttempted() ? (
-              <button
-                onClick={handleFinishTest}
-                className="finish-test-btn finish-ready"
+        <div className="test-bar-center">
+          <div className="test-controls-compact">
+            <button
+              onClick={() => {
+                setQuestions(shuffleArray(originalQuestions));
+                setCurrent(0);
+                setShowExplanation(false);
+              }}
+              className="control-btn compact"
+              title="Shuffle Questions"
+            >
+              <span className="btn-icon">🔀</span>
+              <span className="btn-text">Shuffle</span>
+            </button>
+            <button
+              onClick={() => {
+                setQuestions(originalQuestions);
+                setCurrent(0);
+                setShowExplanation(false);
+                setUserAnswers(originalQuestions.map(getInitialUserAnswer));
+                setQuestionScore(Array(originalQuestions.length).fill(null));
+                setQuestionSubmitted(Array(originalQuestions.length).fill(false));
+              }}
+              className="control-btn compact"
+              title="Reset Test"
+            >
+              <span className="btn-icon">🔄</span>
+              <span className="btn-text">Reset</span>
+            </button>
+            <button onClick={() => setShowSaveModal(true)} className="control-btn compact" title="Save Progress">
+              <span className="btn-icon">💾</span>
+              <span className="btn-text">Save</span>
+            </button>
+            {markedQuestions.length > 0 && (
+              <button 
+                onClick={() => setShowReviewPanel(true)}
+                className="control-btn compact"
+                title={`${markedQuestions.length} question(s) marked for review`}
               >
-                ✅ Finish Test
-              </button>
-            ) : (
-              <button
-                onClick={handleFinishTest}
-                className="finish-test-btn finish-partial"
-                title={`${questions.length - answeredCount()} questions remaining`}
-              >
-                📝 Finish Test ({answeredCount()}/{questions.length})
+                <span className="btn-icon">📌</span>
+                <span className="btn-text">Review ({markedQuestions.length})</span>
               </button>
             )}
           </div>
-        )}
-        
-        {testCompleted && (
-          <div className="test-completed-badge">
-            🎉 Test Completed!
-          </div>
-        )}
-      </div>
-
-      <div className="test-controls">
-        <button
-          onClick={() => {
-            setQuestions(shuffleArray(originalQuestions));
-            setCurrent(0);
-            setShowExplanation(false);
-          }}
-          className="control-btn"
-        >
-          Shuffle Questions
-        </button>
-        <button
-          onClick={() => {
-            setQuestions(originalQuestions);
-            setCurrent(0);
-            setShowExplanation(false);
-            setUserAnswers(originalQuestions.map(getInitialUserAnswer));
-            setQuestionScore(Array(originalQuestions.length).fill(null));
-            setQuestionSubmitted(Array(originalQuestions.length).fill(false));
-          }}
-          className="control-btn"
-        >
-          Reset
-        </button>
-        <button onClick={() => setShowSaveModal(true)} className="control-btn save-btn">
-          Save Progress
-        </button>
-        {markedQuestions.length > 0 && (
-          <button 
-            onClick={() => setShowReviewPanel(true)}
-            className="control-btn review-btn"
-            title={`${markedQuestions.length} question(s) marked for review`}
-          >
-            📌 Review ({markedQuestions.length})
-          </button>
-        )}
-      </div>
-
-      <div className="question-counter">
-        <div className="question-count-display">
-          <span className="current-question">Question {current + 1} of {questions.length}</span>
         </div>
-        <div className="question-jump-container">
-          <input
-            id="practice-question-jump"
-            type="number"
-            min="1"
-            max={questions.length}
-            value={current + 1}
-            onChange={(e) => {
-              const questionNum = parseInt(e.target.value);
-              if (questionNum >= 1 && questionNum <= questions.length) {
-                setCurrent(questionNum - 1);
-              }
-            }}
-            className="question-jump-input"
-            title="Jump to question"
-            placeholder={`1-${questions.length}`}
-          />
+        
+        <div className="test-bar-right">
+          {!testCompleted && (
+            <div className="finish-test-compact">
+              {allQuestionsAttempted() ? (
+                <button
+                  onClick={handleFinishTest}
+                  className="finish-test-btn compact ready"
+                >
+                  <span className="btn-icon">✅</span>
+                  <span className="btn-text">Finish</span>
+                </button>
+              ) : (
+                <button
+                  onClick={handleFinishTest}
+                  className="finish-test-btn compact partial"
+                  title={`${questions.length - answeredCount()} questions remaining`}
+                >
+                  <span className="btn-icon">📝</span>
+                  <span className="btn-text">Finish ({answeredCount()}/{questions.length})</span>
+                </button>
+              )}
+            </div>
+          )}
+          
+          {testCompleted && (
+            <div className="test-completed-compact">
+              <span className="btn-icon">🎉</span>
+              <span className="btn-text">Complete!</span>
+            </div>
+          )}
         </div>
       </div>
 
