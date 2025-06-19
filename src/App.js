@@ -69,8 +69,8 @@ function App() {
         setShowTimer={setShowTimer}
       />
 
-      {/* Timer Toggle Button (desktop only) */}
-      {!showTimer && (
+      {/* Timer Toggle Button (desktop only) - Hide on test routes */}
+      {!showTimer && !location.pathname.includes('/practice') && !location.pathname.includes('/case-study') && !location.pathname.includes('/custom-test') && !location.pathname.includes('/shared-test') && (
         <button
           className="timer-toggle-btn desktop"
           onClick={() => setShowTimer(true)}
@@ -78,7 +78,7 @@ function App() {
           <FontAwesomeIcon icon={faClock} />
         </button>
       )}
-      {showTimer && (
+      {showTimer && !location.pathname.includes('/practice') && !location.pathname.includes('/case-study') && !location.pathname.includes('/custom-test') && !location.pathname.includes('/shared-test') && (
         <Timer onClose={() => setShowTimer(false)} />
       )}
 

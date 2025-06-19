@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Papa from 'papaparse';
 import { SavedTestsService } from '../SavedTestsService';
 import SaveModal from '../SaveModal';
@@ -19,6 +19,18 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
   const [loading, setLoading] = useState(true);
   const [testCompleted, setTestCompleted] = useState(false);
   const [showFinishConfirmation, setShowFinishConfirmation] = useState(false);
+  
+  // Timer state
+  const [timerEnabled, setTimerEnabled] = useState(false);
+  const [timerTime, setTimerTime] = useState(0); // in seconds
+  const [timerRunning, setTimerRunning] = useState(false);
+  const [timerInputMinutes, setTimerInputMinutes] = useState(90);
+  const [timerMinimized, setTimerMinimized] = useState(false);
+  const [timerFloating, setTimerFloating] = useState(false);
+  const [timerDragging, setTimerDragging] = useState(false);
+  const [timerPosition, setTimerPosition] = useState({ x: window.innerWidth - 280, y: 24 });
+  const timerOffset = useRef({ x: 0, y: 0 });
+  const dragRef = useRef({ isDragging: false, lastUpdate: 0 });
   
   // Determine test mode based on test type
   const isAssessmentMode = selectedTest?.isSharedTest || selectedTest?.assessmentMode || false;
@@ -108,29 +120,120 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
     }
   }, [selectedTest]);
 
-  // Show loading screen while questions are being loaded
-  if (loading) {
-    return (
-      <div className="practice-test-loading">
-        <div className="loading-icon">⚡</div>
-        <div className="loading-title">Loading {selectedTest.title}...</div>
-        <div className="loading-subtitle">Please wait while we prepare your questions</div>
-      </div>
-    );
-  }
+  // Timer initialization effect
+  useEffect(() => {
+    if (selectedTest && questions.length > 0) {
+      if (isAssessmentMode) {
+        // Assessment mode: auto-start timer with required time
+        const defaultTime = selectedTest.timeLimit || 90; // minutes
+        setTimerTime(defaultTime * 60); // convert to seconds
+        setTimerEnabled(true);
+        setTimerRunning(true);
+      } else {
+        // Practice mode: timer available but not auto-started
+        setTimerEnabled(false);
+        setTimerTime(timerInputMinutes * 60);
+      }
+    }
+  }, [selectedTest, questions, isAssessmentMode, timerInputMinutes]);
 
-  if (!questions.length) {
-    return (
-      <div className="practice-test-error">
-        <div className="error-icon">📚</div>
-        <div className="error-title">No questions found for this test.</div>
-        <button onClick={onBackToSelection} className="back-btn">
-          Back to Test Selection
-        </button>
-      </div>
-    );
-  }
+  // Timer countdown effect
+  useEffect(() => {
+    let interval;
+    if (timerEnabled && timerRunning && timerTime > 0 && !testCompleted) {
+      interval = setInterval(() => {
+        setTimerTime(prev => {
+          if (prev <= 1) {
+            setTimerRunning(false);
+            // Auto-finish test when time runs out in assessment mode
+            if (isAssessmentMode) {
+              handleFinishTest();
+            }
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [timerEnabled, timerRunning, timerTime, testCompleted, isAssessmentMode]);
 
+  // Timer drag effect
+  useEffect(() => {
+    if (timerDragging) {
+      const handleMouseMove = (e) => {
+        if (!timerDragging) return;
+        
+        // Throttle updates to 60fps max
+        const now = Date.now();
+        if (now - dragRef.current.lastUpdate < 16) return; // ~60fps
+        dragRef.current.lastUpdate = now;
+        
+        // Use requestAnimationFrame for smooth animation
+        requestAnimationFrame(() => {
+          setTimerPosition({
+            x: e.clientX - timerOffset.current.x,
+            y: Math.max(0, e.clientY - timerOffset.current.y),
+          });
+        });
+      };
+      
+      const handleMouseUp = () => {
+        setTimerDragging(false);
+        document.body.style.userSelect = "";
+        document.body.style.cursor = "";
+      };
+
+      window.addEventListener("mousemove", handleMouseMove, { passive: true });
+      window.addEventListener("mouseup", handleMouseUp);
+      
+      return () => {
+        window.removeEventListener("mousemove", handleMouseMove);
+        window.removeEventListener("mouseup", handleMouseUp);
+      };
+    }
+  }, [timerDragging]);
+
+  // Timer utility functions
+  const formatTime = (seconds) => {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  };
+
+  const toggleTimer = () => {
+    if (isPracticeMode) {
+      setTimerEnabled(!timerEnabled);
+      if (!timerEnabled) {
+        setTimerTime(timerInputMinutes * 60);
+        setTimerRunning(false);
+      }
+    }
+  };
+
+  const startStopTimer = () => {
+    setTimerRunning(!timerRunning);
+  };
+
+  const resetTimer = () => {
+    setTimerRunning(false);
+    if (isAssessmentMode) {
+      const defaultTime = selectedTest.timeLimit || 90;
+      setTimerTime(defaultTime * 60);
+    } else {
+      setTimerTime(timerInputMinutes * 60);
+    }
+  };
+
+  const updateTimerMinutes = (minutes) => {
+    if (isPracticeMode && !timerRunning) {
+      setTimerInputMinutes(minutes);
+      setTimerTime(minutes * 60);
+    }
+  };
+
+  // Helper function to get initial answer based on question type
   function getInitialUserAnswer(q) {
     if (q?.question_type?.toLowerCase() === 'multiple choice') {
       return [];
@@ -140,6 +243,23 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
     return '';
   }
 
+  // Function to get choice label from choice text
+  function getChoiceLabel(choice) {
+    const match = choice.match(/^([A-Z])\./);
+    return match ? match[1] : null;
+  }
+
+  // Function to shuffle array
+  function shuffleArray(array) {
+    const arr = [...array];
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  // Handle saving progress
   const handleSaveProgress = async (saveData) => {
     try {
       // Use the progress data from SaveModal (it has the correct structure with totalQuestions and completedQuestions)
@@ -190,38 +310,7 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
     }
   };
 
-  const q = questions[current];
-  const isLast = current >= questions.length - 1;
-  const choices = q.choices?.match(/^[A-Z]\..+?(?=\n[A-Z]\.|$)/gms)?.map(s => s.trim()) || [];
-
-  // Hotspot options
-  const hotspotOptions = {};
-  if (q.question_type?.toLowerCase() === 'hotspot') {
-    const lines = q.choices.split(/\r?\n/).filter(Boolean);
-    for (const line of lines) {
-      const [label, rest] = line.split(':');
-      if (label && rest) {
-        hotspotOptions[label.trim()] = rest.split(',').map(opt => opt.trim()).filter(Boolean);
-      }
-    }
-  }
-
-  const correctHotspotAnswers = {};
-  if (q.question_type?.toLowerCase() === 'hotspot') {
-    const lines = q.correct_answer.split(/\r?\n/).filter(Boolean);
-    for (const line of lines) {
-      const [label, answer] = line.split(':');
-      if (label && answer) {
-        correctHotspotAnswers[label.trim()] = answer.trim();
-      }
-    }
-  }
-
-  function getChoiceLabel(choice) {
-    const match = choice.match(/^([A-Z])\./);
-    return match ? match[1] : null;
-  }
-
+  // Update user answer for current question
   const updateUserAnswer = (answer) => {
     setUserAnswers(prev => {
       const updated = [...prev];
@@ -230,6 +319,7 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
     });
   };
 
+  // Handle hotspot question changes
   function handleHotspotChange(label, val) {
     setUserAnswers(prev => {
       const updated = [...prev];
@@ -238,8 +328,11 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
     });
   }
 
+  // Submit current question
   const submitCurrentQuestion = () => {
     let points = 0;
+    const q = questions[current];
+    
     if (q.question_type?.toLowerCase() === 'multiple choice') {
       const correctAnswers = q.correct_answer.split(',').map(a => a.trim());
       const userSelection = Array.isArray(userAnswers[current]) ? userAnswers[current] : [userAnswers[current]];
@@ -251,6 +344,14 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
         }
       }
     } else if (q.question_type?.toLowerCase() === 'hotspot') {
+      const correctHotspotAnswers = {};
+      const lines = q.correct_answer.split(/\r?\n/).filter(Boolean);
+      for (const line of lines) {
+        const [label, answer] = line.split(':');
+        if (label && answer) {
+          correctHotspotAnswers[label.trim()] = answer.trim();
+        }
+      }
       points = Object.entries(correctHotspotAnswers).filter(
         ([label, correct]) => userAnswers[current][label] === correct
       ).length;
@@ -267,8 +368,6 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
       return updated;
     });
   };
-
-  const runningScore = questionScore.reduce((sum, val) => sum + (val || 0), 0);
 
   // Check if all questions have been attempted
   const allQuestionsAttempted = () => {
@@ -391,6 +490,7 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
     alert(`${modeText} Completed!\n\nScore: ${score}%\nCorrect Answers: ${correctAnswers}/${totalQuestions}\nQuestions Answered: ${answeredCount()}/${totalQuestions}\nTime Spent: ${Math.floor(timeSpent / 60)}m ${timeSpent % 60}s`);
   };
 
+  // Navigation functions
   const nextQuestion = () => {
     setCurrent(prev => Math.min(questions.length - 1, prev + 1));
     setShowExplanation(false);
@@ -401,19 +501,92 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
     setShowExplanation(false);
   };
 
-  function shuffleArray(array) {
-    const arr = [...array];
-    for (let i = arr.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
-    return arr;
-  }
-
   const jumpToQuestion = (questionIndex) => {
     setCurrent(questionIndex);
     setShowExplanation(false);
   };
+
+  // Timer drag handlers
+  const onTimerMouseDown = (e) => {
+    if (!timerFloating) return;
+    e.preventDefault(); // Prevent text selection
+    setTimerDragging(true);
+    timerOffset.current = {
+      x: e.clientX - timerPosition.x,
+      y: e.clientY - timerPosition.y,
+    };
+    document.body.style.userSelect = "none";
+    document.body.style.cursor = "grabbing";
+  };
+
+  const minimizeTimer = () => {
+    setTimerMinimized(true);
+    setTimerFloating(true);
+  };
+
+  const maximizeTimer = () => {
+    setTimerMinimized(false);
+    setTimerFloating(false);
+    document.body.style.cursor = ""; // Reset cursor
+  };
+
+  const makeTimerFloating = () => {
+    setTimerFloating(true);
+    setTimerMinimized(false);
+  };
+
+  // Show loading screen while questions are being loaded
+  if (loading) {
+    return (
+      <div className="practice-test-loading">
+        <div className="loading-icon">⚡</div>
+        <div className="loading-title">Loading {selectedTest.title}...</div>
+        <div className="loading-subtitle">Please wait while we prepare your questions</div>
+      </div>
+    );
+  }
+
+  if (!questions.length) {
+    return (
+      <div className="practice-test-error">
+        <div className="error-icon">📚</div>
+        <div className="error-title">No questions found for this test.</div>
+        <button onClick={onBackToSelection} className="back-btn">
+          Back to Test Selection
+        </button>
+      </div>
+    );
+  }
+
+  // Prepare current question data
+  const q = questions[current];
+  const isLast = current >= questions.length - 1;
+  const choices = q.choices?.match(/^[A-Z]\..+?(?=\n[A-Z]\.|$)/gms)?.map(s => s.trim()) || [];
+
+  // Hotspot options
+  const hotspotOptions = {};
+  if (q.question_type?.toLowerCase() === 'hotspot') {
+    const lines = q.choices.split(/\r?\n/).filter(Boolean);
+    for (const line of lines) {
+      const [label, rest] = line.split(':');
+      if (label && rest) {
+        hotspotOptions[label.trim()] = rest.split(',').map(opt => opt.trim()).filter(Boolean);
+      }
+    }
+  }
+
+  const correctHotspotAnswers = {};
+  if (q.question_type?.toLowerCase() === 'hotspot') {
+    const lines = q.correct_answer.split(/\r?\n/).filter(Boolean);
+    for (const line of lines) {
+      const [label, answer] = line.split(':');
+      if (label && answer) {
+        correctHotspotAnswers[label.trim()] = answer.trim();
+      }
+    }
+  }
+
+  const runningScore = questionScore.reduce((sum, val) => sum + (val || 0), 0);
 
   return (
     <div className="practice-test">
@@ -441,6 +614,217 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
           </div>
         </div>
       </div>
+
+      {/* Integrated Timer */}
+      {(timerEnabled || isPracticeMode) && !timerFloating && (
+        <div className="integrated-timer">
+          <div className="timer-display">
+            <div className="timer-time">
+              <span className={`timer-value ${timerTime < 300 && timerTime > 0 ? 'timer-warning' : ''} ${timerTime === 0 ? 'timer-expired' : ''}`}>
+                {formatTime(timerTime)}
+              </span>
+              {isAssessmentMode && (
+                <span className="timer-label">Time Remaining</span>
+              )}
+              {isPracticeMode && (
+                <span className="timer-label">
+                  {timerEnabled ? 'Practice Timer' : 'Timer Available'}
+                </span>
+              )}
+            </div>
+            
+            <div className="timer-controls">
+              <button 
+                onClick={minimizeTimer}
+                className="timer-btn timer-minimize"
+                title="Minimize timer"
+              >
+                ➖
+              </button>
+              
+              <button 
+                onClick={makeTimerFloating}
+                className="timer-btn timer-float"
+                title="Make timer floating"
+              >
+                📌
+              </button>
+              
+              {isPracticeMode && (
+                <>
+                  <button 
+                    onClick={toggleTimer}
+                    className={`timer-btn ${timerEnabled ? 'timer-enabled' : 'timer-disabled'}`}
+                    title={timerEnabled ? 'Disable timer' : 'Enable timer'}
+                  >
+                    {timerEnabled ? '⏰' : '⏱️'}
+                  </button>
+                  
+                  {timerEnabled && (
+                    <>
+                      <button 
+                        onClick={startStopTimer}
+                        className={`timer-btn ${timerRunning ? 'timer-pause' : 'timer-play'}`}
+                        title={timerRunning ? 'Pause timer' : 'Start timer'}
+                      >
+                        {timerRunning ? '⏸️' : '▶️'}
+                      </button>
+                      
+                      <button 
+                        onClick={resetTimer}
+                        className="timer-btn timer-reset"
+                        title="Reset timer"
+                      >
+                        🔄
+                      </button>
+                      
+                      <input
+                        type="number"
+                        min="1"
+                        max="300"
+                        value={timerInputMinutes}
+                        onChange={(e) => updateTimerMinutes(parseInt(e.target.value) || 1)}
+                        className="timer-input"
+                        disabled={timerRunning}
+                        title="Set timer minutes"
+                      />
+                      <span className="timer-unit">min</span>
+                    </>
+                  )}
+                </>
+              )}
+              
+              {isAssessmentMode && (
+                <div className="assessment-timer-info">
+                  <span className="timer-status">
+                    {timerRunning ? '🟢 Running' : '🔴 Stopped'}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Floating Timer */}
+      {(timerEnabled || isPracticeMode) && timerFloating && (
+        <div 
+          className={`floating-timer ${timerMinimized ? 'minimized' : ''} ${timerDragging ? 'dragging' : ''}`}
+          style={{
+            position: 'fixed',
+            left: `${timerPosition.x}px`,
+            top: `${timerPosition.y}px`,
+            zIndex: 1000,
+          }}
+          onMouseDown={onTimerMouseDown}
+        >
+          <div className="floating-timer-header">
+            <div className="floating-timer-time">
+              <span className={`floating-timer-value ${timerTime < 300 && timerTime > 0 ? 'timer-warning' : ''} ${timerTime === 0 ? 'timer-expired' : ''}`}>
+                {formatTime(timerTime)}
+              </span>
+            </div>
+            <div className="floating-timer-header-controls">
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setTimerMinimized(!timerMinimized);
+                }}
+                className="floating-timer-btn"
+                title={timerMinimized ? 'Expand timer' : 'Minimize timer'}
+              >
+                {timerMinimized ? '🔼' : '🔽'}
+              </button>
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  maximizeTimer();
+                }}
+                className="floating-timer-btn"
+                title="Return to integrated view"
+              >
+                ⬜
+              </button>
+            </div>
+          </div>
+          
+          {!timerMinimized && (
+            <div className="floating-timer-body">
+              <div className="floating-timer-label">
+                {isAssessmentMode ? 'Time Remaining' : 
+                 (isPracticeMode && timerEnabled ? 'Practice Timer' : 'Timer Available')}
+              </div>
+              
+              <div className="floating-timer-controls">
+                {isPracticeMode && (
+                  <>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleTimer();
+                      }}
+                      className={`floating-timer-btn ${timerEnabled ? 'timer-enabled' : 'timer-disabled'}`}
+                      title={timerEnabled ? 'Disable timer' : 'Enable timer'}
+                    >
+                      {timerEnabled ? '⏰' : '⏱️'}
+                    </button>
+                    
+                    {timerEnabled && (
+                      <>
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            startStopTimer();
+                          }}
+                          className={`floating-timer-btn ${timerRunning ? 'timer-pause' : 'timer-play'}`}
+                          title={timerRunning ? 'Pause timer' : 'Start timer'}
+                        >
+                          {timerRunning ? '⏸️' : '▶️'}
+                        </button>
+                        
+                        <button 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            resetTimer();
+                          }}
+                          className="floating-timer-btn timer-reset"
+                          title="Reset timer"
+                        >
+                          🔄
+                        </button>
+                        
+                        <input
+                          type="number"
+                          min="1"
+                          max="300"
+                          value={timerInputMinutes}
+                          onChange={(e) => {
+                            e.stopPropagation();
+                            updateTimerMinutes(parseInt(e.target.value) || 1);
+                          }}
+                          className="floating-timer-input"
+                          disabled={timerRunning}
+                          title="Set timer minutes"
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                        <span className="floating-timer-unit">min</span>
+                      </>
+                    )}
+                  </>
+                )}
+                
+                {isAssessmentMode && (
+                  <div className="floating-assessment-timer-info">
+                    <span className="floating-timer-status">
+                      {timerRunning ? '🟢 Running' : '🔴 Stopped'}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="score-display">
         <div className="score-info">
