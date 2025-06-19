@@ -28,6 +28,41 @@ export default function MyCreatedTests() {
     }
   }, [location.pathname]);
 
+  // Prevent body scroll when export modal is open
+  useEffect(() => {
+    if (exportModalOpen) {
+      const scrollBarWidth = window.innerWidth - document.documentElement.clientWidth;
+      document.body.classList.add('modal-open');
+      document.body.style.paddingRight = `${scrollBarWidth}px`;
+    } else {
+      document.body.classList.remove('modal-open');
+      document.body.style.paddingRight = '';
+    }
+
+    // Cleanup on unmount
+    return () => {
+      document.body.classList.remove('modal-open');
+      document.body.style.paddingRight = '';
+    };
+  }, [exportModalOpen]);
+
+  // Handle escape key to close modal
+  useEffect(() => {
+    const handleEscapeKey = (event) => {
+      if (event.key === 'Escape' && exportModalOpen) {
+        setExportModalOpen(false);
+      }
+    };
+
+    if (exportModalOpen) {
+      document.addEventListener('keydown', handleEscapeKey);
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscapeKey);
+    };
+  }, [exportModalOpen]);
+
   const loadCreatedTests = async () => {
     try {
       console.log('Loading created tests...', new Date().toISOString());
@@ -659,19 +694,30 @@ export default function MyCreatedTests() {
 
       {/* Export Modal */}
       {exportModalOpen && selectedTest && (
-        <div className="export-modal-overlay" onClick={() => setExportModalOpen(false)}>
-          <div className="export-modal" onClick={(e) => e.stopPropagation()}>
+        <div 
+          className="export-modal-overlay" 
+          onClick={() => setExportModalOpen(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="export-modal-title"
+        >
+          <div 
+            className="export-modal" 
+            onClick={(e) => e.stopPropagation()}
+            role="document"
+          >
             <div className="export-modal-header">
               <div className="export-header-content">
                 <div className="export-icon-large">📤</div>
                 <div>
-                  <h3>Export Test</h3>
+                  <h3 id="export-modal-title">Export Test</h3>
                   <p className="export-test-name">{selectedTest.title}</p>
                 </div>
               </div>
               <button 
                 className="export-close-btn"
                 onClick={() => setExportModalOpen(false)}
+                aria-label="Close export modal"
               >
                 ×
               </button>
