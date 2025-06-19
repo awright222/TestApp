@@ -1752,41 +1752,50 @@
   background: #c82333;
 }
 
-/* Responsive adjustments for mark for review */
-@media (max-width: 768px) {
-  .question-header-buttons {
-    flex-direction: column;
-    gap: 0.3rem;
-    align-items: stretch;
-  }
-  
-  .mark-review-btn, .info-btn {
-    font-size: 0.8rem;
-    padding: 0.4rem 0.8rem;
-  }
-  
-  .review-button {
-    font-size: 0.8rem;
-    padding: 0.3rem 0.6rem;
-    margin-left: 0.5rem;
-  }
-  
-  .review-panel-modal {
-    max-width: 95vw;
-    margin: 1rem;
-  }
-  
-  .marked-question-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
-  }
-  
-  .marked-question-actions {
-    align-self: stretch;
-  }
-  
-  .jump-to-question-btn, .unmark-question-btn {
-    flex: 1;
-  }
+/* Test Controls Styling */
+.test-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: rgba(102, 155, 188, 0.1);
+  border-radius: 12px;
+  border: 1px solid rgba(102, 155, 188, 0.3);
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
 }
+
+.control-btn {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  margin: 0;
+  min-width: 120px;
+  text-align: center;
+}
+
+.control-btn:hover {
+  background: #218838;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.control-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.3);
+}
+
+.control-btn:active {
+  background: #1e7e34;
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Save Progress and Review buttons inherit all styling from .control-btn base class */

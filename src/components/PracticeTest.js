@@ -975,20 +975,20 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
         <button onClick={() => setShowSaveModal(true)} className="control-btn save-btn">
           Save Progress
         </button>
+        {markedQuestions.length > 0 && (
+          <button 
+            onClick={() => setShowReviewPanel(true)}
+            className="control-btn review-btn"
+            title={`${markedQuestions.length} question(s) marked for review`}
+          >
+            📌 Review ({markedQuestions.length})
+          </button>
+        )}
       </div>
 
       <div className="question-counter">
         <div className="question-count-display">
           <span className="current-question">Question {current + 1} of {questions.length}</span>
-          {markedQuestions.length > 0 && (
-            <button 
-              onClick={() => setShowReviewPanel(true)}
-              className="review-button"
-              title={`${markedQuestions.length} question(s) marked for review`}
-            >
-              📌 Review ({markedQuestions.length})
-            </button>
-          )}
         </div>
         <div className="question-jump-container">
           <input
