@@ -17,6 +17,12 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
   const [showModal, setShowModal] = useState(false);
   const [currentSavedTest, setCurrentSavedTest] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [testCompleted, setTestCompleted] = useState(false);
+  const [showFinishConfirmation, setShowFinishConfirmation] = useState(false);
+  
+  // Determine test mode based on test type
+  const isAssessmentMode = selectedTest?.isSharedTest || selectedTest?.assessmentMode || false;
+  const isPracticeMode = !isAssessmentMode;
 
   useEffect(() => {
     if (selectedTest) {
@@ -258,36 +264,132 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
     setQuestionScore(prev => {
       const updated = [...prev];
       updated[current] = points;
-      
-      // Check if test is completed and call completion callback
-      const newScore = [...updated];
-      newScore[current] = points;
-      
-      // Check if all questions have been attempted
-      const allAnswered = newScore.every(score => score !== null);
-      if (allAnswered && onTestComplete && selectedTest?.isSharedTest) {
-        const totalQuestions = questions.length;
-        const correctAnswers = newScore.reduce((sum, val) => sum + (val || 0), 0);
-        const score = Math.round((correctAnswers / totalQuestions) * 100);
-        
-        // Calculate time spent (if we have start time)
-        const timeSpent = selectedTest.startTime ? 
-          Math.floor((Date.now() - selectedTest.startTime) / 1000) : 0;
-        
-        onTestComplete({
-          score,
-          totalQuestions,
-          correctAnswers,
-          timeSpent,
-          completedAt: new Date().toISOString()
-        });
-      }
-      
       return updated;
     });
   };
 
   const runningScore = questionScore.reduce((sum, val) => sum + (val || 0), 0);
+
+  // Check if all questions have been attempted
+  const allQuestionsAttempted = () => {
+    if (isPracticeMode) {
+      // In practice mode, check if questions are submitted
+      return questionSubmitted.every(submitted => submitted === true);
+    } else {
+      // In assessment mode, check if answers are provided
+      return userAnswers.every(answer => {
+        if (Array.isArray(answer)) {
+          return answer.length > 0;
+        } else if (typeof answer === 'object' && answer !== null) {
+          return Object.keys(answer).length > 0;
+        }
+        return answer !== undefined && answer !== null && answer !== '';
+      });
+    }
+  };
+
+  // Get number of questions answered
+  const answeredCount = () => {
+    if (isPracticeMode) {
+      return questionSubmitted.filter(submitted => submitted === true).length;
+    } else {
+      return userAnswers.filter(answer => {
+        if (Array.isArray(answer)) {
+          return answer.length > 0;
+        } else if (typeof answer === 'object' && answer !== null) {
+          return Object.keys(answer).length > 0;
+        }
+        return answer !== undefined && answer !== null && answer !== '';
+      }).length;
+    }
+  };
+
+  // Handle test finish
+  const handleFinishTest = () => {
+    if (!allQuestionsAttempted()) {
+      const unanswered = questions.length - answeredCount();
+      if (!window.confirm(`You have ${unanswered} unanswered questions. Are you sure you want to finish the test?`)) {
+        return;
+      }
+    }
+    setShowFinishConfirmation(true);
+  };
+
+  // Confirm and submit test
+  const confirmFinishTest = () => {
+    let finalScore = questionScore;
+    let correctAnswers = 0;
+    
+    if (isAssessmentMode) {
+      // In assessment mode, calculate all scores at once
+      finalScore = userAnswers.map((userAnswer, index) => {
+        const q = questions[index];
+        let points = 0;
+        
+        if (q.question_type?.toLowerCase() === 'multiple choice') {
+          const correctAnswers = q.correct_answer.split(',').map(a => a.trim());
+          const userSelection = Array.isArray(userAnswer) ? userAnswer : [userAnswer];
+          
+          for (const userChoice of userSelection) {
+            const userLabel = getChoiceLabel(userChoice);
+            if (correctAnswers.includes(userLabel)) {
+              points++;
+            }
+          }
+        } else if (q.question_type?.toLowerCase() === 'hotspot') {
+          const correctAnswers = q.hotspot_answers;
+          if (correctAnswers && userAnswer) {
+            points = Object.entries(correctAnswers).filter(
+              ([label, correct]) => userAnswer[label] === correct
+            ).length;
+          }
+        }
+        
+        return points;
+      });
+      
+      correctAnswers = finalScore.reduce((sum, val) => sum + (val || 0), 0);
+    } else {
+      // In practice mode, use existing scores
+      correctAnswers = finalScore.reduce((sum, val) => sum + (val || 0), 0);
+    }
+    
+    const totalQuestions = questions.length;
+    const score = Math.round((correctAnswers / totalQuestions) * 100);
+    
+    // Calculate time spent (if we have start time)
+    const timeSpent = selectedTest.startTime ? 
+      Math.floor((Date.now() - selectedTest.startTime) / 1000) : 0;
+    
+    const results = {
+      score,
+      totalQuestions,
+      correctAnswers,
+      timeSpent,
+      completedAt: new Date().toISOString(),
+      answeredCount: answeredCount(),
+      mode: isAssessmentMode ? 'assessment' : 'practice'
+    };
+
+    setTestCompleted(true);
+    setShowFinishConfirmation(false);
+    
+    // Update question scores for display
+    if (isAssessmentMode) {
+      setQuestionScore(finalScore);
+      setQuestionSubmitted(new Array(questions.length).fill(true));
+      setShowExplanation(true);
+    }
+
+    // Call completion callback for shared tests
+    if (onTestComplete && selectedTest?.isSharedTest) {
+      onTestComplete(results);
+    }
+
+    // Show results summary
+    const modeText = isAssessmentMode ? 'Assessment' : 'Practice Test';
+    alert(`${modeText} Completed!\n\nScore: ${score}%\nCorrect Answers: ${correctAnswers}/${totalQuestions}\nQuestions Answered: ${answeredCount()}/${totalQuestions}\nTime Spent: ${Math.floor(timeSpent / 60)}m ${timeSpent % 60}s`);
+  };
 
   const nextQuestion = () => {
     setCurrent(prev => Math.min(questions.length - 1, prev + 1));
@@ -322,20 +424,69 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
         </button>
         <div className="test-info">
           <h1 className="test-title">{selectedTest.title}</h1>
+          <div className="test-mode-indicator">
+            <span className={`mode-badge ${isAssessmentMode ? 'assessment-mode' : 'practice-mode'}`}>
+              {isAssessmentMode ? '📝 Assessment Mode' : '🎯 Practice Mode'}
+            </span>
+            {isAssessmentMode && (
+              <span className="mode-description">
+                Answer all questions, then submit for final score
+              </span>
+            )}
+            {isPracticeMode && (
+              <span className="mode-description">
+                Get immediate feedback as you submit each answer
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
       <div className="score-display">
-        Score: {runningScore} / {
-          questions.reduce((sum, q) => {
-            if (q.question_type?.toLowerCase() === 'multiple choice') {
-              return sum + q.correct_answer.split(',').length;
-            } else if (q.question_type?.toLowerCase() === 'hotspot') {
-              return sum + q.correct_answer.split(/\r?\n/).filter(Boolean).length;
+        <div className="score-info">
+          <span className="current-score">
+            Score: {runningScore} / {
+              questions.reduce((sum, q) => {
+                if (q.question_type?.toLowerCase() === 'multiple choice') {
+                  return sum + q.correct_answer.split(',').length;
+                } else if (q.question_type?.toLowerCase() === 'hotspot') {
+                  return sum + q.correct_answer.split(/\r?\n/).filter(Boolean).length;
+                }
+                return sum + 1;
+              }, 0)
             }
-            return sum + 1;
-          }, 0)
-        }
+          </span>
+          <span className="progress-info">
+            Progress: {answeredCount()}/{questions.length} questions answered
+          </span>
+        </div>
+        
+        {!testCompleted && (
+          <div className="finish-test-section">
+            {allQuestionsAttempted() ? (
+              <button
+                onClick={handleFinishTest}
+                className="finish-test-btn finish-ready"
+              >
+                ✅ Finish Test
+              </button>
+            ) : (
+              <button
+                onClick={handleFinishTest}
+                className="finish-test-btn finish-partial"
+                title={`${questions.length - answeredCount()} questions remaining`}
+              >
+                📝 Finish Test ({answeredCount()}/{questions.length})
+              </button>
+            )}
+          </div>
+        )}
+        
+        {testCompleted && (
+          <div className="test-completed-badge">
+            🎉 Test Completed!
+          </div>
+        )}
       </div>
 
       <div className="test-controls">
@@ -552,8 +703,8 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
         </div>
       )}
 
-      <div className="navigation-controls">
-        <button 
+      <div className="nav-controls">
+        <button
           onClick={prevQuestion} 
           disabled={current === 0} 
           className="nav-btn nav-btn-left"
@@ -561,13 +712,31 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
           Previous
         </button>
         
-        <button
-          onClick={submitCurrentQuestion}
-          disabled={questionSubmitted[current]}
-          className="submit-btn submit-btn-center"
-        >
-          Submit Answer
-        </button>
+        {/* Submit Answer button only in Practice Mode */}
+        {isPracticeMode && (
+          <button
+            onClick={submitCurrentQuestion}
+            disabled={questionSubmitted[current]}
+            className="submit-btn submit-btn-center"
+          >
+            Submit Answer
+          </button>
+        )}
+        
+        {/* In Assessment Mode, show answer selection status */}
+        {isAssessmentMode && (
+          <div className="answer-status-center">
+            {userAnswers[current] && (
+              Array.isArray(userAnswers[current]) ? userAnswers[current].length > 0 : 
+              typeof userAnswers[current] === 'object' ? Object.keys(userAnswers[current]).length > 0 :
+              userAnswers[current] !== undefined && userAnswers[current] !== null && userAnswers[current] !== ''
+            ) ? (
+              <span className="answer-selected">✓ Answer Selected</span>
+            ) : (
+              <span className="answer-pending">○ Select Answer</span>
+            )}
+          </div>
+        )}
         
         <button 
           onClick={nextQuestion} 
@@ -578,7 +747,8 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
         </button>
       </div>
 
-      {showExplanation && (
+      {/* Explanations - Show in Practice Mode after submission, or in Assessment Mode after completion */}
+      {((isPracticeMode && showExplanation) || (isAssessmentMode && testCompleted)) && (
         <div className="explanation-container">
           <div className="explanation-header">
             <strong>Explanation:</strong>
@@ -588,6 +758,14 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
             <strong>Correct Answer:</strong>
           </div>
           <div className="correct-answer-text">{q.correct_answer}</div>
+          
+          {/* Show score for this question */}
+          {questionScore[current] !== null && (
+            <div className="question-score">
+              <strong>Your Score: {questionScore[current]} points</strong>
+              {questionScore[current] > 0 ? ' ✅' : ' ❌'}
+            </div>
+          )}
         </div>
       )}
 
@@ -611,6 +789,66 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
               <div className="modal-correct-answer">
                 <strong>Correct Answer:</strong>
                 <p>{q.correct_answer}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Finish Test Confirmation Modal */}
+      {showFinishConfirmation && (
+        <div className="modal-overlay">
+          <div className="modal-content finish-confirmation-modal">
+            <h3 className="finish-modal-title">🎯 Finish Test?</h3>
+            <div className="finish-modal-body">
+              <div className="test-summary">
+                <div className="summary-item">
+                  <span className="summary-label">Questions Answered:</span>
+                  <span className="summary-value">{answeredCount()} / {questions.length}</span>
+                </div>
+                <div className="summary-item">
+                  <span className="summary-label">Current Score:</span>
+                  <span className="summary-value">
+                    {Math.round((runningScore / questions.reduce((sum, q) => {
+                      if (q.question_type?.toLowerCase() === 'multiple choice') {
+                        return sum + q.correct_answer.split(',').length;
+                      } else if (q.question_type?.toLowerCase() === 'hotspot') {
+                        return sum + q.correct_answer.split(/\r?\n/).filter(Boolean).length;
+                      }
+                      return sum + 1;
+                    }, 0)) * 100)}%
+                  </span>
+                </div>
+                {selectedTest.startTime && (
+                  <div className="summary-item">
+                    <span className="summary-label">Time Spent:</span>
+                    <span className="summary-value">
+                      {Math.floor((Date.now() - selectedTest.startTime) / 60000)}m {Math.floor(((Date.now() - selectedTest.startTime) % 60000) / 1000)}s
+                    </span>
+                  </div>
+                )}
+              </div>
+              
+              {!allQuestionsAttempted() && (
+                <div className="warning-message">
+                  ⚠️ You have {questions.length - answeredCount()} unanswered questions. 
+                  These will be marked as incorrect.
+                </div>
+              )}
+              
+              <div className="finish-modal-actions">
+                <button
+                  onClick={() => setShowFinishConfirmation(false)}
+                  className="cancel-finish-btn"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmFinishTest}
+                  className="confirm-finish-btn"
+                >
+                  {allQuestionsAttempted() ? '✅ Submit Test' : '📝 Submit Anyway'}
+                </button>
               </div>
             </div>
           </div>
