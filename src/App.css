@@ -1,3 +1,50 @@
+/* CSS Variables for consistent theming */
+:root {
+  --primary-color: #669BBC;
+  --primary-light: rgba(102, 155, 188, 0.1);
+  --success-color: #28a745;
+  --success-light: rgba(40, 167, 69, 0.1);
+  --danger-color: #dc3545;
+  --danger-light: rgba(220, 53, 69, 0.1);
+  --text-primary: #FDF0D5;
+  --text-secondary: rgba(253, 240, 213, 0.8);
+  --text-muted: rgba(253, 240, 213, 0.6);
+  --background-light: rgba(253, 240, 213, 0.05);
+  --border-light: rgba(253, 240, 213, 0.2);
+}
+
+/* Button Styles */
+.btn-primary {
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-primary:hover {
+  background: #5a8aa3;
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background: var(--primary-light);
+}
+
 body {
   background: #003049;
   margin: 0;

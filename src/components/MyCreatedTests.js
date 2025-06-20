@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { CreatedTestsService } from '../services/CreatedTestsService';
 import ShareTest from './ShareTest';
+import AssignTest from './AssignTest';
 import './MyCreatedTests.css';
 
 export default function MyCreatedTests() {
@@ -11,6 +12,7 @@ export default function MyCreatedTests() {
   const [loading, setLoading] = useState(true);
   const [lastRefresh, setLastRefresh] = useState(Date.now());
   const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [assignModalOpen, setAssignModalOpen] = useState(false);
   const [exportModalOpen, setExportModalOpen] = useState(false);
   const [selectedTest, setSelectedTest] = useState(null);
 
@@ -297,6 +299,11 @@ export default function MyCreatedTests() {
   const shareTest = (test) => {
     setSelectedTest(test);
     setShareModalOpen(true);
+  };
+
+  const assignTest = (test) => {
+    setSelectedTest(test);
+    setAssignModalOpen(true);
   };
 
   const importTest = () => {
@@ -660,6 +667,22 @@ export default function MyCreatedTests() {
                   🔗 Share
                 </button>
                 <button
+                  onClick={() => assignTest(test)}
+                  style={{
+                    background: 'transparent',
+                    color: '#17a2b8',
+                    border: '2px solid #17a2b8',
+                    padding: '0.5rem 1rem',
+                    borderRadius: '6px',
+                    fontSize: '0.9rem',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    flex: 1
+                  }}
+                >
+                  🎓 Assign
+                </button>
+                <button
                   onClick={() => navigate(`/test-analytics/${test.id}`)}
                   style={{
                     background: 'transparent',
@@ -705,6 +728,19 @@ export default function MyCreatedTests() {
             setShareModalOpen(false);
             setSelectedTest(null);
           }}
+        />
+      )}
+
+      {/* Assign Test Modal */}
+      {assignModalOpen && selectedTest && (
+        <AssignTest
+          isOpen={assignModalOpen}
+          onClose={() => {
+            setAssignModalOpen(false);
+            setSelectedTest(null);
+          }}
+          testId={selectedTest.id}
+          testTitle={selectedTest.title}
         />
       )}
 

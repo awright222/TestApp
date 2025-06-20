@@ -19,7 +19,11 @@ import CrossDeviceDebug from './components/CrossDeviceDebug';
 import SaveTestDebug from './components/SaveTestDebug';
 import NoAuthDebug from './components/NoAuthDebug';
 import Sidebar from './components/Sidebar';
-import Debug from './components/Debug';
+import Debug from './components/Debug';  
+import RoleSelection from './components/RoleSelection';
+import ClassManagement from './components/ClassManagement';
+import StudentClasses from './components/StudentClasses';
+import DevPanel from './components/DevPanel';
 
 function App() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -27,7 +31,19 @@ function App() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const location = useLocation();
 
-  const { user, loading } = useAuth();
+  const { user, userProfile, loading } = useAuth();
+
+  // Check if user needs role selection
+  const needsRoleSelection = user && userProfile && userProfile.isNewUser && !userProfile.accountType;
+  
+  // Debug logging
+  console.log('App.js - Auth State:', {
+    user: !!user,
+    userProfile: !!userProfile,
+    isNewUser: userProfile?.isNewUser,
+    accountType: userProfile?.accountType,
+    needsRoleSelection
+  });
 
   // Show loading spinner while checking authentication
   if (loading) {
@@ -52,7 +68,12 @@ function App() {
 
   // Show landing page for unauthenticated users
   if (!user) {
-    return <Landing />;
+    return (
+      <>
+        <Landing />
+        <DevPanel />
+      </>
+    );
   }
 
   // Main authenticated app
@@ -89,6 +110,8 @@ function App() {
           <Route path="/shared-tests" element={<SharedTests />} />
           <Route path="/shared-test/:testId" element={<SharedTestAccess />} />
           <Route path="/my-tests" element={<MyCreatedTests />} />
+          <Route path="/class-management" element={<ClassManagement />} />
+          <Route path="/my-classes" element={<StudentClasses />} />
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/test-analytics/:testId" element={<TestAnalytics />} />
           <Route path="/create-test" element={<CreateTest />} />
@@ -115,7 +138,6 @@ function App() {
               />
             } 
           />
-          {/* Debug route to clear localStorage if needed */}
           <Route path="/debug" element={<Debug />} />
           <Route path="/debug/cross-device" element={<CrossDeviceDebug />} />
           <Route path="/debug/save-test" element={<SaveTestDebug />} />
@@ -149,6 +171,18 @@ function App() {
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
       />
+
+      {/* Role Selection Modal for new users */}
+      <RoleSelection
+        isOpen={needsRoleSelection}
+        onComplete={() => {
+          // Role selection completed, the userProfile will update automatically
+          window.location.reload(); // Simple refresh to update the UI
+        }}
+      />
+
+      {/* Dev Panel - only shows in development */}
+      <DevPanel />
     </div>
   );
 }

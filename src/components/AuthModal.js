@@ -6,6 +6,7 @@ export default function AuthModal({ isOpen, onClose }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
+  const [selectedRole, setSelectedRole] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -16,15 +17,23 @@ export default function AuthModal({ isOpen, onClose }) {
     setLoading(true);
     setError('');
 
+    // For signup, validate role selection
+    if (!isLogin && !selectedRole) {
+      setError('Please select whether you are a teacher or student');
+      setLoading(false);
+      return;
+    }
+
     const result = isLogin 
       ? await login(email, password)
-      : await register(email, password, displayName);
+      : await register(email, password, displayName, selectedRole);
 
     if (result.success) {
       onClose();
       setEmail('');
       setPassword('');
       setDisplayName('');
+      setSelectedRole('');
     } else {
       setError(result.error);
     }
@@ -46,10 +55,19 @@ export default function AuthModal({ isOpen, onClose }) {
 
   if (!isOpen) return null;
 
+  const handleClose = () => {
+    setEmail('');
+    setPassword('');
+    setDisplayName('');
+    setSelectedRole('');
+    setError('');
+    onClose();
+  };
+
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="modal-overlay" onClick={handleClose}>
       <div className="modal-content" onClick={e => e.stopPropagation()}>
-        <button className="modal-close" onClick={onClose}>&times;</button>
+        <button className="modal-close" onClick={handleClose}>&times;</button>
         
         <h3 style={{ marginTop: 0, color: '#003049' }}>
           {isLogin ? 'Sign In' : 'Create Account'}
@@ -140,6 +158,90 @@ export default function AuthModal({ isOpen, onClose }) {
             />
           </div>
 
+          {!isLogin && (
+            <div style={{ marginBottom: '1.5rem' }}>
+              <label style={{ display: 'block', marginBottom: '0.75rem', fontWeight: 'bold', color: '#003049', fontSize: '1.1rem' }}>
+                I am a:
+              </label>
+              <div style={{ display: 'flex', gap: '0.75rem' }}>
+                <button
+                  type="button"
+                  onClick={() => setSelectedRole('teacher')}
+                  style={{
+                    flex: 1,
+                    padding: '1rem',
+                    border: selectedRole === 'teacher' ? '3px solid #780000' : '2px solid #669BBC',
+                    borderRadius: '8px',
+                    backgroundColor: selectedRole === 'teacher' ? '#FDF0D5' : '#FFFFFF',
+                    color: '#003049',
+                    cursor: 'pointer',
+                    fontSize: '0.95rem',
+                    fontWeight: selectedRole === 'teacher' ? 'bold' : 'normal',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  <div style={{ fontSize: '1.5rem', marginBottom: '0.25rem' }}>👨‍🏫</div>
+                  <div style={{ fontWeight: 'bold' }}>Teacher</div>
+                  <div style={{ fontSize: '0.8rem', color: '#666', marginTop: '0.25rem' }}>
+                    Create tests, manage classes
+                  </div>
+                </button>
+                
+                <button
+                  type="button"
+                  onClick={() => setSelectedRole('student')}
+                  style={{
+                    flex: 1,
+                    padding: '1rem',
+                    border: selectedRole === 'student' ? '3px solid #780000' : '2px solid #669BBC',
+                    borderRadius: '8px',
+                    backgroundColor: selectedRole === 'student' ? '#FDF0D5' : '#FFFFFF',
+                    color: '#003049',
+                    cursor: 'pointer',
+                    fontSize: '0.95rem',
+                    fontWeight: selectedRole === 'student' ? 'bold' : 'normal',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  <div style={{ fontSize: '1.5rem', marginBottom: '0.25rem' }}>🎓</div>
+                  <div style={{ fontWeight: 'bold' }}>Student</div>
+                  <div style={{ fontSize: '0.8rem', color: '#666', marginTop: '0.25rem' }}>
+                    Take tests, track progress
+                  </div>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {!isLogin && selectedRole && (
+            <div style={{
+              background: selectedRole === 'teacher' ? '#fff3e0' : '#e8f5e8',
+              border: `1px solid ${selectedRole === 'teacher' ? '#ffcc80' : '#a5d6a7'}`,
+              borderRadius: '6px',
+              padding: '0.75rem',
+              marginBottom: '1rem',
+              fontSize: '0.9rem',
+              color: '#003049'
+            }}>
+              <div style={{ fontWeight: 'bold', marginBottom: '0.25rem' }}>
+                {selectedRole === 'teacher' ? '🚀 Teacher Features:' : '🎯 Student Features:'}
+              </div>
+              {selectedRole === 'teacher' ? (
+                <ul style={{ margin: 0, paddingLeft: '1.2rem' }}>
+                  <li>Create unlimited tests (3 free, then $12/month)</li>
+                  <li>Advanced analytics and reporting</li>
+                  <li>Class management tools</li>
+                </ul>
+              ) : (
+                <ul style={{ margin: 0, paddingLeft: '1.2rem' }}>
+                  <li>Take unlimited tests for free</li>
+                  <li>Track your progress and results</li>
+                  <li>Join classes and groups</li>
+                </ul>
+              )}
+            </div>
+          )}
+
           <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
             <button
               type="submit"
@@ -182,7 +284,11 @@ export default function AuthModal({ isOpen, onClose }) {
         <div style={{ textAlign: 'center' }}>
           <button
             type="button"
-            onClick={() => setIsLogin(!isLogin)}
+            onClick={() => {
+              setIsLogin(!isLogin);
+              setSelectedRole('');
+              setError('');
+            }}
             style={{
               background: 'none',
               border: 'none',

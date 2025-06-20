@@ -1,6 +1,115 @@
-# Getting Started with Create React App
+# TestApp - Advanced Quiz & Assessment Platform
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A comprehensive React-based test creation and management platform designed for educators and institutions. Features role-based access, class management, advanced analytics, and scalable architecture for both individual teachers and large educational organizations.
+
+## 🚀 Key Features
+
+### 🎯 **Role-Based Access Control**
+- **Teacher Accounts**: Create tests, manage classes, view analytics, assign tests to students
+- **Student Accounts**: Join classes, take assigned tests, track progress
+- **Subscription Management**: Feature gating based on subscription tiers
+- **Usage Tracking**: Monitor test creation limits and storage usage
+
+### 🎓 **Class & Group Management**
+- **Class Creation**: Teachers can create and organize classes by subject
+- **Student Enrollment**: Multiple enrollment methods (invitation codes, manual addition)
+- **Test Assignment**: Assign tests to entire classes with custom settings
+- **Bulk Management**: Manage multiple students and assignments efficiently
+- **Class Analytics**: Track class-wide performance and engagement
+
+### 📝 **Advanced Test Creation**
+- **Flexible Question Types**: Multiple choice, true/false, short answer
+- **Timer Settings**: Configurable time limits with warnings and auto-submit
+- **Security Features**: Browser lockdown, full screen mode, linear progression
+- **Import/Export**: Support for CSV, Excel, PDF, Word, and JSON formats
+- **Question Shuffling**: Randomize question order for each student
+
+### 📊 **Comprehensive Analytics**
+- **Individual Performance**: Detailed student progress tracking
+- **Class Analytics**: Class-wide performance insights and trends
+- **Test Analytics**: Question-level analysis and difficulty assessment
+- **Export Reports**: Download analytics in multiple formats
+- **Real-time Monitoring**: Live test-taking progress tracking
+
+### 🔒 **Security & Proctoring**
+- **Browser Lockdown**: Prevents tab switching and external navigation
+- **Full Screen Enforcement**: Maintains focus during test taking
+- **Linear Mode**: Prevents backtracking to previous questions
+- **Time Management**: Automatic submission with grace periods
+- **Academic Integrity**: Built-in features to maintain test security
+
+## 🏗️ **Technical Architecture**
+
+### Frontend
+- **React 19.1.0**: Modern React with hooks and functional components
+- **React Router 7.6.2**: Client-side routing and navigation
+- **Firebase 11.9.1**: Authentication, database, and real-time features
+- **Responsive Design**: Mobile-first approach with adaptive layouts
+
+### Backend Services
+- **Firebase Firestore**: NoSQL database for scalable data storage
+- **Firebase Auth**: Secure user authentication and management
+- **Real-time Synchronization**: Cross-device data syncing
+- **Cloud Functions**: Serverless backend logic (ready for implementation)
+
+### State Management
+- **Context API**: Centralized user and app state management
+- **Local Storage**: Offline capability and data persistence
+- **Firebase Integration**: Seamless cloud synchronization
+
+## 📱 **User Experience**
+
+### For Teachers
+1. **Quick Setup**: Create account, select teacher role, start creating classes
+2. **Class Management**: Organize students, assign tests, monitor progress
+3. **Test Creation**: Build assessments with advanced settings and security
+4. **Analytics Dashboard**: Comprehensive insights into student performance
+5. **Export & Share**: Multiple formats for test distribution and reporting
+
+### For Students
+1. **Easy Enrollment**: Join classes using enrollment codes from teachers
+2. **Assignment Dashboard**: View upcoming tests and due dates
+3. **Secure Test Taking**: Guided experience with built-in security measures
+4. **Progress Tracking**: Monitor personal performance and improvement
+5. **Multi-device Access**: Seamless experience across devices
+
+## 🎨 **User Interface**
+
+### Modern Design System
+- **Consistent Color Palette**: Professional blue/teal theme with accessibility in mind
+- **Responsive Grid Layouts**: Adapts to all screen sizes and devices
+- **Interactive Components**: Smooth animations and micro-interactions
+- **Accessibility First**: WCAG compliant with keyboard navigation support
+
+### Component Library
+- **Reusable UI Components**: Modular design system for consistency
+- **Custom Form Controls**: Specialized inputs for test creation
+- **Data Visualization**: Charts and graphs for analytics display
+- **Modal System**: Layered interface for complex workflows
+
+## 🔧 **Installation & Setup**
+
+### Prerequisites
+- Node.js 18+ and npm
+- Firebase project with Firestore and Authentication enabled
+- Modern web browser with JavaScript enabled
+
+### Quick Start
+
+### Quick Start
+
+```bash
+# Clone and install dependencies
+git clone <repository-url>
+cd TestApp
+npm install
+
+# Configure Firebase
+# Create src/firebase/config.js with your Firebase configuration
+
+# Start development server
+npm start
+```
 
 ## Available Scripts
 
@@ -138,3 +247,20 @@ Test Taking Experience:
 ✅ All security restrictions enforced during test taking
 ✅ Timer countdown with warnings and auto-submit
 ✅ Navigation restrictions based on test settings
+
+1. Enhanced AuthContext
+Role Management: Teacher/Student account types
+Subscription Tiers: Free, Paid, School with feature flags
+Usage Tracking: Tests created, student attempts, storage
+Permission System: canPerformAction() helper function
+Backward Compatibility: Existing users default to teacher role
+2. Role Selection System
+Beautiful Modal: New users choose Teacher or Student role
+Clear Value Props: Features and pricing for each role
+Smart Defaults: Existing users grandfathered as teachers
+Non-Breaking: Seamless integration without disrupting current users
+3. Usage Tracking & Display
+Usage Display Component: Shows current limits and usage
+Upgrade Prompts: Contextual upgrade messaging
+Progress Visualization: Visual progress bars for limits
+Subscription Badges: Clear tier indicators

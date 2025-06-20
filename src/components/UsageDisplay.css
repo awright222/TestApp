@@ -1,0 +1,255 @@
+/* UsageDisplay.css */
+
+.usage-display {
+  background: #00243a;
+  border: 2px solid #669BBC;
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.usage-display-compact {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background: rgba(102, 155, 188, 0.1);
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.usage-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.usage-header h3 {
+  color: #FDF0D5;
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.subscription-badge {
+  background: linear-gradient(135deg, #669BBC 0%, #003049 100%);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.usage-metrics {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.usage-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.usage-details {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.usage-current {
+  color: #669BBC;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.usage-separator {
+  color: #bfc9d1;
+}
+
+.usage-limit {
+  color: #FDF0D5;
+  font-weight: 500;
+}
+
+.usage-stat {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background: rgba(102, 155, 188, 0.1);
+  border-radius: 8px;
+}
+
+.stat-label {
+  color: #bfc9d1;
+}
+
+.stat-value {
+  color: #FDF0D5;
+  font-weight: 600;
+}
+
+.unlimited-badge {
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  color: white;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.upgrade-section {
+  background: linear-gradient(135deg, rgba(255, 193, 7, 0.1) 0%, rgba(253, 126, 20, 0.1) 100%);
+  border: 1px solid rgba(255, 193, 7, 0.3);
+  border-radius: 8px;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.upgrade-message h4 {
+  color: #FDF0D5;
+  margin: 0 0 0.5rem 0;
+  font-size: 1.1rem;
+}
+
+.upgrade-message p {
+  color: #bfc9d1;
+  margin: 0 0 1rem 0;
+  line-height: 1.4;
+}
+
+.upgrade-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.upgrade-btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  border: none;
+  font-size: 0.9rem;
+}
+
+.upgrade-btn.primary {
+  background: linear-gradient(135deg, #669BBC 0%, #003049 100%);
+  color: white;
+  box-shadow: 0 2px 8px rgba(102, 155, 188, 0.3);
+}
+
+.upgrade-btn.primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(102, 155, 188, 0.4);
+}
+
+.upgrade-btn.secondary {
+  background: transparent;
+  color: #669BBC;
+  border: 2px solid #669BBC;
+}
+
+.upgrade-btn.secondary:hover {
+  background: rgba(102, 155, 188, 0.1);
+}
+
+.upgrade-btn.outline {
+  background: transparent;
+  color: #669BBC;
+  border: 1px solid rgba(102, 155, 188, 0.5);
+  padding: 0.5rem 1rem;
+  font-size: 0.8rem;
+}
+
+.upgrade-btn.outline:hover {
+  background: rgba(102, 155, 188, 0.1);
+  border-color: #669BBC;
+}
+
+.upgrade-hint {
+  background: rgba(102, 155, 188, 0.05);
+  border: 1px solid rgba(102, 155, 188, 0.2);
+  border-radius: 8px;
+  padding: 1rem;
+  text-align: center;
+}
+
+.upgrade-hint p {
+  color: #bfc9d1;
+  margin: 0 0 0.75rem 0;
+  font-size: 0.9rem;
+}
+
+/* Compact version styles */
+.usage-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.usage-label {
+  color: #bfc9d1;
+}
+
+.usage-value {
+  color: #FDF0D5;
+  font-weight: 600;
+}
+
+.usage-value.limit-reached {
+  color: #dc3545;
+}
+
+.upgrade-prompt {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.8rem;
+  color: #dc3545;
+}
+
+.upgrade-link {
+  background: none;
+  border: none;
+  color: #669BBC;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: inherit;
+  padding: 0;
+}
+
+.upgrade-link:hover {
+  color: #FDF0D5;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .usage-display {
+    padding: 1rem;
+  }
+  
+  .usage-header {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
+  }
+  
+  .upgrade-options {
+    gap: 0.5rem;
+  }
+  
+  .usage-display-compact {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+}

@@ -5,10 +5,9 @@ import { useAuth } from '../firebase/AuthContext';
 
 export default function Landing() {
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [testLoginLoading, setTestLoginLoading] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, login } = useAuth();
+  const { user } = useAuth();
   
   // Check if user was trying to access a specific test
   const pendingTestAccess = location.pathname.includes('/custom-test/') || sessionStorage.getItem('pendingTestAccess');
@@ -27,23 +26,6 @@ export default function Landing() {
       navigate(`/custom-test/${testId}`);
     }
   }, [user, pendingTestAccess, testId, navigate]);
-
-  // Test login function for development
-  const handleTestLogin = async () => {
-    setTestLoginLoading(true);
-    try {
-      const result = await login('test@testapp.com', 'password123');
-      if (!result.success) {
-        alert('Test login failed: ' + result.error);
-      }
-      // App will automatically redirect to dashboard if login succeeds
-    } catch (error) {
-      console.error('Test login error:', error);
-      alert('Test login error: ' + error.message);
-    } finally {
-      setTestLoginLoading(false);
-    }
-  };
 
   return (
     <div style={{
@@ -157,25 +139,6 @@ export default function Landing() {
           }}
         >
           {pendingTestAccess ? '🚀 Sign In to Access Your Test' : 'Get Started - Sign In or Sign Up'}
-        </button>
-
-        {/* Test Login Button - Development Only */}
-        <button
-          onClick={handleTestLogin}
-          disabled={testLoginLoading}
-          style={{
-            background: '#28a745',
-            border: 'none',
-            color: 'white',
-            padding: '0.5rem 1rem',
-            borderRadius: '6px',
-            fontSize: '0.9rem',
-            cursor: 'pointer',
-            transition: 'all 0.3s ease',
-            opacity: testLoginLoading ? 0.7 : 1
-          }}
-        >
-          {testLoginLoading ? '🔄 Logging in...' : '🧪 Test Login (Dev)'}
         </button>
 
         {/* Footer */}

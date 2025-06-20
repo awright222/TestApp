@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { CreatedTestsService } from '../services/CreatedTestsService';
+import { useAuth } from '../firebase/AuthContext';
 import './CreateTest.css';
 
 export default function CreateTest() {
   const navigate = useNavigate();
   const { testId } = useParams(); // For editing existing tests
+  const { userProfile, canPerformAction, trackUsage } = useAuth();
   const isEditing = Boolean(testId);
   
   const [activeTab, setActiveTab] = useState('import'); // 'import', 'builder', 'case-study', or 'settings'
@@ -132,6 +134,21 @@ export default function CreateTest() {
       sessionStorage.setItem('current_test_settings', JSON.stringify(testSettings));
     }
   }, [testSettings, isEditing]);
+
+  // Permission check - redirect if user can't create tests
+  useEffect(() => {
+    if (userProfile && !isEditing && !canPerformAction('create_test')) {
+      // User has reached their test creation limit
+      navigate('/my-tests?showUpgrade=true');
+      return;
+    }
+    
+    if (userProfile && userProfile.accountType === 'student') {
+      // Students can't create tests at all
+      navigate('/dashboard');
+      return;
+    }
+  }, [userProfile, canPerformAction, isEditing, navigate]);
 
   // Clear temporary settings when component unmounts or test is created
   useEffect(() => {
@@ -290,8 +307,18 @@ Role: Admin","Proper configuration requires setting the department and role corr
         result = await CreatedTestsService.updateTest(testId, testData);
         console.log('Test updated:', result);
       } else {
+        // Check permission before creating
+        if (!canPerformAction('create_test')) {
+          alert('You have reached your test creation limit. Please upgrade to continue.');
+          navigate('/my-tests?showUpgrade=true');
+          return;
+        }
+        
         result = await CreatedTestsService.createTest(testData);
         console.log('Test created:', result);
+        
+        // Track usage for new test creation
+        await trackUsage('test_created', 1);
       }
       
       // Wait a moment to ensure localStorage write is complete
@@ -346,8 +373,18 @@ Role: Admin","Proper configuration requires setting the department and role corr
         testData.questions = []; // Placeholder
       }
 
+      // Check permission before creating
+      if (!canPerformAction('create_test')) {
+        alert('You have reached your test creation limit. Please upgrade to continue.');
+        navigate('/my-tests?showUpgrade=true');
+        return;
+      }
+
       const result = await CreatedTestsService.createTest(testData);
       console.log('Import test created:', result);
+      
+      // Track usage for new test creation
+      await trackUsage('test_created', 1);
       
       // Wait a moment to ensure localStorage write is complete
       await new Promise(resolve => setTimeout(resolve, 100));

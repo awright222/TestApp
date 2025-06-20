@@ -164,6 +164,13 @@
   border-radius: 6px;
 }
 
+/* Usage Section */
+.sidebar-usage {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(102, 155, 188, 0.3);
+}
+
 /* Auth Section */
 .sidebar-auth {
   margin-top: 2rem;

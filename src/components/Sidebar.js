@@ -10,18 +10,41 @@ function Sidebar({
   setMobileMenuOpen
 }) {
   const location = useLocation();
-  const { user, logout } = useAuth();
+  const { user, userProfile, logout } = useAuth();
 
-  const navigationItems = [
-    { path: '/dashboard', icon: '🏠', label: 'Dashboard' },
-    { path: '/practice', icon: '📝', label: 'Practice Test' },
-    { path: '/shared-tests', icon: '📤', label: 'Shared Tests' },
-    { path: '/my-tests', icon: '📚', label: 'My Created Tests' },
-    { path: '/analytics', icon: '📊', label: 'Analytics' },
-    { path: '/create-test', icon: '✨', label: 'Create Test' },
-    { path: '/case-studies', icon: '📚', label: 'Case Studies' },
-    { path: '/saved-tests', icon: '💾', label: 'Saved Tests' }
-  ];
+  // Define navigation items based on user role
+  const getNavigationItems = () => {
+    const baseItems = [
+      { path: '/dashboard', icon: '🏠', label: 'Dashboard' },
+      { path: '/practice', icon: '📝', label: 'Practice Tests' },
+      { path: '/case-studies', icon: '📖', label: 'Case Studies' }
+    ];
+
+    if (!userProfile) return baseItems;
+
+    if (userProfile.accountType === 'teacher') {
+      return [
+        ...baseItems,
+        { path: '/my-tests', icon: '📚', label: 'My Created Tests' },
+        { path: '/class-management', icon: '🎓', label: 'Class Management' },
+        { path: '/analytics', icon: '📊', label: 'Analytics' },
+        { path: '/create-test', icon: '✨', label: 'Create Test' },
+        { path: '/shared-tests', icon: '📤', label: 'Shared Tests' },
+        { path: '/saved-tests', icon: '💾', label: 'Practice Saves' }
+      ];
+    } else if (userProfile.accountType === 'student') {
+      return [
+        ...baseItems,
+        { path: '/my-classes', icon: '🎓', label: 'My Classes' },
+        { path: '/shared-tests', icon: '📤', label: 'Available Tests' },
+        { path: '/saved-tests', icon: '💾', label: 'My Progress' }
+      ];
+    }
+
+    return baseItems;
+  };
+
+  const navigationItems = getNavigationItems();
 
   return (
     <>
