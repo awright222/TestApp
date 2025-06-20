@@ -375,7 +375,7 @@ export default function MyCreatedTests() {
         marginBottom: '2rem' 
       }}>
         <div>
-          <h1 style={{ color: '#003049', marginBottom: '0.5rem' }}>📝 My Created Tests</h1>
+          <h1 style={{ color: '#003049', marginBottom: '0.5rem' }}>✨ My Tests</h1>
           <p style={{ color: '#669BBC', margin: 0 }}>
             {createdTests.length} test{createdTests.length !== 1 ? 's' : ''} created
             <small style={{ marginLeft: '1rem', opacity: 0.7 }}>
@@ -387,6 +387,27 @@ export default function MyCreatedTests() {
           </p>
         </div>
         <div style={{ display: 'flex', gap: '1rem' }}>
+          <button
+            onClick={() => navigate('/create-test')}
+            style={{
+              background: 'linear-gradient(45deg, #669BBC, #577a9e)',
+              color: '#FDF0D5',
+              border: 'none',
+              padding: '0.75rem 1.5rem',
+              borderRadius: '8px',
+              fontSize: '1rem',
+              fontWeight: '600',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseOver={(e) => e.target.style.background = 'linear-gradient(45deg, #577a9e, #4a6b8a)'}
+            onMouseOut={(e) => e.target.style.background = 'linear-gradient(45deg, #669BBC, #577a9e)'}
+          >
+            ✨ Create New Test
+          </button>
           <button
             onClick={importTest}
             style={{

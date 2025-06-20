@@ -16,8 +16,7 @@ function Sidebar({
   const getNavigationItems = () => {
     const baseItems = [
       { path: '/dashboard', icon: '🏠', label: 'Dashboard' },
-      { path: '/practice', icon: '📝', label: 'Practice Tests' },
-      { path: '/case-studies', icon: '📖', label: 'Case Studies' }
+      { path: '/test-library', icon: '�', label: 'Test Library' }
     ];
 
     if (!userProfile) return baseItems;
@@ -25,19 +24,15 @@ function Sidebar({
     if (userProfile.accountType === 'teacher') {
       return [
         ...baseItems,
-        { path: '/my-tests', icon: '📚', label: 'My Created Tests' },
-        { path: '/class-management', icon: '🎓', label: 'Class Management' },
-        { path: '/analytics', icon: '📊', label: 'Analytics' },
-        { path: '/create-test', icon: '✨', label: 'Create Test' },
-        { path: '/shared-tests', icon: '📤', label: 'Shared Tests' },
-        { path: '/saved-tests', icon: '💾', label: 'Practice Saves' }
+        { path: '/my-tests', icon: '✨', label: 'My Tests' },
+        { path: '/class-management', icon: '🎓', label: 'Classes' },
+        { path: '/analytics', icon: '📊', label: 'Analytics' }
       ];
     } else if (userProfile.accountType === 'student') {
       return [
         ...baseItems,
         { path: '/my-classes', icon: '🎓', label: 'My Classes' },
-        { path: '/shared-tests', icon: '📤', label: 'Available Tests' },
-        { path: '/saved-tests', icon: '💾', label: 'My Progress' }
+        { path: '/my-progress', icon: '�', label: 'My Progress' }
       ];
     }
 

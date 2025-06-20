@@ -8,6 +8,7 @@ import AuthModal from './components/AuthModal';
 import Landing from './components/Landing';
 import Dashboard from './components/Dashboard';
 import SharedTests from './components/SharedTests';
+import TestLibrary from './components/TestLibrary';
 import MyCreatedTests from './components/MyCreatedTests';
 import CreateTest from './components/CreateTest';
 import TestAnalytics from './components/TestAnalytics';
@@ -99,6 +100,15 @@ function App() {
             } 
           />
           <Route 
+            path="/test-library" 
+            element={
+              <TestLibrary 
+                searchTerm={searchTerm} 
+                onClearSearch={() => setSearchTerm('')} 
+              />
+            } 
+          />
+          <Route 
             path="/practice" 
             element={
               <PracticeTestContainer 
@@ -112,12 +122,20 @@ function App() {
           <Route path="/my-tests" element={<MyCreatedTests />} />
           <Route path="/class-management" element={<ClassManagement />} />
           <Route path="/my-classes" element={<StudentClasses />} />
+          <Route 
+            path="/my-progress" 
+            element={
+              <SavedTests 
+                searchTerm={searchTerm} 
+                onClearSearch={() => setSearchTerm('')}
+              />
+            } 
+          />
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/test-analytics/:testId" element={<TestAnalytics />} />
           <Route path="/create-test" element={<CreateTest />} />
           <Route path="/create-test/:testId" element={<CreateTest />} />
           <Route path="/custom-test/:testId" element={<PracticeTestContainer />} />
-          {/* <Route path="/take-test/:shareId" element={<TakeTest />} /> */}
           <Route path="/case-studies" element={<CaseStudies />} />
           <Route path="/case-studies/:id" element={<CaseStudyDetail />} />
           <Route 

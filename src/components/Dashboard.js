@@ -256,7 +256,7 @@ export default function Dashboard({ searchTerm, onClearSearch }) {
           flexWrap: 'wrap'
         }}>
           <button
-            onClick={() => window.location.href = '/practice'}
+            onClick={() => window.location.href = '/test-library'}
             style={{
               background: '#669BBC',
               color: '#FDF0D5',
@@ -268,10 +268,10 @@ export default function Dashboard({ searchTerm, onClearSearch }) {
               fontSize: '1rem'
             }}
           >
-            📝 Take Practice Test
+            � Browse Test Library
           </button>
           <button
-            onClick={() => window.location.href = '/saved-tests'}
+            onClick={() => window.location.href = '/my-progress'}
             style={{
               background: 'transparent',
               color: '#669BBC',
@@ -283,7 +283,7 @@ export default function Dashboard({ searchTerm, onClearSearch }) {
               fontSize: '1rem'
             }}
           >
-            📂 View Saved Tests
+            � View My Progress
           </button>
         </div>
       </div>
