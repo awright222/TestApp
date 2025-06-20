@@ -1,4 +1,4 @@
-# TestApp - Advanced Quiz & Assessment Platform
+# Formulate - Where Tests Take Shape
 
 A comprehensive React-based test creation and management platform designed for educators and institutions. Features role-based access, class management, advanced analytics, and scalable architecture for both individual teachers and large educational organizations.
 

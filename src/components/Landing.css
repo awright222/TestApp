@@ -48,6 +48,17 @@
   font-weight: bold;
   color: #FDF0D5;
   text-decoration: none;
+  position: relative;
+  z-index: 10;
+  overflow: hidden;
+}
+
+.landing-logo-image {
+  height: 60px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+  filter: brightness(0) saturate(100%) invert(93%) sepia(18%) saturate(197%) hue-rotate(347deg) brightness(107%) contrast(92%);
 }
 
 .landing-logo-icon {
@@ -414,4 +425,24 @@
 @keyframes pulse {
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.02); }
+}
+
+/* Hide any potential debugging text or unwanted content */
+.landing-header,
+.landing-logo {
+  position: relative;
+  z-index: 10;
+}
+
+.landing-header::before,
+.landing-header::after,
+.landing-logo::before,
+.landing-logo::after {
+  display: none !important;
+}
+
+/* Ensure no browser debugging text appears */
+body::before,
+html::before {
+  display: none !important;
 }

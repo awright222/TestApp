@@ -34,8 +34,12 @@ export default function Landing() {
         {/* Header */}
         <header className="landing-header">
           <div className="landing-logo">
-            <span className="landing-logo-icon">🎓</span>
-            <span>Test Builder</span>
+            <img 
+              src="/nobglogomono.png" 
+              alt="Formulate Logo" 
+              className="landing-logo-image"
+            />
+            <span>Formulate</span>
           </div>
           
           <nav className="landing-nav">
@@ -67,14 +71,14 @@ export default function Landing() {
 
           {/* Hero Content */}
           <h1 className="hero-title">
-            Create. Share. Excel.
+            Where Tests Take Shape
           </h1>
           
           <p className="hero-subtitle">
             {pendingTestAccess ? (
               "Access your test and sync your progress across all devices with a free account."
             ) : (
-              "The ultimate platform for creating custom tests, managing classes, and tracking student progress. Join thousands of educators revolutionizing assessment."
+              "The ultimate platform for creating custom tests, managing classes, and tracking student progress. Join thousands of educators revolutionizing assessment with Formulate."
             )}
           </p>
 
@@ -100,7 +104,7 @@ export default function Landing() {
               <h3 className="feature-title">Smart Test Creation</h3>
               <p className="feature-description">
                 Build comprehensive tests with multiple choice, hotspot questions, and interactive case studies. 
-                AI-powered suggestions help create better assessments.
+                Formulate's AI-powered suggestions help create better assessments.
               </p>
             </div>
             
@@ -176,7 +180,7 @@ export default function Landing() {
             <div className="testimonials-grid">
               <div className="testimonial-card">
                 <p className="testimonial-quote">
-                  "Test Builder transformed how I assess my students. The analytics help me understand exactly where each student needs support."
+                  "Formulate transformed how I assess my students. The analytics help me understand exactly where each student needs support."
                 </p>
                 <div className="testimonial-author">Sarah Johnson</div>
                 <div className="testimonial-role">High School Biology Teacher</div>
@@ -203,7 +207,7 @@ export default function Landing() {
 
         {/* Footer */}
         <footer className="landing-footer">
-          <p>© 2025 Test Builder. Empowering education through innovative assessment tools.</p>
+          <p>© 2025 Formulate. Empowering education through innovative assessment tools.</p>
         </footer>
       </div>
 

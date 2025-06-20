@@ -69,10 +69,10 @@ function App() {
   // Show landing page for unauthenticated users
   if (!user) {
     return (
-      <>
+      <div>
         <Landing />
         <DevPanel />
-      </>
+      </div>
     );
   }
 

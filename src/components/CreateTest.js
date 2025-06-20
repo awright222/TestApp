@@ -1169,7 +1169,7 @@ Role: Admin","Proper configuration requires setting the department and role corr
             {/* Mixed Test - Show both builders */}
             {testType === 'mixed' && (
               <div className="mixed-test-builder">
-                <h3>🔀 Mixed Test Builder</h3>
+                <h3>🔀 Mixed Question Builder</h3>
                 <p>Add both regular questions and case study sections</p>
                 
                 <div className="mixed-sections">
