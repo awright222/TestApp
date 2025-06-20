@@ -136,9 +136,15 @@ export class PublishedTestsService {
         completedAt: new Date().toISOString(),
         answers: results.answers,
         score: results.score,
-        percentage: results.percentage,
+        percentage: results.percentage || results.score,
         timeSpent: results.timeSpent,
-        isCompleted: true
+        isCompleted: true,
+        // Enhanced analytics data
+        questionResults: results.questionResults || [],
+        testSettings: results.testSettings || {},
+        mode: results.mode || 'practice',
+        answeredCount: results.answeredCount || 0,
+        startedAt: results.startedAt || attempts[attemptIndex].startedAt
       };
 
       localStorage.setItem(`${TEST_ATTEMPTS_KEY}_${shareId}`, JSON.stringify(attempts));

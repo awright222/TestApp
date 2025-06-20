@@ -1,0 +1,406 @@
+/* Analytics.css */
+
+.analytics-dashboard {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  background: #001122;
+  color: #FDF0D5;
+  min-height: 100vh;
+}
+
+.analytics-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.analytics-header h1 {
+  color: #669BBC;
+  margin: 0 0 0.5rem 0;
+  font-size: 2.5rem;
+}
+
+.analytics-header p {
+  color: #bfc9d1;
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.analytics-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  text-align: center;
+}
+
+.loading-spinner {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Overall Statistics */
+.overall-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+.stat-card {
+  background: #00243a;
+  border: 2px solid #669BBC;
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+  transition: transform 0.2s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+}
+
+.stat-number {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #FFC107;
+  margin-bottom: 0.5rem;
+}
+
+.stat-label {
+  color: #bfc9d1;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Performance Overview */
+.performance-overview {
+  margin-bottom: 3rem;
+  padding: 2rem;
+  background: rgba(102, 155, 188, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(102, 155, 188, 0.2);
+}
+
+.performance-overview h2 {
+  color: #669BBC;
+  margin: 0 0 1.5rem 0;
+  font-size: 1.8rem;
+}
+
+.performance-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Tests Overview */
+.tests-overview {
+  margin-bottom: 3rem;
+}
+
+.tests-overview h2 {
+  color: #669BBC;
+  margin-bottom: 2rem;
+  font-size: 1.8rem;
+}
+
+.tests-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.5rem;
+}
+
+.test-summary-card {
+  background: #00243a;
+  border: 2px solid #669BBC;
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: transform 0.2s ease;
+}
+
+.test-summary-card:hover {
+  transform: translateY(-2px);
+}
+
+.test-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+
+.test-header h3 {
+  color: #FDF0D5;
+  margin: 0;
+  font-size: 1.2rem;
+  flex: 1;
+  margin-right: 1rem;
+}
+
+.status-badge {
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.status-badge.published {
+  background: rgba(40, 167, 69, 0.2);
+  color: #28a745;
+  border: 1px solid #28a745;
+}
+
+.status-badge.draft {
+  background: rgba(108, 117, 125, 0.2);
+  color: #6c757d;
+  border: 1px solid #6c757d;
+}
+
+.test-stats {
+  margin-bottom: 1.5rem;
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(102, 155, 188, 0.2);
+}
+
+.stat-row:last-child {
+  border-bottom: none;
+}
+
+.stat-row span:first-child {
+  color: #bfc9d1;
+}
+
+.stat-row span:last-child {
+  color: #FDF0D5;
+  font-weight: 600;
+}
+
+.test-actions {
+  text-align: center;
+}
+
+.analytics-link {
+  display: inline-block;
+  background: #669BBC;
+  color: white;
+  text-decoration: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: background 0.2s ease;
+}
+
+.analytics-link:hover {
+  background: #5a8ca8;
+}
+
+.no-analytics {
+  color: #bfc9d1;
+  font-style: italic;
+  margin: 0;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 3rem;
+  background: #00243a;
+  border-radius: 12px;
+  border: 2px dashed #669BBC;
+}
+
+.empty-state h3 {
+  color: #669BBC;
+  margin-bottom: 1rem;
+}
+
+.empty-state p {
+  color: #bfc9d1;
+  margin-bottom: 2rem;
+}
+
+.create-test-link {
+  display: inline-block;
+  background: #FFC107;
+  color: #212529;
+  text-decoration: none;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: background 0.2s ease;
+}
+
+.create-test-link:hover {
+  background: #e0a800;
+}
+
+/* Quick Actions */
+.quick-actions {
+  margin-bottom: 3rem;
+}
+
+.quick-actions h2 {
+  color: #669BBC;
+  margin-bottom: 2rem;
+  font-size: 1.8rem;
+}
+
+.actions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.action-card {
+  background: #00243a;
+  border: 2px solid #669BBC;
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+  text-decoration: none;
+  color: #FDF0D5;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.action-card:hover {
+  transform: translateY(-4px);
+  border-color: #FFC107;
+}
+
+.refresh-card {
+  border: none;
+  background: #669BBC;
+  color: white;
+}
+
+.refresh-card:hover {
+  background: #5a8ca8;
+  border-color: #5a8ca8;
+}
+
+.action-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.action-card h3 {
+  color: inherit;
+  margin: 0 0 0.5rem 0;
+  font-size: 1.2rem;
+}
+
+.action-card p {
+  color: #bfc9d1;
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.refresh-card p {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Tips Section */
+.analytics-tips {
+  margin-bottom: 2rem;
+}
+
+.analytics-tips h2 {
+  color: #669BBC;
+  margin-bottom: 2rem;
+  font-size: 1.8rem;
+}
+
+.tips-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.tip-card {
+  background: rgba(102, 155, 188, 0.1);
+  border: 1px solid rgba(102, 155, 188, 0.3);
+  border-radius: 8px;
+  padding: 1.5rem;
+}
+
+.tip-card h4 {
+  color: #FFC107;
+  margin: 0 0 0.75rem 0;
+  font-size: 1rem;
+}
+
+.tip-card p {
+  color: #bfc9d1;
+  margin: 0;
+  line-height: 1.5;
+  font-size: 0.9rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .analytics-dashboard {
+    padding: 1rem;
+  }
+  
+  .analytics-header h1 {
+    font-size: 2rem;
+  }
+  
+  .overall-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .tests-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .test-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .test-header h3 {
+    margin-right: 0;
+  }
+  
+  .actions-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .tips-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .overall-stats {
+    grid-template-columns: 1fr;
+  }
+  
+  .stat-card {
+    padding: 1.5rem;
+  }
+  
+  .stat-number {
+    font-size: 2rem;
+  }
+}

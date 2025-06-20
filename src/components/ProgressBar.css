@@ -1,0 +1,68 @@
+/* ProgressBar.css */
+
+.progress-bar-container {
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.progress-bar-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.label-text {
+  color: #FDF0D5;
+  font-weight: 500;
+}
+
+.label-value {
+  color: #669BBC;
+  font-weight: 600;
+}
+
+.progress-bar-track {
+  width: 100%;
+  background-color: rgba(102, 155, 188, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-bar-fill {
+  border-radius: 4px;
+  transition: width 0.3s ease-in-out;
+  position: relative;
+}
+
+.progress-bar-fill.animated {
+  animation: progressGlow 2s ease-in-out infinite alternate;
+}
+
+@keyframes progressGlow {
+  0% {
+    box-shadow: 0 0 5px rgba(102, 155, 188, 0.3);
+  }
+  100% {
+    box-shadow: 0 0 15px rgba(102, 155, 188, 0.6);
+  }
+}
+
+/* Different color variants */
+.progress-excellent {
+  background: linear-gradient(90deg, #28a745 0%, #20c997 100%);
+}
+
+.progress-good {
+  background: linear-gradient(90deg, #17a2b8 0%, #6f42c1 100%);
+}
+
+.progress-average {
+  background: linear-gradient(90deg, #ffc107 0%, #fd7e14 100%);
+}
+
+.progress-poor {
+  background: linear-gradient(90deg, #dc3545 0%, #e83e8c 100%);
+}

@@ -17,6 +17,7 @@ function Sidebar({
     { path: '/practice', icon: '📝', label: 'Practice Test' },
     { path: '/shared-tests', icon: '📤', label: 'Shared Tests' },
     { path: '/my-tests', icon: '📚', label: 'My Created Tests' },
+    { path: '/analytics', icon: '📊', label: 'Analytics' },
     { path: '/create-test', icon: '✨', label: 'Create Test' },
     { path: '/case-studies', icon: '📚', label: 'Case Studies' },
     { path: '/saved-tests', icon: '💾', label: 'Saved Tests' }

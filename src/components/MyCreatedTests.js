@@ -660,6 +660,22 @@ export default function MyCreatedTests() {
                   🔗 Share
                 </button>
                 <button
+                  onClick={() => navigate(`/test-analytics/${test.id}`)}
+                  style={{
+                    background: 'transparent',
+                    color: '#ffc107',
+                    border: '2px solid #ffc107',
+                    padding: '0.5rem 1rem',
+                    borderRadius: '6px',
+                    fontSize: '0.9rem',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    flex: 1
+                  }}
+                >
+                  📊 Analytics
+                </button>
+                <button
                   onClick={() => exportTest(test)}
                   style={{
                     background: 'transparent',

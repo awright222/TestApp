@@ -10,6 +10,8 @@ import Dashboard from './components/Dashboard';
 import SharedTests from './components/SharedTests';
 import MyCreatedTests from './components/MyCreatedTests';
 import CreateTest from './components/CreateTest';
+import TestAnalytics from './components/TestAnalytics';
+import Analytics from './components/Analytics';
 // import TakeTest from './components/TakeTest';
 import PracticeTestContainer from './components/PracticeTestContainer';
 import SharedTestAccess from './components/SharedTestAccess';
@@ -87,6 +89,8 @@ function App() {
           <Route path="/shared-tests" element={<SharedTests />} />
           <Route path="/shared-test/:testId" element={<SharedTestAccess />} />
           <Route path="/my-tests" element={<MyCreatedTests />} />
+          <Route path="/analytics" element={<Analytics />} />
+          <Route path="/test-analytics/:testId" element={<TestAnalytics />} />
           <Route path="/create-test" element={<CreateTest />} />
           <Route path="/create-test/:testId" element={<CreateTest />} />
           <Route path="/custom-test/:testId" element={<PracticeTestContainer />} />

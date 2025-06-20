@@ -334,6 +334,63 @@
   max-width: 280px;
 }
 
+/* Security Indicators */
+.security-indicators {
+  margin-top: 1rem;
+  padding: 1rem;
+  border-radius: 8px;
+  background: rgba(255, 193, 7, 0.05);
+  border: 1px solid rgba(255, 193, 7, 0.2);
+}
+
+.security-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #856404;
+  margin-bottom: 0.5rem;
+}
+
+.security-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.security-badge {
+  padding: 0.25rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  white-space: nowrap;
+}
+
+.lockdown-active {
+  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+  color: white;
+  box-shadow: 0 1px 4px rgba(220, 53, 69, 0.25);
+}
+
+.fullscreen-active {
+  background: linear-gradient(135deg, #6f42c1 0%, #5a2d91 100%);
+  color: white;
+  box-shadow: 0 1px 4px rgba(111, 66, 193, 0.25);
+}
+
+.linear-active {
+  background: linear-gradient(135deg, #fd7e14 0%, #e55a00 100%);
+  color: white;
+  box-shadow: 0 1px 4px rgba(253, 126, 20, 0.25);
+}
+
+.no-backtrack-active {
+  background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
+  color: #212529;
+  box-shadow: 0 1px 4px rgba(255, 193, 7, 0.25);
+}
+
 .saved-test-info {
   font-size: 0.9rem;
   color: #669BBC;
@@ -2014,45 +2071,3 @@
 }
 
 /* Save Progress and Review buttons inherit all styling from .control-btn base class */
-
-/* Security Status Indicators */
-.security-status {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-left: 1rem;
-}
-
-.security-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
-  font-size: 12px;
-  cursor: help;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-}
-
-.security-badge.lockdown {
-  background: rgba(255, 107, 53, 0.8);
-}
-
-.security-badge.fullscreen {
-  background: rgba(0, 48, 73, 0.8);
-}
-
-.security-badge.linear {
-  background: rgba(102, 155, 188, 0.8);
-}
-
-.security-badge.no-back {
-  background: rgba(220, 53, 69, 0.8);
-}
-
-.security-badge:hover {
-  transform: scale(1.1);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
