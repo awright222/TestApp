@@ -1,290 +1,254 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../firebase/AuthContext';
+import { CreatedTestsService } from '../services/CreatedTestsService';
+import { PublishedTestsService } from '../services/PublishedTestsService';
 import { SavedTestsService } from '../SavedTestsService';
 import SearchResults from './SearchResults';
+import './Dashboard.css';
 
-export default function Dashboard({ searchTerm, onClearSearch }) {
-  const { user } = useAuth();
-  const [stats, setStats] = useState({
-    totalTests: 0,
-    lastTestTaken: null,
-    lastScore: null,
-    averageScore: 0,
-    testsThisWeek: 0
-  });
+function Dashboard({ searchTerm, onClearSearch }) {
+  const navigate = useNavigate();
+  const { user, userProfile } = useAuth();
+  const [activityData, setActivityData] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    // Temporarily disable stats loading to debug
-    /*
-    loadUserStats();
-    */
-    setLoading(false);
-  }, []);
-
-  const loadUserStats = async () => {
+  const loadDashboardData = async () => {
+    setLoading(true);
     try {
-      const savedTests = await SavedTestsService.getSavedTests();
+      let roleSpecificData = [];
       
-      // Calculate stats from saved tests
-      const totalTests = savedTests.length;
-      let lastTestTaken = null;
-      let lastScore = null;
-      let totalScore = 0;
-      let testsWithScores = 0;
-      let testsThisWeek = 0;
-      
-      const oneWeekAgo = new Date();
-      oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-
-      // Sort by date modified to find most recent
-      const sortedTests = savedTests.sort((a, b) => 
-        new Date(b.dateModified || b.dateCreated) - new Date(a.dateModified || a.dateCreated)
-      );
-
-      if (sortedTests.length > 0) {
-        lastTestTaken = sortedTests[0];
+      if (userProfile?.accountType === 'teacher') {
+        // Teacher-specific activity data
+        const createdTests = await CreatedTestsService.getCreatedTests();
+        const userCreatedTests = createdTests.filter(test => test.createdBy === user.uid);
         
-        // Calculate last score as percentage
-        if (lastTestTaken.progress) {
-          const { questionScore } = lastTestTaken.progress;
-          if (questionScore && questionScore.length > 0) {
-            const earnedPoints = questionScore.filter(score => score !== null).reduce((sum, score) => sum + (score || 0), 0);
-            const totalPossiblePoints = questionScore.length; // Simplified - assuming 1 point per question
-            lastScore = totalPossiblePoints > 0 ? Math.round((earnedPoints / totalPossiblePoints) * 100) : 0;
+        roleSpecificData = [
+          {
+            id: 'tests-created',
+            title: 'Tests Created',
+            value: userCreatedTests.length,
+            subtitle: `0 this month`,
+            icon: '✨',
+            trend: 'neutral',
+            color: '#6366f1',
+            actionText: 'Create New Test',
+            actionPath: '/create-test'
+          },
+          {
+            id: 'total-students',
+            title: 'Students Enrolled',
+            value: 0,
+            subtitle: `Across 0 classes`,
+            icon: '🎓',
+            trend: 'neutral',
+            color: '#10b981',
+            actionText: 'Manage Classes',
+            actionPath: '/classes'
+          },
+          {
+            id: 'test-attempts',
+            title: 'Total Test Attempts',
+            value: 0,
+            subtitle: 'From all your tests',
+            icon: '📊',
+            trend: 'neutral',
+            color: '#f59e0b',
+            actionText: 'View Analytics',
+            actionPath: '/analytics'
+          },
+          {
+            id: 'recent-activity',
+            title: 'Recent Activity',
+            value: 'Active',
+            subtitle: 'Last login today',
+            icon: '⚡',
+            trend: 'up',
+            color: '#8b5cf6',
+            actionText: 'View Test Library',
+            actionPath: '/test-library'
           }
-        }
+        ];
+      } else {
+        // Student-specific activity data
+        const savedTests = await SavedTestsService.getSavedTests();
+        const userSavedTests = savedTests.filter(test => test.userId === user.uid);
+        
+        roleSpecificData = [
+          {
+            id: 'tests-taken',
+            title: 'Tests Attempted',
+            value: userSavedTests.length,
+            subtitle: `0 this week`,
+            icon: '📝',
+            trend: 'neutral',
+            color: '#6366f1',
+            actionText: 'Browse Tests',
+            actionPath: '/test-library'
+          },
+          {
+            id: 'completion-rate',
+            title: 'Completion Rate',
+            value: `0%`,
+            subtitle: `0 completed`,
+            icon: '✅',
+            trend: 'neutral',
+            color: '#10b981',
+            actionText: 'View Progress',
+            actionPath: '/saved-tests'
+          },
+          {
+            id: 'average-score',
+            title: 'Average Score',
+            value: 'N/A',
+            subtitle: `From 0 graded tests`,
+            icon: '🎯',
+            trend: 'neutral',
+            color: '#f59e0b',
+            actionText: 'Improve Skills',
+            actionPath: '/test-library?tab=practice'
+          },
+          {
+            id: 'enrolled-classes',
+            title: 'My Classes',
+            value: 0,
+            subtitle: 'All caught up',
+            icon: '🎓',
+            trend: 'up',
+            color: '#8b5cf6',
+            actionText: 'View Classes',
+            actionPath: '/my-classes'
+          }
+        ];
       }
 
-      // Calculate average score and tests this week
-      savedTests.forEach(test => {
-        const testDate = new Date(test.dateModified || test.dateCreated);
-        
-        if (testDate > oneWeekAgo) {
-          testsThisWeek++;
-        }
-
-        if (test.progress && test.progress.questionScore) {
-          const { questionScore } = test.progress;
-          if (questionScore && questionScore.length > 0) {
-            const earnedPoints = questionScore.filter(score => score !== null).reduce((sum, score) => sum + (score || 0), 0);
-            const totalPossiblePoints = questionScore.length;
-            if (totalPossiblePoints > 0) {
-              totalScore += (earnedPoints / totalPossiblePoints) * 100;
-              testsWithScores++;
-            }
-          }
-        }
-      });
-
-      const averageScore = testsWithScores > 0 ? Math.round(totalScore / testsWithScores) : 0;
-
-      setStats({
-        totalTests,
-        lastTestTaken,
-        lastScore,
-        averageScore,
-        testsThisWeek
-      });
+      setActivityData(roleSpecificData);
     } catch (error) {
-      console.error('Error loading user stats:', error);
+      console.error('Error loading dashboard data:', error);
+      setActivityData([]);
     } finally {
       setLoading(false);
     }
   };
 
-  const formatDate = (dateString) => {
-    try {
-      return new Date(dateString).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric'
-      });
-    } catch (error) {
-      return 'Unknown date';
+  useEffect(() => {
+    if (user && userProfile) {
+      loadDashboardData();
     }
-  };
-
-  if (loading) {
-    return (
-      <div style={{ padding: '2rem', textAlign: 'center' }}>
-        <div style={{ color: '#669BBC' }}>Loading dashboard...</div>
-      </div>
-    );
-  }
+  }, [user, userProfile]);
 
   return (
-    <div style={{ padding: '2rem' }}>
-      {/* Welcome Header */}
-      <div style={{ marginBottom: '2rem' }}>
-        <h1 style={{ color: '#FDF0D5', marginBottom: '0.5rem' }}>
-          Welcome back, {user?.displayName || user?.email || 'User'}!
-        </h1>
-        <p style={{ color: '#bfc9d1', fontSize: '1.1rem' }}>
-          Here's an overview of your testing activity
-        </p>
+    <div className="dashboard">
+      <div className="dashboard-header">
+        <h1>Welcome back, {user?.displayName || 'there'}!</h1>
+        <p>Here's your overview for today</p>
       </div>
 
-      {/* Stats Cards */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-        gap: '1.5rem',
-        marginBottom: '2rem'
-      }}>
-        {/* Total Tests */}
-        <div style={{
-          background: '#00243a',
-          border: '2px solid #669BBC',
-          borderRadius: '10px',
-          padding: '1.5rem',
-          textAlign: 'center'
-        }}>
-          <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#669BBC', marginBottom: '0.5rem' }}>
-            {stats.totalTests}
+      {/* Activity Cards */}
+      <div className="activity-cards">
+        {activityData.map((card) => (
+          <div 
+            key={card.id} 
+            className={`activity-card ${card.trend}`}
+            style={{ '--card-color': card.color }}
+          >
+            <div className="activity-card-header">
+              <div className="activity-icon" style={{ color: card.color }}>
+                {card.icon}
+              </div>
+              <div className={`trend-indicator ${card.trend}`}>
+                {card.trend === 'up' && '↗️'}
+                {card.trend === 'down' && '↘️'}
+                {card.trend === 'neutral' && '➡️'}
+              </div>
+            </div>
+            
+            <div className="activity-card-body">
+              <h3 className="activity-value">{card.value}</h3>
+              <p className="activity-title">{card.title}</p>
+              <p className="activity-subtitle">{card.subtitle}</p>
+            </div>
+            
+            <div className="activity-card-footer">
+              <button 
+                className="activity-action-btn"
+                onClick={() => navigate(card.actionPath)}
+                style={{ borderColor: card.color, color: card.color }}
+              >
+                {card.actionText}
+              </button>
+            </div>
           </div>
-          <div style={{ color: '#FDF0D5', fontSize: '1.1rem', fontWeight: 'bold' }}>
-            Total Tests
-          </div>
-          <div style={{ color: '#bfc9d1', fontSize: '0.9rem' }}>
-            Tests saved to your account
-          </div>
-        </div>
-
-        {/* Average Score */}
-        <div style={{
-          background: '#00243a',
-          border: '2px solid #669BBC',
-          borderRadius: '10px',
-          padding: '1.5rem',
-          textAlign: 'center'
-        }}>
-          <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#669BBC', marginBottom: '0.5rem' }}>
-            {stats.averageScore}%
-          </div>
-          <div style={{ color: '#FDF0D5', fontSize: '1.1rem', fontWeight: 'bold' }}>
-            Average Score
-          </div>
-          <div style={{ color: '#bfc9d1', fontSize: '0.9rem' }}>
-            Across all completed tests
-          </div>
-        </div>
-
-        {/* Last Score */}
-        <div style={{
-          background: '#00243a',
-          border: '2px solid #669BBC',
-          borderRadius: '10px',
-          padding: '1.5rem',
-          textAlign: 'center'
-        }}>
-          <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#669BBC', marginBottom: '0.5rem' }}>
-            {stats.lastScore !== null ? `${stats.lastScore}%` : '--'}
-          </div>
-          <div style={{ color: '#FDF0D5', fontSize: '1.1rem', fontWeight: 'bold' }}>
-            Last Test Score
-          </div>
-          <div style={{ color: '#bfc9d1', fontSize: '0.9rem' }}>
-            {stats.lastTestTaken ? stats.lastTestTaken.title : 'No tests taken yet'}
-          </div>
-        </div>
-
-        {/* Tests This Week */}
-        <div style={{
-          background: '#00243a',
-          border: '2px solid #669BBC',
-          borderRadius: '10px',
-          padding: '1.5rem',
-          textAlign: 'center'
-        }}>
-          <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#669BBC', marginBottom: '0.5rem' }}>
-            {stats.testsThisWeek}
-          </div>
-          <div style={{ color: '#FDF0D5', fontSize: '1.1rem', fontWeight: 'bold' }}>
-            Tests This Week
-          </div>
-          <div style={{ color: '#bfc9d1', fontSize: '0.9rem' }}>
-            Your recent activity
-          </div>
-        </div>
+        ))}
       </div>
-
-      {/* Recent Activity */}
-      {stats.lastTestTaken && (
-        <div style={{
-          background: '#00243a',
-          border: '2px solid #669BBC',
-          borderRadius: '10px',
-          padding: '1.5rem'
-        }}>
-          <h3 style={{ color: '#FDF0D5', marginBottom: '1rem' }}>Recent Activity</h3>
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: '1rem',
-            background: 'rgba(102, 155, 188, 0.1)',
-            borderRadius: '8px',
-            border: '1px solid rgba(102, 155, 188, 0.3)'
-          }}>
-            <div>
-              <div style={{ color: '#FDF0D5', fontWeight: 'bold', marginBottom: '0.25rem' }}>
-                {stats.lastTestTaken.title}
-              </div>
-              <div style={{ color: '#bfc9d1', fontSize: '0.9rem' }}>
-                Last worked on: {formatDate(stats.lastTestTaken.dateModified || stats.lastTestTaken.dateCreated)}
-              </div>
-            </div>
-            <div style={{ textAlign: 'right' }}>
-              <div style={{ color: '#669BBC', fontWeight: 'bold', fontSize: '1.2rem' }}>
-                {stats.lastScore !== null ? `${stats.lastScore}%` : 'In Progress'}
-              </div>
-              <div style={{ color: '#bfc9d1', fontSize: '0.8rem' }}>
-                {stats.lastTestTaken.progress?.completedQuestions || 0} / {stats.lastTestTaken.progress?.totalQuestions || 0} completed
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Quick Actions */}
-      <div style={{ marginTop: '2rem' }}>
-        <h3 style={{ color: '#FDF0D5', marginBottom: '1rem' }}>Quick Actions</h3>
-        <div style={{
-          display: 'flex',
-          gap: '1rem',
-          flexWrap: 'wrap'
-        }}>
-          <button
-            onClick={() => window.location.href = '/test-library'}
-            style={{
-              background: '#669BBC',
-              color: '#FDF0D5',
-              border: 'none',
-              padding: '0.75rem 1.5rem',
-              borderRadius: '6px',
-              fontWeight: 'bold',
-              cursor: 'pointer',
-              fontSize: '1rem'
-            }}
-          >
-            � Browse Test Library
-          </button>
-          <button
-            onClick={() => window.location.href = '/my-progress'}
-            style={{
-              background: 'transparent',
-              color: '#669BBC',
-              border: '2px solid #669BBC',
-              padding: '0.75rem 1.5rem',
-              borderRadius: '6px',
-              fontWeight: 'bold',
-              cursor: 'pointer',
-              fontSize: '1rem'
-            }}
-          >
-            � View My Progress
-          </button>
+      <div className="quick-actions">
+        <h2>Quick Actions</h2>
+        <div className="quick-actions-grid">
+          {userProfile?.accountType === 'teacher' ? (
+            <>
+              <div className="quick-action-card" onClick={() => navigate('/create-test')}>
+                <div className="quick-action-icon">✨</div>
+                <div className="quick-action-content">
+                  <h3>Create New Test</h3>
+                  <p>Build a custom test for your students</p>
+                </div>
+              </div>
+              <div className="quick-action-card" onClick={() => navigate('/classes')}>
+                <div className="quick-action-icon">🎓</div>
+                <div className="quick-action-content">
+                  <h3>Manage Classes</h3>
+                  <p>View and organize your classes</p>
+                </div>
+              </div>
+              <div className="quick-action-card" onClick={() => navigate('/analytics')}>
+                <div className="quick-action-icon">📊</div>
+                <div className="quick-action-content">
+                  <h3>View Analytics</h3>
+                  <p>See performance insights and reports</p>
+                </div>
+              </div>
+              <div className="quick-action-card" onClick={() => navigate('/test-library')}>
+                <div className="quick-action-icon">📚</div>
+                <div className="quick-action-content">
+                  <h3>Test Library</h3>
+                  <p>Browse available tests and resources</p>
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="quick-action-card" onClick={() => navigate('/test-library')}>
+                <div className="quick-action-icon">📚</div>
+                <div className="quick-action-content">
+                  <h3>Browse Tests</h3>
+                  <p>Find practice tests and materials</p>
+                </div>
+              </div>
+              <div className="quick-action-card" onClick={() => navigate('/my-classes')}>
+                <div className="quick-action-icon">🎓</div>
+                <div className="quick-action-content">
+                  <h3>My Classes</h3>
+                  <p>View your enrolled classes</p>
+                </div>
+              </div>
+              <div className="quick-action-card" onClick={() => navigate('/saved-tests')}>
+                <div className="quick-action-icon">📈</div>
+                <div className="quick-action-content">
+                  <h3>View Progress</h3>
+                  <p>Track your learning progress</p>
+                </div>
+              </div>
+              <div className="quick-action-card" onClick={() => navigate('/test-library?tab=case-studies')}>
+                <div className="quick-action-icon">📖</div>
+                <div className="quick-action-content">
+                  <h3>Case Studies</h3>
+                  <p>Practice with real scenarios</p>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
@@ -299,3 +263,5 @@ export default function Dashboard({ searchTerm, onClearSearch }) {
     </div>
   );
 }
+
+export default Dashboard;
