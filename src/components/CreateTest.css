@@ -360,7 +360,7 @@
 }
 
 .validate-btn:hover:not(:disabled) {
-  background: #5a8aa6;
+  background: #5a8ca6;
 }
 
 .validate-btn:disabled {
@@ -1567,7 +1567,7 @@
 }
 
 .preview-btn:hover {
-  background: #5a8aa6;
+  background: #5a8ca6;
   transform: translateY(-2px);
   box-shadow: 0 8px 24px rgba(102, 155, 188, 0.3);
 }
@@ -1753,7 +1753,7 @@
   box-shadow: 0 0 0 2px rgba(102, 155, 188, 0.2);
 }
 
-/* Case study actions inline */
+/* Case Study Actions Inline */
 .case-study-actions-inline {
   display: flex;
   justify-content: center;
@@ -1830,7 +1830,7 @@
 }
 
 .switch-to-case-study-btn:hover {
-  background: #5a8aa6;
+  background: #5a8ca6;
   transform: translateY(-2px);
   box-shadow: 0 8px 24px rgba(102, 155, 188, 0.3);
 }
@@ -2185,5 +2185,260 @@
   .preview-test-btn {
     margin-right: 0;
     width: 100%;
+  }
+}
+
+/* Info button styling */
+.label-with-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.label-with-info label {
+  margin-bottom: 0;
+  line-height: 1.2;
+}
+
+/* Info button styling - more specific to override App.css */
+.label-with-info .info-btn {
+  background: transparent !important;
+  border: 1px solid #003049 !important;
+  color: #003049 !important;
+  width: 18px !important;
+  height: 18px !important;
+  border-radius: 50% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  font-size: 13px !important;
+  font-weight: bold !important;
+  font-family: 'Times New Roman', serif !important;
+  font-style: italic !important;
+  transition: all 0.2s ease !important;
+  flex-shrink: 0 !important;
+  position: relative !important;
+  line-height: 1 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.label-with-info .info-btn:hover {
+  border-color: #000 !important;
+  color: #000 !important;
+  background: transparent !important;
+  transform: scale(1.05) !important;
+}
+
+.label-with-info .info-btn:active {
+  transform: scale(0.95) !important;
+  background: transparent !important;
+}
+
+/* Tooltip styling for better readability */
+.info-btn[title] {
+  position: relative;
+}
+
+.info-btn[title]:hover::after {
+  content: attr(title);
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  font-size: 12px;
+  white-space: pre-wrap;
+  z-index: 1000;
+  min-width: 200px;
+  max-width: 300px;
+  margin-top: 0.5rem;
+  line-height: 1.4;
+  text-align: left;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.info-btn[title]:hover::before {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-bottom-color: rgba(0, 0, 0, 0.9);
+  margin-top: -6px;
+  z-index: 1001;
+}
+
+/* Preview styles for different question types */
+.essay-preview, .short-answer-preview, .hotspot-preview {
+  margin: 1rem 0;
+}
+
+.preview-textarea {
+  width: 100%;
+  min-height: 100px;
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  padding: 1rem;
+  background: #f8f9fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.preview-input {
+  width: 100%;
+  height: 40px;
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  padding: 0.75rem;
+  background: #f8f9fa;
+  display: flex;
+  align-items: center;
+}
+
+.preview-hotspot-area {
+  width: 100%;
+  height: 200px;
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  background: #f8f9fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.preview-placeholder {
+  color: #6c757d;
+  font-style: italic;
+  text-align: center;
+}
+
+/* Drag and Drop Preview Styles */
+.drag-drop-preview {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 2px solid #e9ecef;
+  margin: 1rem 0;
+}
+
+.preview-instructions {
+  background: rgba(102, 155, 188, 0.1);
+  border: 1px solid rgba(102, 155, 188, 0.3);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.preview-instructions p {
+  margin: 0;
+  color: #669BBC;
+  font-weight: 500;
+}
+
+.drag-drop-preview-workspace {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+.preview-items-panel,
+.preview-zones-panel {
+  background: white;
+  border-radius: 8px;
+  padding: 1rem;
+  border: 2px solid #e9ecef;
+}
+
+.preview-items-panel h5,
+.preview-zones-panel h5 {
+  margin: 0 0 1rem 0;
+  color: #003049;
+  font-size: 1rem;
+  border-bottom: 2px solid #e9ecef;
+  padding-bottom: 0.5rem;
+}
+
+.preview-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.preview-draggable-item {
+  background: rgba(102, 155, 188, 0.1);
+  border: 2px solid #669BBC;
+  border-radius: 8px;
+  padding: 0.75rem;
+  font-weight: 500;
+  color: #003049;
+  text-align: center;
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+.preview-zones {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.preview-drop-zone {
+  background: white;
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  padding: 1rem;
+  min-height: 60px;
+}
+
+.preview-zone-label {
+  font-weight: 600;
+  color: #003049;
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.preview-zone-content {
+  min-height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.preview-drop-hint {
+  color: #6c757d;
+  font-style: italic;
+  opacity: 0.7;
+  font-size: 0.9rem;
+}
+
+/* Responsive design for preview drag and drop */
+@media (max-width: 768px) {
+  .drag-drop-preview-workspace {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .preview-items-panel,
+  .preview-zones-panel {
+    padding: 0.75rem;
+  }
+  
+  .preview-draggable-item {
+    padding: 0.5rem;
+    font-size: 0.9rem;
+  }
+  
+  .preview-drop-zone {
+    padding: 0.75rem;
+    min-height: 50px;
   }
 }

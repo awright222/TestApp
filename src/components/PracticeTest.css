@@ -2071,3 +2071,286 @@
 }
 
 /* Save Progress and Review buttons inherit all styling from .control-btn base class */
+
+/* Drag and Drop Styles for PracticeTest */
+.practice-test .drag-drop-container {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  border: 2px solid #e9ecef;
+  margin: 1rem 0;
+}
+
+.practice-test .drag-drop-instructions {
+  background: rgba(102, 155, 188, 0.1);
+  border: 1px solid rgba(102, 155, 188, 0.3);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.practice-test .drag-drop-instructions p {
+  margin: 0;
+  color: #003049;
+  font-weight: 500;
+}
+
+.practice-test .drag-drop-workspace {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.practice-test .draggable-items-panel,
+.practice-test .drop-zones-panel {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 1rem;
+  border: 2px solid #e9ecef;
+}
+
+.practice-test .draggable-items-panel h4,
+.practice-test .drop-zones-panel h4 {
+  margin: 0 0 1rem 0;
+  color: #003049;
+  font-size: 1.1rem;
+  border-bottom: 2px solid #e9ecef;
+  padding-bottom: 0.5rem;
+}
+
+.practice-test .draggable-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.practice-test .draggable-item {
+  background: white;
+  border: 2px solid #669BBC;
+  border-radius: 8px;
+  padding: 0.75rem;
+  cursor: grab;
+  user-select: none;
+  transition: all 0.2s ease;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 500;
+  color: #003049;
+}
+
+.practice-test .draggable-item:hover {
+  background: rgba(102, 155, 188, 0.1);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(102, 155, 188, 0.2);
+}
+
+.practice-test .draggable-item:active {
+  cursor: grabbing;
+}
+
+.practice-test .draggable-item.matched {
+  background: rgba(40, 167, 69, 0.1);
+  border-color: #28a745;
+  cursor: default;
+}
+
+.practice-test .draggable-item.matched:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+/* Feedback styles for draggable items */
+.practice-test .draggable-item.item-correct {
+  background: rgba(40, 167, 69, 0.2);
+  border-color: #28a745;
+}
+
+.practice-test .draggable-item.item-incorrect {
+  background: rgba(220, 53, 69, 0.2);
+  border-color: #dc3545;
+}
+
+.practice-test .drop-zones {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.practice-test .drop-zone {
+  background: white;
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  padding: 1rem;
+  min-height: 80px;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.practice-test .drop-zone:hover {
+  border-color: #669BBC;
+  background: rgba(102, 155, 188, 0.05);
+}
+
+.practice-test .drop-zone.has-items {
+  border-style: solid;
+  border-color: #28a745;
+  background: rgba(40, 167, 69, 0.05);
+}
+
+/* Feedback styles for drop zones */
+.practice-test .drop-zone.zone-correct {
+  border-color: #28a745;
+  background: rgba(40, 167, 69, 0.1);
+}
+
+.practice-test .drop-zone.zone-incorrect {
+  border-color: #dc3545;
+  background: rgba(220, 53, 69, 0.1);
+}
+
+.practice-test .zone-label {
+  font-weight: 600;
+  color: #003049;
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.practice-test .zone-content {
+  min-height: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.practice-test .drop-hint {
+  color: #6c757d;
+  font-style: italic;
+  text-align: center;
+  padding: 0.5rem;
+  opacity: 0.7;
+}
+
+.practice-test .dropped-item {
+  background: #e8f5e8;
+  border: 1px solid #28a745;
+  border-radius: 6px;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 500;
+  color: #155724;
+}
+
+/* Feedback styles for dropped items */
+.practice-test .dropped-item.dropped-item-correct {
+  background: rgba(40, 167, 69, 0.2);
+  border-color: #28a745;
+  color: #155724;
+}
+
+.practice-test .dropped-item.dropped-item-incorrect {
+  background: rgba(220, 53, 69, 0.2);
+  border-color: #dc3545;
+  color: #721c24;
+}
+
+.practice-test .remove-match {
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  margin-left: 0.5rem;
+  flex-shrink: 0;
+}
+
+.practice-test .remove-match:hover {
+  background: #c82333;
+}
+
+.practice-test .remove-match:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+}
+
+.practice-test .matches-summary {
+  background: rgba(40, 167, 69, 0.1);
+  border: 1px solid rgba(40, 167, 69, 0.3);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.practice-test .matches-summary h4 {
+  margin: 0 0 0.75rem 0;
+  color: #155724;
+  font-size: 1rem;
+}
+
+.practice-test .matches-summary ul {
+  margin: 0;
+  padding-left: 1.5rem;
+  color: #155724;
+}
+
+.practice-test .matches-summary li {
+  margin-bottom: 0.25rem;
+}
+
+/* Feedback styles for match summary */
+.practice-test .matches-summary li.match-correct {
+  color: #155724;
+}
+
+.practice-test .matches-summary li.match-incorrect {
+  color: #721c24;
+}
+
+.practice-test .match-feedback {
+  font-weight: bold;
+}
+
+/* Error message for malformed drag and drop questions */
+.practice-test .error-message {
+  background: rgba(220, 53, 69, 0.1);
+  border: 1px solid rgba(220, 53, 69, 0.3);
+  border-radius: 8px;
+  padding: 1rem;
+  color: #721c24;
+  text-align: center;
+  font-weight: 500;
+  margin: 1rem 0;
+}
+
+/* Responsive design for drag and drop in practice test */
+@media (max-width: 768px) {
+  .practice-test .drag-drop-workspace {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .practice-test .draggable-items-panel,
+  .practice-test .drop-zones-panel {
+    padding: 0.75rem;
+  }
+  
+  .practice-test .draggable-item {
+    padding: 0.5rem;
+    font-size: 0.9rem;
+  }
+  
+  .practice-test .drop-zone {
+    padding: 0.75rem;
+    min-height: 60px;
+  }
+}

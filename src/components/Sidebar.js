@@ -26,7 +26,8 @@ function Sidebar({
         ...baseItems,
         { path: '/my-tests', icon: '✨', label: 'My Tests' },
         { path: '/class-management', icon: '🎓', label: 'Classes' },
-        { path: '/analytics', icon: '📊', label: 'Analytics' }
+        { path: '/analytics', icon: '📊', label: 'Analytics' },
+        { path: '/saved-tests', icon: '📈', label: 'Practice Progress' }
       ];
     } else if (userProfile.accountType === 'student') {
       return [

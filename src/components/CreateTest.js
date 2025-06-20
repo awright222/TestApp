@@ -7,7 +7,7 @@ import './CreateTest.css';
 export default function CreateTest() {
   const navigate = useNavigate();
   const { testId } = useParams(); // For editing existing tests
-  const { userProfile, canPerformAction, trackUsage } = useAuth();
+  const { userProfile, canPerformAction, trackUsage, loading } = useAuth();
   const isEditing = Boolean(testId);
   
   const [activeTab, setActiveTab] = useState('import'); // 'import', 'builder', 'case-study', or 'settings'
@@ -137,18 +137,52 @@ export default function CreateTest() {
 
   // Permission check - redirect if user can't create tests
   useEffect(() => {
-    if (userProfile && !isEditing && !canPerformAction('create_test')) {
+    // Wait for auth to finish loading before checking permissions
+    if (loading) {
+      console.log('CreateTest: Auth still loading...');
+      return;
+    }
+    
+    // Only run permission check if userProfile is loaded
+    if (!userProfile) {
+      console.log('CreateTest: No userProfile found');
+      return;
+    }
+    
+    console.log('CreateTest: Checking permissions...', {
+      userProfile: userProfile,
+      accountType: userProfile.accountType,
+      subscription: userProfile.subscription,
+      usage: userProfile.usage,
+      isEditing: isEditing,
+      canCreateTest: canPerformAction('create_test')
+    });
+    
+    // Allow teachers to always create tests in development (bypass limits)
+    const isDevelopment = process.env.NODE_ENV === 'development';
+    const isTeacher = userProfile.accountType === 'teacher';
+    
+    if (isDevelopment && isTeacher) {
+      console.log('CreateTest: Development mode - allowing teacher to create tests');
+      return; // Skip all permission checks in development for teachers
+    }
+    
+    if (!isEditing && !canPerformAction('create_test')) {
       // User has reached their test creation limit
+      console.log('CreateTest: Cannot create test - redirecting to my-tests');
       navigate('/my-tests?showUpgrade=true');
       return;
     }
     
-    if (userProfile && userProfile.accountType === 'student') {
+    if (userProfile.accountType === 'student') {
       // Students can't create tests at all
+      console.log('CreateTest: Student account - redirecting to dashboard');
       navigate('/dashboard');
       return;
     }
-  }, [userProfile, canPerformAction, isEditing, navigate]);
+    
+    console.log('CreateTest: Permission check passed');
+  }, [userProfile, canPerformAction, isEditing, navigate, loading]);
 
   // Clear temporary settings when component unmounts or test is created
   useEffect(() => {
@@ -433,10 +467,21 @@ Role: Admin","Proper configuration requires setting the department and role corr
 
   return (
     <div className="create-test-container">
-      <div className="create-test-header">
-        <h1>{isEditing ? '✏️ Edit Test' : '✨ Create New Test'}</h1>
-        <p>{isEditing ? 'Update your custom test' : 'Build custom tests with your own questions and answers'}</p>
-      </div>
+      {/* Show loading while auth is initializing */}
+      {loading && (
+        <div className="loading-container" style={{ textAlign: 'center', padding: '2rem' }}>
+          <div className="loading-spinner">🔄</div>
+          <p>Loading...</p>
+        </div>
+      )}
+      
+      {/* Show content only when auth is loaded */}
+      {!loading && (
+        <>
+          <div className="create-test-header">
+            <h1>{isEditing ? '✏️ Edit Test' : '✨ Create New Test'}</h1>
+            <p>{isEditing ? 'Update your custom test' : 'Build custom tests with your own questions and answers'}</p>
+          </div>
 
       {/* Tab Navigation */}
       <div className="create-test-tabs">
@@ -761,16 +806,54 @@ Role: Admin","Proper configuration requires setting the department and role corr
                   >
                     <option value="multiple choice">Multiple Choice</option>
                     <option value="hotspot">Hotspot/Interactive</option>
+                    <option value="essay">Essay Question</option>
+                    <option value="short answer">Short Answer</option>
+                    <option value="drag and drop">Drag and Drop</option>
                   </select>
                 </div>
 
                 <div className="input-group">
-                  <label htmlFor="choices">Choices</label>
+                  <div className="label-with-info">
+                    <label>
+                      {currentQuestion.question_type === 'essay' ? 'Grading Rubric (Optional)' :
+                       currentQuestion.question_type === 'short answer' ? 'Expected Keywords/Phrases' :
+                       currentQuestion.question_type === 'drag and drop' ? 'Drag Items & Drop Zones' :
+                       'Choices'}
+                    </label>
+                    <button 
+                      type="button"
+                      className="info-btn"
+                      title={
+                        currentQuestion.question_type === 'multiple choice' ? 
+                          'Format: A. First option\nB. Second option\nC. Third option\nD. Fourth option\n\nEach choice should be on a new line with a letter prefix.' :
+                        currentQuestion.question_type === 'hotspot' ?
+                          'Format: Label1: option1, option2, option3\nLabel2: optionA, optionB\n\nCreate labeled groups of clickable options separated by commas.' :
+                        currentQuestion.question_type === 'essay' ?
+                          'Optional grading criteria to help evaluate responses:\n- Key points to address\n- Quality of arguments\n- Grammar and structure\n\nThis helps maintain consistency when grading.' :
+                        currentQuestion.question_type === 'short answer' ?
+                          'List acceptable keywords and phrases that indicate a correct answer:\nkeyword1, keyword2\nphrase example\nalternative answer\n\nSeparate alternatives with commas or new lines.' :                      currentQuestion.question_type === 'drag and drop' ?
+                        'Define draggable items and drop zones:\nItems: item1, item2, item3\nZones: zone1, zone2, zone3\n\nDo NOT include correct matches here - use the field below for that.' :
+                          'Standard answer choices for the question.'
+                      }
+                    >
+                      i
+                    </button>
+                  </div>
                   <textarea
                     id="choices"
-                    placeholder={currentQuestion.question_type === 'multiple choice' 
-                      ? "A. First option\nB. Second option\nC. Third option\nD. Fourth option"
-                      : "Label1: option1, option2, option3\nLabel2: optionA, optionB"}
+                    placeholder={
+                      currentQuestion.question_type === 'multiple choice' ? 
+                        "A. First option\nB. Second option\nC. Third option\nD. Fourth option" :
+                      currentQuestion.question_type === 'hotspot' ?
+                        "Label1: option1, option2, option3\nLabel2: optionA, optionB" :
+                      currentQuestion.question_type === 'essay' ?
+                        "Grading criteria (optional):\n- Key points to address\n- Quality of arguments\n- Grammar and structure" :
+                      currentQuestion.question_type === 'short answer' ?
+                        "Acceptable keywords/phrases:\nkeyword1, keyword2\nphrase example\nalternative answer" :
+                      currentQuestion.question_type === 'drag and drop' ?
+                        "Items: item1, item2, item3\nZones: zone1, zone2, zone3" :
+                        "Enter choices..."
+                    }
                     value={currentQuestion.choices}
                     onChange={(e) => setCurrentQuestion({...currentQuestion, choices: e.target.value})}
                     className="textarea-input"
@@ -779,11 +862,49 @@ Role: Admin","Proper configuration requires setting the department and role corr
                 </div>
 
                 <div className="input-group">
-                  <label htmlFor="correct-answer">Correct Answer</label>
+                  <div className="label-with-info">
+                    <label>
+                      {currentQuestion.question_type === 'essay' ? 'Sample Answer (Optional)' :
+                       currentQuestion.question_type === 'short answer' ? 'Correct Keywords/Phrases' :
+                       currentQuestion.question_type === 'drag and drop' ? 'Correct Matches' :
+                       'Correct Answer'}
+                    </label>
+                    <button 
+                      type="button"
+                      className="info-btn"
+                      title={
+                        currentQuestion.question_type === 'multiple choice' ? 
+                          'Enter the letter(s) of the correct answer(s):\nSingle answer: A\nMultiple answers: A, C\n\nUse the letter that corresponds to the correct choice(s).' :
+                        currentQuestion.question_type === 'hotspot' ?
+                          'Specify correct selections for each hotspot area:\nLabel1: option1\nLabel2: optionA\n\nMatch each label to its correct clickable option.' :
+                        currentQuestion.question_type === 'essay' ?
+                          'Provide a sample answer or key points for reference:\n- What a good answer should include\n- Main concepts to address\n- Quality indicators\n\nThis helps with consistent grading.' :
+                        currentQuestion.question_type === 'short answer' ?
+                          'List acceptable answers separated by commas:\nkeyword1, phrase example, alternative\n\nStudents need to match one of these to be correct.' :
+                        currentQuestion.question_type === 'drag and drop' ?
+                          'Define correct item-to-zone matches:\nitem1->zone1, item2->zone2, item3->zone3\n\nUse -> to show which item belongs in which zone.' :
+                          'Specify the correct answer for this question.'
+                      }
+                    >
+                      i
+                    </button>
+                  </div>
                   <input
                     id="correct-answer"
                     type="text"
-                    placeholder={currentQuestion.question_type === 'multiple choice' ? "A, B" : "Label1: option1\nLabel2: optionA"}
+                    placeholder={
+                      currentQuestion.question_type === 'multiple choice' ? 
+                        "A" :
+                      currentQuestion.question_type === 'hotspot' ?
+                        "Label1: option1\nLabel2: optionA" :
+                      currentQuestion.question_type === 'essay' ?
+                        "Sample answer or key points (for reference only)" :
+                      currentQuestion.question_type === 'short answer' ?
+                        "keyword1, phrase example, alternative" :
+                      currentQuestion.question_type === 'drag and drop' ?
+                        "item1->zone1, item2->zone2, item3->zone3" :
+                        "Enter correct answer..."
+                    }
                     value={currentQuestion.correct_answer}
                     onChange={(e) => setCurrentQuestion({...currentQuestion, correct_answer: e.target.value})}
                     className="text-input"
@@ -1062,15 +1183,54 @@ Role: Admin","Proper configuration requires setting the department and role corr
                       >
                         <option value="multiple choice">Multiple Choice</option>
                         <option value="hotspot">Hotspot/Interactive</option>
+                        <option value="essay">Essay Question</option>
+                        <option value="short answer">Short Answer</option>
+                        <option value="drag and drop">Drag and Drop</option>
                       </select>
                     </div>
 
                     <div className="input-group">
-                      <label>Choices</label>
+                      <div className="label-with-info">
+                        <label>
+                          {currentCaseStudyQuestion.question_type === 'essay' ? 'Grading Rubric (Optional)' :
+                           currentCaseStudyQuestion.question_type === 'short answer' ? 'Expected Keywords/Phrases' :
+                           currentCaseStudyQuestion.question_type === 'drag and drop' ? 'Drag Items & Drop Zones' :
+                           'Choices'}
+                        </label>
+                        <button 
+                          type="button"
+                          className="info-btn"
+                          title={
+                            currentCaseStudyQuestion.question_type === 'multiple choice' ? 
+                              'Format: A. First option\nB. Second option\nC. Third option\nD. Fourth option\n\nEach choice should be on a new line with a letter prefix.' :
+                            currentCaseStudyQuestion.question_type === 'hotspot' ?
+                              'Format: Label1: option1, option2, option3\nLabel2: optionA, optionB\n\nCreate labeled groups of clickable options separated by commas.' :
+                            currentCaseStudyQuestion.question_type === 'essay' ?
+                              'Optional grading criteria to help evaluate responses:\n- Key points to address\n- Quality of arguments\n- Grammar and structure\n\nThis helps maintain consistency when grading.' :
+                            currentCaseStudyQuestion.question_type === 'short answer' ?
+                              'List acceptable keywords and phrases that indicate a correct answer:\nkeyword1, keyword2\nphrase example\nalternative answer\n\nSeparate alternatives with commas or new lines.' :
+                            currentCaseStudyQuestion.question_type === 'drag and drop' ?
+                              'Define draggable items and drop zones:\nItems: item1, item2, item3\nZones: zone1, zone2, zone3\nCorrect matches: item1->zone1, item2->zone2\n\nClearly specify what items match which zones.' :
+                              'Standard answer choices for the question.'
+                          }
+                        >
+                          i
+                        </button>
+                      </div>
                       <textarea
-                        placeholder={currentCaseStudyQuestion.question_type === 'multiple choice' 
-                          ? "A. First option\nB. Second option\nC. Third option\nD. Fourth option"
-                          : "Label1: option1, option2, option3\nLabel2: optionA, optionB"}
+                        placeholder={
+                          currentCaseStudyQuestion.question_type === 'multiple choice' ? 
+                            "A. First option\nB. Second option\nC. Third option\nD. Fourth option" :
+                          currentCaseStudyQuestion.question_type === 'hotspot' ?
+                            "Label1: option1, option2, option3\nLabel2: optionA, optionB" :
+                          currentCaseStudyQuestion.question_type === 'essay' ?
+                            "Grading criteria (optional):\n- Key points to address\n- Quality of arguments\n- Grammar and structure" :
+                          currentCaseStudyQuestion.question_type === 'short answer' ?
+                            "Acceptable keywords/phrases:\nkeyword1, keyword2\nphrase example\nalternative answer" :
+                          currentCaseStudyQuestion.question_type === 'drag and drop' ?
+                            "Items: item1, item2, item3\nZones: zone1, zone2, zone3\nCorrect matches: item1->zone1, item2->zone2" :
+                            "Enter choices..."
+                        }
                         value={currentCaseStudyQuestion.choices}
                         onChange={(e) => setCurrentCaseStudyQuestion({...currentCaseStudyQuestion, choices: e.target.value})}
                         className="textarea-input"
@@ -1079,7 +1239,27 @@ Role: Admin","Proper configuration requires setting the department and role corr
                     </div>
 
                     <div className="input-group">
-                      <label>Correct Answer</label>
+                      <div className="label-with-info">
+                        <label>Correct Answer</label>
+                        <button 
+                          type="button" 
+                          className="info-btn"
+                          title={currentCaseStudyQuestion.question_type === 'multiple choice' ? 
+                            'Enter the letter(s) of the correct answer(s):\nSingle answer: A\nMultiple answers: A, C\n\nUse the letter that corresponds to the correct choice(s).' :
+                            currentCaseStudyQuestion.question_type === 'hotspot' ?
+                            'Specify the coordinates or regions for correct hotspots:\nFormat: x1,y1 x2,y2\nExample: 150,200 300,400\n\nEach coordinate pair represents a clickable area.' :
+                            currentCaseStudyQuestion.question_type === 'essay' ?
+                            'List acceptable keywords and phrases that indicate a correct answer:\nkeyword1, keyword2\nphrase example\nalternative answer\n\nSeparate alternatives with commas or new lines.' :
+                            currentCaseStudyQuestion.question_type === 'short answer' ?
+                            'List acceptable keywords and phrases that indicate a correct answer:\nkeyword1, keyword2\nphrase example\nalternative answer\n\nSeparate alternatives with commas or new lines.' :
+                            currentCaseStudyQuestion.question_type === 'drag and drop' ?
+                            'Specify correct matches between items:\nItem1: Target1\nItem2: Target2\n\nFormat as item-target pairs, one per line.' :
+                            'Specify the correct answer for this question.'
+                          }
+                        >
+                          i
+                        </button>
+                      </div>
                       <input
                         type="text"
                         placeholder={currentCaseStudyQuestion.question_type === 'multiple choice' ? "A" : "Label1: option1\nLabel2: optionA"}
@@ -1448,15 +1628,54 @@ Role: Admin","Proper configuration requires setting the department and role corr
                       >
                         <option value="multiple choice">Multiple Choice</option>
                         <option value="hotspot">Hotspot/Interactive</option>
+                        <option value="essay">Essay Question</option>
+                        <option value="short answer">Short Answer</option>
+                        <option value="drag and drop">Drag and Drop</option>
                       </select>
                     </div>
 
                     <div className="input-group">
-                      <label>Choices</label>
+                      <div className="label-with-info">
+                        <label>
+                          {currentCaseStudyQuestion.question_type === 'essay' ? 'Grading Rubric (Optional)' :
+                           currentCaseStudyQuestion.question_type === 'short answer' ? 'Expected Keywords/Phrases' :
+                           currentCaseStudyQuestion.question_type === 'drag and drop' ? 'Drag Items & Drop Zones' :
+                           'Choices'}
+                        </label>
+                        <button 
+                          type="button"
+                          className="info-btn"
+                          title={
+                            currentCaseStudyQuestion.question_type === 'multiple choice' ? 
+                              'Format: A. First option\nB. Second option\nC. Third option\nD. Fourth option\n\nEach choice should be on a new line with a letter prefix.' :
+                            currentCaseStudyQuestion.question_type === 'hotspot' ?
+                              'Format: Label1: option1, option2, option3\nLabel2: optionA, optionB\n\nCreate labeled groups of clickable options separated by commas.' :
+                            currentCaseStudyQuestion.question_type === 'essay' ?
+                              'Optional grading criteria to help evaluate responses:\n- Key points to address\n- Quality of arguments\n- Grammar and structure\n\nThis helps maintain consistency when grading.' :
+                            currentCaseStudyQuestion.question_type === 'short answer' ?
+                              'List acceptable keywords and phrases that indicate a correct answer:\nkeyword1, keyword2\nphrase example\nalternative answer\n\nSeparate alternatives with commas or new lines.' :
+                            currentCaseStudyQuestion.question_type === 'drag and drop' ?
+                              'Define draggable items and drop zones:\nItems: item1, item2, item3\nZones: zone1, zone2, zone3\nCorrect matches: item1->zone1, item2->zone2\n\nClearly specify what items match which zones.' :
+                              'Standard answer choices for the question.'
+                          }
+                        >
+                          i
+                        </button>
+                      </div>
                       <textarea
-                        placeholder={currentCaseStudyQuestion.question_type === 'multiple choice' 
-                          ? "A. First option\nB. Second option\nC. Third option\nD. Fourth option"
-                          : "Label1: option1, option2, option3\nLabel2: optionA, optionB"}
+                        placeholder={
+                          currentCaseStudyQuestion.question_type === 'multiple choice' ? 
+                            "A. First option\nB. Second option\nC. Third option\nD. Fourth option" :
+                          currentCaseStudyQuestion.question_type === 'hotspot' ?
+                            "Label1: option1, option2, option3\nLabel2: optionA, optionB" :
+                          currentCaseStudyQuestion.question_type === 'essay' ?
+                            "Grading criteria (optional):\n- Key points to address\n- Quality of arguments\n- Grammar and structure" :
+                          currentCaseStudyQuestion.question_type === 'short answer' ?
+                            "Acceptable keywords/phrases:\nkeyword1, keyword2\nphrase example\nalternative answer" :
+                          currentCaseStudyQuestion.question_type === 'drag and drop' ?
+                            "Items: item1, item2, item3\nZones: zone1, zone2, zone3\nCorrect matches: item1->zone1, item2->zone2" :
+                            "Enter choices..."
+                        }
                         value={currentCaseStudyQuestion.choices}
                         onChange={(e) => setCurrentCaseStudyQuestion({...currentCaseStudyQuestion, choices: e.target.value})}
                         className="textarea-input"
@@ -1465,7 +1684,27 @@ Role: Admin","Proper configuration requires setting the department and role corr
                     </div>
 
                     <div className="input-group">
-                      <label>Correct Answer</label>
+                      <div className="label-with-info">
+                        <label>Correct Answer</label>
+                        <button 
+                          type="button" 
+                          className="info-btn"
+                          title={currentCaseStudyQuestion.question_type === 'multiple choice' ? 
+                            'Enter the letter(s) of the correct answer(s):\nSingle answer: A\nMultiple answers: A, C\n\nUse the letter that corresponds to the correct choice(s).' :
+                            currentCaseStudyQuestion.question_type === 'hotspot' ?
+                            'Specify the coordinates or regions for correct hotspots:\nFormat: x1,y1 x2,y2\nExample: 150,200 300,400\n\nEach coordinate pair represents a clickable area.' :
+                            currentCaseStudyQuestion.question_type === 'essay' ?
+                            'List acceptable keywords and phrases that indicate a correct answer:\nkeyword1, keyword2\nphrase example\nalternative answer\n\nSeparate alternatives with commas or new lines.' :
+                            currentCaseStudyQuestion.question_type === 'short answer' ?
+                            'List acceptable keywords and phrases that indicate a correct answer:\nkeyword1, keyword2\nphrase example\nalternative answer\n\nSeparate alternatives with commas or new lines.' :
+                            currentCaseStudyQuestion.question_type === 'drag and drop' ?
+                            'Specify correct matches between items:\nItem1: Target1\nItem2: Target2\n\nFormat as item-target pairs, one per line.' :
+                            'Specify the correct answer for this question.'
+                          }
+                        >
+                          i
+                        </button>
+                      </div>
                       <input
                         type="text"
                         placeholder={currentCaseStudyQuestion.question_type === 'multiple choice' ? "A" : "Label1: option1\nLabel2: optionA"}
@@ -1614,7 +1853,8 @@ Role: Admin","Proper configuration requires setting the department and role corr
                       <div className="question-content-preview">
                         <p className="question-text-preview">{question.question_text}</p>
                         
-                        {question.choices && (
+                        {/* Multiple Choice Questions */}
+                        {question.question_type === 'multiple choice' && question.choices && (
                           <div className="choices-preview">
                             {question.choices.split('\n').filter(choice => choice.trim()).map((choice, choiceIndex) => (
                               <div key={choiceIndex} className="choice-preview">
@@ -1624,6 +1864,97 @@ Role: Admin","Proper configuration requires setting the department and role corr
                             ))}
                           </div>
                         )}
+
+                        {/* Essay Questions */}
+                        {question.question_type === 'essay' && (
+                          <div className="essay-preview">
+                            <div className="preview-textarea">
+                              <span className="preview-placeholder">Essay answer will be typed here...</span>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Short Answer Questions */}
+                        {question.question_type === 'short answer' && (
+                          <div className="short-answer-preview">
+                            <div className="preview-input">
+                              <span className="preview-placeholder">Short answer will be typed here...</span>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Drag and Drop Questions */}
+                        {question.question_type === 'drag and drop' && question.choices && (() => {
+                          // Parse drag and drop data for preview
+                          const lines = question.choices.split('\n').filter(line => line.trim());
+                          const items = [];
+                          const zones = [];
+                          
+                          let currentSection = '';
+                          
+                          lines.forEach(line => {
+                            const trimmed = line.trim().toLowerCase();
+                            if (trimmed.startsWith('items:')) {
+                              currentSection = 'items';
+                              const itemsText = line.substring(line.indexOf(':') + 1);
+                              if (itemsText.trim()) {
+                                items.push(...itemsText.split(',').map(item => item.trim()).filter(item => item));
+                              }
+                            } else if (trimmed.startsWith('zones:')) {
+                              currentSection = 'zones';
+                              const zonesText = line.substring(line.indexOf(':') + 1);
+                              if (zonesText.trim()) {
+                                zones.push(...zonesText.split(',').map(zone => zone.trim()).filter(zone => zone));
+                              }
+                            } else if (currentSection === 'items' && line.trim()) {
+                              items.push(...line.split(',').map(item => item.trim()).filter(item => item));
+                            } else if (currentSection === 'zones' && line.trim()) {
+                              zones.push(...line.split(',').map(zone => zone.trim()).filter(zone => zone));
+                            }
+                          });
+
+                          return (
+                            <div className="drag-drop-preview">
+                              <div className="preview-instructions">
+                                <p><em>Drag and drop interface - students will drag items to zones</em></p>
+                              </div>
+                              <div className="drag-drop-preview-workspace">
+                                <div className="preview-items-panel">
+                                  <h5>Items to Match:</h5>
+                                  <div className="preview-items">
+                                    {items.map((item, index) => (
+                                      <div key={index} className="preview-draggable-item">
+                                        {item}
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                                <div className="preview-zones-panel">
+                                  <h5>Drop Zones:</h5>
+                                  <div className="preview-zones">
+                                    {zones.map((zone, index) => (
+                                      <div key={index} className="preview-drop-zone">
+                                        <div className="preview-zone-label">{zone}</div>
+                                        <div className="preview-zone-content">
+                                          <span className="preview-drop-hint">Drop items here</span>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })()}
+
+                        {/* Hotspot Questions - DISABLED FOR NOW */}
+                        {/* {question.question_type === 'hotspot' && (
+                          <div className="hotspot-preview">
+                            <div className="preview-hotspot-area">
+                              <span className="preview-placeholder">Interactive hotspot areas will be displayed here</span>
+                            </div>
+                          </div>
+                        )} */}
                         
                         {question.explanation && testSettings.showExplanations && (
                           <div className="explanation-preview">
@@ -1671,7 +2002,8 @@ Role: Admin","Proper configuration requires setting the department and role corr
                           <div className="question-content-preview">
                             <p className="question-text-preview">{question.question_text}</p>
                             
-                            {question.choices && (
+                            {/* Multiple Choice Questions */}
+                            {question.question_type === 'multiple choice' && question.choices && (
                               <div className="choices-preview">
                                 {question.choices.split('\n').filter(choice => choice.trim()).map((choice, choiceIndex) => (
                                   <div key={choiceIndex} className="choice-preview">
@@ -1679,6 +2011,97 @@ Role: Admin","Proper configuration requires setting the department and role corr
                                     <span>{choice.trim()}</span>
                                   </div>
                                 ))}
+                              </div>
+                            )}
+
+                            {/* Essay Questions */}
+                            {question.question_type === 'essay' && (
+                              <div className="essay-preview">
+                                <div className="preview-textarea">
+                                  <span className="preview-placeholder">Essay answer will be typed here...</span>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Short Answer Questions */}
+                            {question.question_type === 'short answer' && (
+                              <div className="short-answer-preview">
+                                <div className="preview-input">
+                                  <span className="preview-placeholder">Short answer will be typed here...</span>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Drag and Drop Questions */}
+                            {question.question_type === 'drag and drop' && question.choices && (() => {
+                              // Parse drag and drop data for preview
+                              const lines = question.choices.split('\n').filter(line => line.trim());
+                              const items = [];
+                              const zones = [];
+                              
+                              let currentSection = '';
+                              
+                              lines.forEach(line => {
+                                const trimmed = line.trim().toLowerCase();
+                                if (trimmed.startsWith('items:')) {
+                                  currentSection = 'items';
+                                  const itemsText = line.substring(line.indexOf(':') + 1);
+                                  if (itemsText.trim()) {
+                                    items.push(...itemsText.split(',').map(item => item.trim()).filter(item => item));
+                                  }
+                                } else if (trimmed.startsWith('zones:')) {
+                                  currentSection = 'zones';
+                                  const zonesText = line.substring(line.indexOf(':') + 1);
+                                  if (zonesText.trim()) {
+                                    zones.push(...zonesText.split(',').map(zone => zone.trim()).filter(zone => zone));
+                                  }
+                                } else if (currentSection === 'items' && line.trim()) {
+                                  items.push(...line.split(',').map(item => item.trim()).filter(item => item));
+                                } else if (currentSection === 'zones' && line.trim()) {
+                                  zones.push(...line.split(',').map(zone => zone.trim()).filter(zone => zone));
+                                }
+                              });
+
+                              return (
+                                <div className="drag-drop-preview">
+                                  <div className="preview-instructions">
+                                    <p><em>Drag and drop interface - students will drag items to zones</em></p>
+                                  </div>
+                                  <div className="drag-drop-preview-workspace">
+                                    <div className="preview-items-panel">
+                                      <h5>Items to Match:</h5>
+                                      <div className="preview-items">
+                                        {items.map((item, index) => (
+                                          <div key={index} className="preview-draggable-item">
+                                            {item}
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </div>
+                                    <div className="preview-zones-panel">
+                                      <h5>Drop Zones:</h5>
+                                      <div className="preview-zones">
+                                        {zones.map((zone, index) => (
+                                          <div key={index} className="preview-drop-zone">
+                                            <div className="preview-zone-label">{zone}</div>
+                                            <div className="preview-zone-content">
+                                              <span className="preview-drop-hint">Drop items here</span>
+                                            </div>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })()}
+
+                            {/* Hotspot Questions */}
+                            {question.question_type === 'hotspot' && (
+                              <div className="hotspot-preview">
+                                <div className="preview-hotspot-area">
+                                  <span className="preview-placeholder">Interactive hotspot areas will be displayed here</span>
+                                </div>
                               </div>
                             )}
                             
@@ -2079,6 +2502,9 @@ Role: Admin","Proper configuration requires setting the department and role corr
             </div>
           </div>
         </div>
+      )}
+      
+      </>
       )}
     </div>
   );

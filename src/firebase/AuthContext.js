@@ -369,6 +369,12 @@ export const AuthProvider = ({ children }) => {
   const canPerformAction = (action) => {
     if (!userProfile) return false;
     
+    // In development, allow teachers to bypass limits
+    const isDevelopment = process.env.NODE_ENV === 'development';
+    if (isDevelopment && userProfile.accountType === 'teacher' && action === 'create_test') {
+      return true;
+    }
+    
     const features = userProfile.subscription.features;
     const usage = userProfile.usage;
     

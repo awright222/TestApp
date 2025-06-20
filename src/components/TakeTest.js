@@ -38,6 +38,23 @@ export default function TakeTest() {
     try {
       const publishedTest = await PublishedTestsService.getPublishedTestByShareId(shareId);
       if (publishedTest) {
+        console.log('=== LOADED TEST DEBUG ===');
+        console.log('Full test object:', publishedTest);
+        console.log('Questions array:', publishedTest.questions);
+        if (publishedTest.questions && publishedTest.questions.length > 0) {
+          console.log('First question:', publishedTest.questions[0]);
+          publishedTest.questions.forEach((q, index) => {
+            console.log(`Question ${index}:`, {
+              question_type: q.question_type,
+              choices: q.choices,
+              choices_type: typeof q.choices,
+              choices_length: q.choices?.length,
+              correct_answer: q.correct_answer
+            });
+          });
+        }
+        console.log('=== END LOADED TEST DEBUG ===');
+        
         setTest(publishedTest);
         if (publishedTest.settings.timeLimit > 0) {
           setTimeLeft(publishedTest.settings.timeLimit * 60); // Convert minutes to seconds
@@ -96,14 +113,46 @@ export default function TakeTest() {
       test.questions.forEach((question, index) => {
         const studentAnswer = answers[index];
         const correctAnswer = question.correct_answer;
-        const isCorrect = studentAnswer === correctAnswer;
+        const questionType = question.question_type?.toLowerCase();
+        let isCorrect = false;
+        
+        // Handle different question types
+        if (questionType === 'drag and drop') {
+          // Parse correct matches from the correct_answer field
+          const correctMatches = {};
+          if (correctAnswer) {
+            correctAnswer.split(',').forEach(match => {
+              const [item, zone] = match.split('->').map(s => s.trim());
+              if (item && zone) {
+                correctMatches[item] = zone;
+              }
+            });
+          }
+          
+          // Check if student's matches are correct
+          const studentMatches = studentAnswer || {};
+          const allItemsMatched = Object.keys(correctMatches).every(item => 
+            studentMatches[item] === correctMatches[item]
+          );
+          const noExtraMatches = Object.keys(studentMatches).every(item => 
+            correctMatches.hasOwnProperty(item)
+          );
+          
+          isCorrect = allItemsMatched && noExtraMatches && 
+                     Object.keys(correctMatches).length === Object.keys(studentMatches).length;
+        } else {
+          // Default comparison for other question types
+          isCorrect = studentAnswer === correctAnswer;
+        }
         
         questionResults[index] = {
           question: question.question_text,
-          studentAnswer,
+          studentAnswer: questionType === 'drag and drop' ? 
+            JSON.stringify(studentAnswer || {}) : studentAnswer,
           correctAnswer,
           isCorrect,
-          explanation: question.explanation
+          explanation: question.explanation,
+          questionType
         };
         
         if (isCorrect) correctAnswers++;
@@ -240,11 +289,84 @@ export default function TakeTest() {
     );
   }
 
+  // Parse drag and drop data for current question
+  const parseDragDropData = (question) => {
+    if (question.question_type?.toLowerCase() !== 'drag and drop') return null;
+    
+    const lines = question.choices.split('\n').filter(line => line.trim());
+    const items = [];
+    const zones = [];
+    
+    let currentSection = '';
+    
+    lines.forEach(line => {
+      const trimmed = line.trim().toLowerCase();
+      if (trimmed.startsWith('items:')) {
+        currentSection = 'items';
+        const itemsText = line.substring(line.indexOf(':') + 1);
+        if (itemsText.trim()) {
+          items.push(...itemsText.split(',').map(item => item.trim()).filter(item => item));
+        }
+      } else if (trimmed.startsWith('zones:')) {
+        currentSection = 'zones';
+        const zonesText = line.substring(line.indexOf(':') + 1);
+        if (zonesText.trim()) {
+          zones.push(...zonesText.split(',').map(zone => zone.trim()).filter(zone => zone));
+        }
+      } else if (currentSection === 'items' && line.trim()) {
+        items.push(...line.split(',').map(item => item.trim()).filter(item => item));
+      } else if (currentSection === 'zones' && line.trim()) {
+        zones.push(...line.split(',').map(zone => zone.trim()).filter(zone => zone));
+      }
+    });
+    
+    // Parse correct matches from the correct_answer field
+    const correctMatches = {};
+    if (question.correct_answer) {
+      question.correct_answer.split(',').forEach(match => {
+        const [item, zone] = match.split('->').map(s => s.trim());
+        if (item && zone) {
+          correctMatches[item] = zone;
+        }
+      });
+    }
+    
+    return { items, zones, correctMatches };
+  };
+
+  const handleDragStart = (e, item) => {
+    e.dataTransfer.setData('text/plain', item);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDrop = (e, zone) => {
+    e.preventDefault();
+    const item = e.dataTransfer.getData('text/plain');
+    
+    if (item && zone) {
+      const currentAnswer = answers[currentQuestion] || {};
+      const newAnswer = { ...currentAnswer, [item]: zone };
+      handleAnswerChange(currentQuestion, newAnswer);
+    }
+  };
+
+  const removeDragDropMatch = (item) => {
+    const currentAnswer = answers[currentQuestion] || {};
+    const newAnswer = { ...currentAnswer };
+    delete newAnswer[item];
+    handleAnswerChange(currentQuestion, newAnswer);
+  };
+
   // Test Taking Step
   if (currentStep === 'test') {
     const question = test.questions[currentQuestion];
-    const choices = question.choices.split('\n').filter(choice => choice.trim());
-
+    const questionType = question.question_type?.toLowerCase();
+    
     return (
       <div className="take-test-container">
         <div className="test-header">
@@ -267,20 +389,213 @@ export default function TakeTest() {
         <div className="question-content">
           <h2>{question.question_text}</h2>
           
-          <div className="choices">
-            {choices.map((choice, index) => (
-              <label key={index} className="choice-option">
-                <input
-                  type="radio"
-                  name={`question-${currentQuestion}`}
-                  value={choice}
-                  checked={answers[currentQuestion] === choice}
-                  onChange={(e) => handleAnswerChange(currentQuestion, e.target.value)}
-                />
-                <span className="choice-text">{choice}</span>
-              </label>
-            ))}
-          </div>
+          {/* Multiple Choice Questions */}
+          {questionType === 'multiple choice' && (
+            <div className="choices">
+              {question.choices.split('\n').filter(choice => choice.trim()).map((choice, index) => (
+                <label key={index} className="choice-option">
+                  <input
+                    type="radio"
+                    name={`question-${currentQuestion}`}
+                    value={choice}
+                    checked={answers[currentQuestion] === choice}
+                    onChange={(e) => handleAnswerChange(currentQuestion, e.target.value)}
+                  />
+                  <span className="choice-text">{choice}</span>
+                </label>
+              ))}
+            </div>
+          )}
+
+          {/* Essay Questions */}
+          {questionType === 'essay' && (
+            <div className="essay-answer">
+              <textarea
+                value={answers[currentQuestion] || ''}
+                onChange={(e) => handleAnswerChange(currentQuestion, e.target.value)}
+                placeholder="Type your essay answer here..."
+                className="essay-textarea"
+                rows={10}
+              />
+            </div>
+          )}
+
+          {/* Short Answer Questions */}
+          {questionType === 'short answer' && (
+            <div className="short-answer">
+              <input
+                type="text"
+                value={answers[currentQuestion] || ''}
+                onChange={(e) => handleAnswerChange(currentQuestion, e.target.value)}
+                placeholder="Type your answer here..."
+                className="short-answer-input"
+              />
+            </div>
+          )}
+
+          {/* Drag and Drop Questions */}
+          {questionType === 'drag and drop' && (() => {
+            console.log('=== DRAG AND DROP DEBUG START ===');
+            console.log('Question Object:', question);
+            console.log('Question Type:', question.question_type);
+            console.log('Question Type (lowercase):', questionType);
+            console.log('Choices Raw:', question.choices);
+            console.log('Choices Type:', typeof question.choices);
+            console.log('Choices Length:', question.choices?.length);
+            console.log('Correct Answer:', question.correct_answer);
+            
+            if (question.choices) {
+              console.log('Choices Split by \\n:', question.choices.split('\n'));
+              console.log('Filtered Lines:', question.choices.split('\n').filter(line => line.trim()));
+            }
+            
+            const dragDropData = parseDragDropData(question);
+            const currentAnswer = answers[currentQuestion] || {};
+            
+            console.log('Parsed drag drop data:', dragDropData);
+            console.log('=== DRAG AND DROP DEBUG END ===');
+            
+            if (!dragDropData) {
+              console.log('parseDragDropData returned null');
+              return (
+                <div className="error-message">
+                  Failed to parse drag and drop data. Question type: {question.question_type}
+                </div>
+              );
+            }
+            
+            if (!dragDropData.items.length || !dragDropData.zones.length) {
+              console.log('Missing items or zones:', {
+                items: dragDropData.items,
+                zones: dragDropData.zones,
+                rawChoices: question.choices,
+                choicesLines: question.choices?.split('\n')
+              });
+              return (
+                <div className="error-message">
+                  This drag and drop question is not properly formatted. Expected format:
+                  <br /><br />
+                  <strong>In the "Drag Items &amp; Drop Zones" field:</strong>
+                  <br />Items: item1, item2, item3
+                  <br />Zones: zone1, zone2, zone3
+                  <br /><br />
+                  <strong>In the "Correct Matches" field:</strong>
+                  <br />item1-&gt;zone1, item2-&gt;zone2
+                  <br /><br />
+                  <strong>Current choices data:</strong> {question.choices || 'No choices data'}
+                  <br /><strong>Parsed items ({dragDropData.items.length}):</strong> {JSON.stringify(dragDropData.items)}
+                  <br /><strong>Parsed zones ({dragDropData.zones.length}):</strong> {JSON.stringify(dragDropData.zones)}
+                  <br /><strong>Lines in choices:</strong> {JSON.stringify(question.choices?.split('\n'))}
+                </div>
+              );
+            }
+
+            return (
+              <div className="drag-drop-container">
+                <div className="drag-drop-instructions">
+                  <p>Drag items from the left panel to the appropriate drop zones on the right.</p>
+                </div>
+                
+                <div className="drag-drop-workspace">
+                  {/* Draggable Items */}
+                  <div className="draggable-items-panel">
+                    <h4>Items to Match:</h4>
+                    <div className="draggable-items">
+                      {dragDropData.items.map((item, index) => {
+                        const isMatched = Object.keys(currentAnswer).includes(item);
+                        return (
+                          <div
+                            key={index}
+                            className={`draggable-item ${isMatched ? 'matched' : ''}`}
+                            draggable={!isMatched}
+                            onDragStart={(e) => handleDragStart(e, item)}
+                            style={{ opacity: isMatched ? 0.5 : 1 }}
+                          >
+                            {item}
+                            {isMatched && (
+                              <button 
+                                className="remove-match"
+                                onClick={() => removeDragDropMatch(item)}
+                                title="Remove match"
+                              >
+                                ×
+                              </button>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Drop Zones */}
+                  <div className="drop-zones-panel">
+                    <h4>Drop Zones:</h4>
+                    <div className="drop-zones">
+                      {dragDropData.zones.map((zone, index) => {
+                        const matchedItems = Object.entries(currentAnswer)
+                          .filter(([item, matchedZone]) => matchedZone === zone)
+                          .map(([item]) => item);
+
+                        return (
+                          <div
+                            key={index}
+                            className={`drop-zone ${matchedItems.length > 0 ? 'has-items' : ''}`}
+                            onDragOver={handleDragOver}
+                            onDrop={(e) => handleDrop(e, zone)}
+                          >
+                            <div className="zone-label">{zone}</div>
+                            <div className="zone-content">
+                              {matchedItems.length === 0 ? (
+                                <span className="drop-hint">Drop items here</span>
+                              ) : (
+                                matchedItems.map((item, itemIndex) => (
+                                  <div key={itemIndex} className="dropped-item">
+                                    {item}
+                                    <button 
+                                      className="remove-match"
+                                      onClick={() => removeDragDropMatch(item)}
+                                      title="Remove match"
+                                    >
+                                      ×
+                                    </button>
+                                  </div>
+                                ))
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Current Matches Summary */}
+                {Object.keys(currentAnswer).length > 0 && (
+                  <div className="matches-summary">
+                    <h4>Current Matches:</h4>
+                    <ul>
+                      {Object.entries(currentAnswer).map(([item, zone], index) => (
+                        <li key={index}>
+                          <strong>{item}</strong> → {zone}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
+          {/* Hotspot Questions */}
+          {questionType === 'hotspot' && (
+            <div className="hotspot-question">
+              <p>Click on the correct area in the image/diagram</p>
+              {/* Note: Hotspot implementation would need additional image/coordinate handling */}
+              <div className="hotspot-placeholder">
+                Hotspot question interface needs additional implementation
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="test-navigation">
@@ -354,13 +669,25 @@ export default function TakeTest() {
                     <div className="student-answer">
                       <span className="label">Your Answer:</span>
                       <span className={result.isCorrect ? 'correct' : 'incorrect'}>
-                        {result.studentAnswer || 'No answer'}
+                        {result.studentAnswer ? (
+                          result.questionType === 'drag and drop' && typeof result.studentAnswer === 'object' ?
+                            Object.entries(result.studentAnswer).map(([item, zone]) => `${item} → ${zone}`).join(', ') :
+                            result.studentAnswer
+                        ) : 'No answer'}
                       </span>
                     </div>
                     {test.settings.showCorrectAnswers && !result.isCorrect && (
                       <div className="correct-answer">
                         <span className="label">Correct Answer:</span>
-                        <span className="correct">{result.correctAnswer}</span>
+                        <span className="correct">
+                          {result.questionType === 'drag and drop' && typeof result.correctAnswer === 'string' && result.correctAnswer.includes('->') ? 
+                            result.correctAnswer.split(',').map(match => {
+                              const [item, zone] = match.split('->').map(s => s.trim());
+                              return `${item} → ${zone}`;
+                            }).join(', ') :
+                            result.correctAnswer
+                          }
+                        </span>
                       </div>
                     )}
                     {test.settings.showExplanations && result.explanation && (

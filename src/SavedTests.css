@@ -142,6 +142,14 @@
   font-size: 1.3rem;
   line-height: 1.4;
   font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.save-name-indicator {
+  font-size: 1rem;
+  opacity: 0.8;
 }
 
 .test-card-original-title {
@@ -384,6 +392,196 @@
   50% { opacity: 0.7; transform: scale(1.1); }
 }
 
+/* Enhanced Controls */
+.saved-tests-controls {
+  background: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: 12px;
+  margin-bottom: 2rem;
+  border: 2px solid #e9ecef;
+}
+
+.controls-row {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.control-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.control-group label {
+  font-weight: 600;
+  color: #495057;
+  font-size: 0.9rem;
+}
+
+.control-select {
+  padding: 0.5rem 0.75rem;
+  border: 2px solid #dee2e6;
+  border-radius: 6px;
+  background: white;
+  color: #495057;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+}
+
+.control-select:focus {
+  outline: none;
+  border-color: #669BBC;
+}
+
+.bulk-select-btn {
+  padding: 0.5rem 1rem;
+  border: 2px solid #669BBC;
+  border-radius: 6px;
+  background: white;
+  color: #669BBC;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+}
+
+.bulk-select-btn:hover {
+  background: #669BBC;
+  color: white;
+}
+
+.bulk-select-btn.active {
+  background: #dc3545;
+  border-color: #dc3545;
+  color: white;
+}
+
+/* Bulk Actions */
+.bulk-actions {
+  padding: 1rem;
+  background: #e9f4ff;
+  border-radius: 8px;
+  border: 2px solid #669BBC;
+  margin-top: 1rem;
+}
+
+.bulk-actions-info {
+  margin-bottom: 1rem;
+  font-weight: 600;
+  color: #495057;
+}
+
+.bulk-actions-buttons {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.bulk-btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+}
+
+.bulk-btn.secondary {
+  background: #6c757d;
+  color: white;
+}
+
+.bulk-btn.secondary:hover {
+  background: #5a6268;
+}
+
+.bulk-btn.danger {
+  background: #dc3545;
+  color: white;
+}
+
+.bulk-btn.danger:hover {
+  background: #c82333;
+}
+
+.bulk-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Stats */
+.saved-tests-stats {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #dee2e6;
+  flex-wrap: wrap;
+}
+
+.stat {
+  font-size: 0.9rem;
+  color: #6c757d;
+  font-weight: 500;
+}
+
+/* Test Card Selection */
+.test-card.selected {
+  border-color: #007bff;
+  background: linear-gradient(135deg, #004085 0%, #003366 100%);
+}
+
+.test-card-select {
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  z-index: 10;
+}
+
+.test-select-checkbox {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: #669BBC;
+}
+
+/* Test Info Section */
+.test-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: rgba(0, 48, 73, 0.3);
+  border-radius: 8px;
+  border: 1px solid rgba(102, 155, 188, 0.2);
+}
+
+.test-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.info-label {
+  color: rgba(191, 201, 209, 0.8);
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.info-value {
+  color: #FDF0D5;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .saved-tests-page {
@@ -405,6 +603,25 @@
   
   .saved-tests-header h2 {
     font-size: 1.7rem;
+  }
+  
+  .controls-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+  
+  .control-group {
+    justify-content: space-between;
+  }
+  
+  .bulk-actions-buttons {
+    flex-direction: column;
+  }
+  
+  .saved-tests-stats {
+    flex-direction: column;
+    gap: 0.5rem;
   }
 }
 
