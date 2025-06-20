@@ -56,13 +56,33 @@ function TestLibrary({ searchTerm, onClearSearch }) {
     setLoading(true);
     
     try {
+      // Load original practice tests (from TestSelector)
+      const originalPracticeTests = [
+        {
+          id: 'mb800-practice',
+          title: 'MB-800: Microsoft Dynamics 365 Business Central Functional Consultant',
+          description: 'Complete certification preparation with practice questions',
+          questionCount: '65+ Questions',
+          difficulty: 'Intermediate',
+          topics: ['Microsoft Dynamics 365', 'Business Central', 'Functional Consultant'],
+          type: 'practice',
+          source: 'Certification Prep',
+          csvUrl: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTDO68GqAelFKS2G6SwiUWdPs2tw5Gt62D5xLiB_9zyLyBPLSZm5gTthaQz9yCpmDKuymWMc83PV5a2/pub?gid=0&single=true&output=csv',
+          color: '#003049',
+          icon: '💼'
+        }
+      ];
+
       // Load practice tests (existing saved tests logic)
       const savedTests = await SavedTestsService.getSavedTests();
-      const practiceTestsData = savedTests.map(test => ({
+      const savedPracticeTests = savedTests.map(test => ({
         ...test,
         type: 'practice',
         source: 'Saved Practice'
       }));
+
+      // Combine original practice tests with saved tests
+      const allPracticeTests = [...originalPracticeTests, ...savedPracticeTests];
 
       // Load case studies from Google Sheets
       const caseStudiesData = await loadCaseStudies();
@@ -70,7 +90,7 @@ function TestLibrary({ searchTerm, onClearSearch }) {
       // Load shared/published tests
       const sharedTestsData = await loadSharedTests();
 
-      setPracticeTests(practiceTestsData);
+      setPracticeTests(allPracticeTests);
       setCaseStudies(caseStudiesData);
       setSharedTests(sharedTestsData);
     } catch (error) {
@@ -121,7 +141,13 @@ function TestLibrary({ searchTerm, onClearSearch }) {
   const handleTestClick = (test) => {
     switch (test.type) {
       case 'practice':
-        navigate('/practice', { state: { savedTest: test } });
+        if (test.csvUrl) {
+          // Original practice test - navigate to practice container with test selection
+          navigate('/practice', { state: { selectedTest: test } });
+        } else {
+          // Saved practice test
+          navigate('/practice', { state: { savedTest: test } });
+        }
         break;
       case 'case-study':
         navigate(`/case-studies/${test.id}`);
@@ -244,7 +270,7 @@ function TestLibrary({ searchTerm, onClearSearch }) {
                   <div className="test-meta">
                     {test.questionCount && (
                       <span className="meta-item">
-                        📊 {test.questionCount} questions
+                        📊 {test.questionCount}
                       </span>
                     )}
                     {test.difficulty && (
@@ -255,6 +281,11 @@ function TestLibrary({ searchTerm, onClearSearch }) {
                     {test.lastTaken && (
                       <span className="meta-item">
                         📅 Last taken: {new Date(test.lastTaken).toLocaleDateString()}
+                      </span>
+                    )}
+                    {test.csvUrl && (
+                      <span className="meta-item">
+                        🔗 Online Questions
                       </span>
                     )}
                   </div>
@@ -273,7 +304,10 @@ function TestLibrary({ searchTerm, onClearSearch }) {
                 
                 <div className="test-card-footer">
                   <button className="test-action-btn">
-                    {test.type === 'practice' ? 'Continue Practice' : 'Start Test'}
+                    {test.type === 'practice' 
+                      ? (test.csvUrl ? 'Start Practice Test' : 'Continue Practice')
+                      : 'Start Test'
+                    }
                   </button>
                 </div>
               </div>

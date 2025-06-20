@@ -37,6 +37,21 @@ function PracticeTestContainer({
       setSelectedTest(transformedTest);
       return;
     }
+
+    // Check if we have a selected test from Test Library (original practice test)
+    if (location.state?.selectedTest) {
+      const selectedTestFromLibrary = location.state.selectedTest;
+      // This is an original practice test with csvUrl - treat it like a test selection
+      if (selectedTestFromLibrary.csvUrl) {
+        // Transform it to the format expected by PracticeTest
+        const transformedTest = {
+          ...selectedTestFromLibrary,
+          type: 'practice'
+        };
+        setSelectedTest(transformedTest);
+        return;
+      }
+    }
     
     // Check if we have a saved test from navigation state
     if (location.state?.savedTest) {
