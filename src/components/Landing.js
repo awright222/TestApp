@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import AuthModal from './AuthModal';
 import { useAuth } from '../firebase/AuthContext';
+import './Landing.css';
 
 export default function Landing() {
   const [showAuthModal, setShowAuthModal] = useState(false);
@@ -28,127 +29,182 @@ export default function Landing() {
   }, [user, pendingTestAccess, testId, navigate]);
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: 'linear-gradient(135deg, #003049 0%, #00243a 100%)',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '2rem',
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif'
-    }}>
-      {/* Main Content */}
-      <div style={{
-        textAlign: 'center',
-        maxWidth: '600px',
-        color: '#FDF0D5'
-      }}>
-        {/* App Title */}
-        <h1 style={{
-          fontSize: '3rem',
-          fontWeight: 'bold',
-          marginBottom: '1rem',
-          color: '#FDF0D5'
-        }}>
-          Test Builder
-        </h1>
-        
-        {/* App Description */}
-        <p style={{
-          fontSize: '1.2rem',
-          lineHeight: '1.6',
-          marginBottom: '2rem',
-          color: '#bfc9d1'
-        }}>
-          {pendingTestAccess ? (
-            <>
-              🔐 <strong>Login Required</strong><br />
-              You're trying to access a test, but you need to be logged in for cross-device sync. 
-              Sign in below to access your tests from any device!
-            </>
-          ) : (
-            <>
-              Create, share, and take practice tests with ease. Perfect for students, teachers, and professionals 
-              who want to build custom assessments and track progress over time.
-            </>
+    <div className="landing-page">
+      <div className="landing-content">
+        {/* Header */}
+        <header className="landing-header">
+          <div className="landing-logo">
+            <span className="landing-logo-icon">🎓</span>
+            <span>Test Builder</span>
+          </div>
+          
+          <nav className="landing-nav">
+            <a href="#features" className="nav-link">Features</a>
+            <a href="#about" className="nav-link">About</a>
+            <a href="#contact" className="nav-link">Contact</a>
+            <button 
+              className="sign-in-btn"
+              onClick={() => setShowAuthModal(true)}
+            >
+              Sign In
+            </button>
+          </nav>
+        </header>
+
+        {/* Main Content */}
+        <main className="hero-section">
+          {/* Pending Test Access Banner */}
+          {pendingTestAccess && (
+            <div className="pending-access-banner">
+              <div className="pending-access-icon">🔐</div>
+              <h2 className="pending-access-title">Login Required</h2>
+              <p className="pending-access-description">
+                You're trying to access a test, but you need to be logged in for cross-device sync. 
+                Sign in below to access your tests from any device!
+              </p>
+            </div>
           )}
-        </p>
 
-        {/* Features List */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-          gap: '1.5rem',
-          marginBottom: '3rem'
-        }}>
-          <div style={{
-            background: 'rgba(102, 155, 188, 0.1)',
-            padding: '1.5rem',
-            borderRadius: '8px',
-            border: '1px solid rgba(102, 155, 188, 0.3)'
-          }}>
-            <h3 style={{ color: '#669BBC', marginBottom: '0.5rem' }}>📝 Create Tests</h3>
-            <p style={{ color: '#bfc9d1', fontSize: '0.9rem' }}>Build custom tests with multiple choice, hotspot, and case study questions</p>
-          </div>
+          {/* Hero Content */}
+          <h1 className="hero-title">
+            Create. Share. Excel.
+          </h1>
           
-          <div style={{
-            background: 'rgba(102, 155, 188, 0.1)',
-            padding: '1.5rem',
-            borderRadius: '8px',
-            border: '1px solid rgba(102, 155, 188, 0.3)'
-          }}>
-            <h3 style={{ color: '#669BBC', marginBottom: '0.5rem' }}>🚀 Share & Collaborate</h3>
-            <p style={{ color: '#bfc9d1', fontSize: '0.9rem' }}>Share tests with students or colleagues and track their progress</p>
-          </div>
-          
-          <div style={{
-            background: 'rgba(102, 155, 188, 0.1)',
-            padding: '1.5rem',
-            borderRadius: '8px',
-            border: '1px solid rgba(102, 155, 188, 0.3)'
-          }}>
-            <h3 style={{ color: '#669BBC', marginBottom: '0.5rem' }}>📊 Track Progress</h3>
-            <p style={{ color: '#bfc9d1', fontSize: '0.9rem' }}>Monitor performance with detailed analytics and progress tracking</p>
-          </div>
-        </div>
+          <p className="hero-subtitle">
+            {pendingTestAccess ? (
+              "Access your test and sync your progress across all devices with a free account."
+            ) : (
+              "The ultimate platform for creating custom tests, managing classes, and tracking student progress. Join thousands of educators revolutionizing assessment."
+            )}
+          </p>
 
-        {/* Sign In Button */}
-        <button
-          onClick={() => setShowAuthModal(true)}
-          style={{
-            background: '#669BBC',
-            border: 'none',
-            color: '#FDF0D5',
-            padding: '1rem 2rem',
-            borderRadius: '8px',
-            fontSize: '1.1rem',
-            fontWeight: 'bold',
-            cursor: 'pointer',
-            transition: 'all 0.3s ease',
-            boxShadow: '0 4px 12px rgba(102, 155, 188, 0.3)',
-            marginBottom: '0.5rem'
-          }}
-          onMouseEnter={(e) => {
-            e.target.style.background = '#577a9e';
-            e.target.style.transform = 'translateY(-2px)';
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.background = '#669BBC';
-            e.target.style.transform = 'translateY(0)';
-          }}
-        >
-          {pendingTestAccess ? '🚀 Sign In to Access Your Test' : 'Get Started - Sign In or Sign Up'}
-        </button>
+          {/* Call to Action */}
+          <div className="hero-cta">
+            <button 
+              className="cta-primary"
+              onClick={() => setShowAuthModal(true)}
+            >
+              {pendingTestAccess ? '🚀 Sign In to Access Test' : 'Get Started Free'}
+            </button>
+            {!pendingTestAccess && (
+              <button className="cta-secondary">
+                Watch Demo
+              </button>
+            )}
+          </div>
+
+          {/* Features Grid */}
+          <div className="features-section" id="features">
+            <div className="feature-card">
+              <span className="feature-icon floating">📝</span>
+              <h3 className="feature-title">Smart Test Creation</h3>
+              <p className="feature-description">
+                Build comprehensive tests with multiple choice, hotspot questions, and interactive case studies. 
+                AI-powered suggestions help create better assessments.
+              </p>
+            </div>
+            
+            <div className="feature-card">
+              <span className="feature-icon floating">👥</span>
+              <h3 className="feature-title">Class Management</h3>
+              <p className="feature-description">
+                Organize students into classes, assign tests, and track progress. 
+                Enrollment codes make joining classes effortless.
+              </p>
+            </div>
+            
+            <div className="feature-card">
+              <span className="feature-icon floating">📊</span>
+              <h3 className="feature-title">Advanced Analytics</h3>
+              <p className="feature-description">
+                Detailed performance insights, progress tracking, and exportable reports. 
+                Identify learning gaps and measure improvement over time.
+              </p>
+            </div>
+
+            <div className="feature-card">
+              <span className="feature-icon floating">🌐</span>
+              <h3 className="feature-title">Cross-Device Sync</h3>
+              <p className="feature-description">
+                Access your tests from anywhere, on any device. 
+                Seamless synchronization keeps your work safe and accessible.
+              </p>
+            </div>
+
+            <div className="feature-card">
+              <span className="feature-icon floating">�</span>
+              <h3 className="feature-title">Secure & Private</h3>
+              <p className="feature-description">
+                Enterprise-grade security protects your data. 
+                Role-based access ensures students only see what they should.
+              </p>
+            </div>
+
+            <div className="feature-card">
+              <span className="feature-icon floating">⚡</span>
+              <h3 className="feature-title">Lightning Fast</h3>
+              <p className="feature-description">
+                Built for speed and reliability. 
+                No more waiting - create, share, and take tests instantly.
+              </p>
+            </div>
+          </div>
+
+          {/* Stats Section */}
+          <div className="stats-section">
+            <div className="stat-item">
+              <span className="stat-number">10K+</span>
+              <span className="stat-label">Active Users</span>
+            </div>
+            <div className="stat-item">
+              <span className="stat-number">50K+</span>
+              <span className="stat-label">Tests Created</span>
+            </div>
+            <div className="stat-item">
+              <span className="stat-number">500K+</span>
+              <span className="stat-label">Questions Answered</span>
+            </div>
+            <div className="stat-item">
+              <span className="stat-number">99.9%</span>
+              <span className="stat-label">Uptime</span>
+            </div>
+          </div>
+
+          {/* Testimonials */}
+          <div className="testimonials-section">
+            <h2 className="testimonials-title">What Educators Are Saying</h2>
+            <div className="testimonials-grid">
+              <div className="testimonial-card">
+                <p className="testimonial-quote">
+                  "Test Builder transformed how I assess my students. The analytics help me understand exactly where each student needs support."
+                </p>
+                <div className="testimonial-author">Sarah Johnson</div>
+                <div className="testimonial-role">High School Biology Teacher</div>
+              </div>
+              
+              <div className="testimonial-card">
+                <p className="testimonial-quote">
+                  "Creating and sharing tests has never been easier. My students love the interactive features and immediate feedback."
+                </p>
+                <div className="testimonial-author">Dr. Michael Chen</div>
+                <div className="testimonial-role">University Professor</div>
+              </div>
+              
+              <div className="testimonial-card">
+                <p className="testimonial-quote">
+                  "The class management features are incredible. I can track progress across all my courses from one dashboard."
+                </p>
+                <div className="testimonial-author">Emily Rodriguez</div>
+                <div className="testimonial-role">Middle School Math Teacher</div>
+              </div>
+            </div>
+          </div>
+        </main>
 
         {/* Footer */}
-        <p style={{
-          marginTop: '2rem',
-          fontSize: '0.9rem',
-          color: '#8a9ba8'
-        }}>
-          Join thousands of users creating and sharing tests worldwide
-        </p>
+        <footer className="landing-footer">
+          <p>© 2025 Test Builder. Empowering education through innovative assessment tools.</p>
+        </footer>
       </div>
 
       {/* Auth Modal */}

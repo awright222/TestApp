@@ -47,10 +47,25 @@ export class ClassService {
           totalAssignments: 0,
           completedAssignments: 0,
           averageScore: 0
-        }
+        },
+        // Store initial student emails for processing
+        initialStudentEmails: classData.initialStudents || []
       };
 
       await setDoc(doc(db, 'classes', classId), newClass);
+      
+      // If initial students were provided, add them to the class
+      if (classData.initialStudents && classData.initialStudents.length > 0) {
+        for (const email of classData.initialStudents) {
+          try {
+            await this.addStudentByEmail(classId, email);
+          } catch (error) {
+            console.warn(`Could not add student ${email} to class:`, error.message);
+            // Continue adding other students even if one fails
+          }
+        }
+      }
+      
       return { success: true, classId, class: newClass };
     } catch (error) {
       console.error('Error creating class:', error);
@@ -356,6 +371,34 @@ export class ClassService {
       await setDoc(doc(db, 'enrollments', enrollmentId), enrollment);
     } catch (error) {
       console.error('Error creating enrollment record:', error);
+    }
+  }
+
+  // Add student to class by email (looks up user first)
+  static async addStudentByEmail(classId, studentEmail) {
+    try {
+      // In a real implementation, you would:
+      // 1. Look up the user by email in your users collection
+      // 2. Check if they have a student role
+      // 3. Add them to the class if found
+      
+      // For now, we'll create a placeholder student ID and invitation
+      const studentId = `pending_${studentEmail.replace(/[^a-zA-Z0-9]/g, '_')}`;
+      
+      // Add student to class (they'll be marked as pending until they join)
+      const result = await this.addStudentToClass(classId, studentId, studentEmail);
+      
+      if (result.success) {
+        // In a real implementation, you might also:
+        // - Send an email invitation
+        // - Create a notification for the student
+        console.log(`Student ${studentEmail} added to class ${classId} (pending registration)`);
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('Error adding student by email:', error);
+      return { success: false, error: error.message };
     }
   }
 }

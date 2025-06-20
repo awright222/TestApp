@@ -32,6 +32,19 @@ const ClassManagement = () => {
     const result = await ClassService.createClass(user.uid, classData);
     
     if (result.success) {
+      // Show success message with enrollment code if applicable
+      let successMessage = `Class "${classData.name}" created successfully!`;
+      
+      if (classData.allowSelfEnrollment && result.class?.settings?.enrollmentCode) {
+        successMessage += `\n\nEnrollment Code: ${result.class.settings.enrollmentCode}`;
+        successMessage += '\nStudents can use this code to join your class.';
+      }
+      
+      if (classData.initialStudents && classData.initialStudents.length > 0) {
+        successMessage += `\n\nInitial students (${classData.initialStudents.length}) have been added to the class.`;
+      }
+      
+      alert(successMessage);
       loadClasses();
       setShowCreateModal(false);
     } else {
@@ -183,7 +196,8 @@ const CreateClassModal = ({ onClose, onSubmit }) => {
     name: '',
     description: '',
     subject: '',
-    allowSelfEnrollment: true
+    allowSelfEnrollment: true,
+    initialStudents: ''
   });
 
   const handleSubmit = (e) => {
@@ -192,64 +206,116 @@ const CreateClassModal = ({ onClose, onSubmit }) => {
       alert('Please enter a class name');
       return;
     }
-    onSubmit(formData);
+    
+    // Process initial students if provided
+    const initialStudentEmails = formData.initialStudents
+      .split('\n')
+      .map(email => email.trim())
+      .filter(email => email && email.includes('@'));
+    
+    onSubmit({
+      ...formData,
+      initialStudents: initialStudentEmails
+    });
   };
 
   return (
     <div className="modal-overlay">
-      <div className="modal create-class-modal">
+      <div className="create-class-modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
-          <h2>Create New Class</h2>
+          <h2>🎓 Create New Class</h2>
           <button className="modal-close" onClick={onClose}>×</button>
         </div>
 
-        <form onSubmit={handleSubmit} className="modal-body">
-          <div className="form-group">
-            <label htmlFor="className">Class Name *</label>
-            <input
-              type="text"
-              id="className"
-              value={formData.name}
-              onChange={(e) => setFormData({...formData, name: e.target.value})}
-              placeholder="e.g., Biology 101, AP Chemistry"
-              required
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="subject">Subject</label>
-            <input
-              type="text"
-              id="subject"
-              value={formData.subject}
-              onChange={(e) => setFormData({...formData, subject: e.target.value})}
-              placeholder="e.g., Science, Math, History"
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="description">Description</label>
-            <textarea
-              id="description"
-              value={formData.description}
-              onChange={(e) => setFormData({...formData, description: e.target.value})}
-              placeholder="Brief description of the class"
-              rows={3}
-            />
-          </div>
-
-          <div className="form-group checkbox-group">
-            <label>
+        <form onSubmit={handleSubmit}>
+          <div className="modal-body">
+            {/* Class Name */}
+            <div className="form-group">
+              <label htmlFor="className">Class Name *</label>
               <input
-                type="checkbox"
-                checked={formData.allowSelfEnrollment}
-                onChange={(e) => setFormData({...formData, allowSelfEnrollment: e.target.checked})}
+                type="text"
+                id="className"
+                value={formData.name}
+                onChange={(e) => setFormData({...formData, name: e.target.value})}
+                placeholder="e.g., Biology 101, AP Chemistry, Math 9th Grade"
+                required
+                className="form-input"
               />
-              Allow students to join with enrollment code
-            </label>
+            </div>
+
+            {/* Subject */}
+            <div className="form-group">
+              <label htmlFor="subject">Subject</label>
+              <input
+                type="text"
+                id="subject"
+                value={formData.subject}
+                onChange={(e) => setFormData({...formData, subject: e.target.value})}
+                placeholder="e.g., Science, Math, History, English"
+                className="form-input"
+              />
+            </div>
+
+            {/* Description */}
+            <div className="form-group">
+              <label htmlFor="description">Description</label>
+              <textarea
+                id="description"
+                value={formData.description}
+                onChange={(e) => setFormData({...formData, description: e.target.value})}
+                placeholder="Brief description of the class (optional)"
+                rows={3}
+                className="form-textarea"
+              />
+            </div>
+
+            {/* Self-Enrollment Options */}
+            <div className="enrollment-section">
+              <h3>📝 How students will join this class</h3>
+              
+              <div className="enrollment-option">
+                <div className="checkbox-group">
+                  <input
+                    type="checkbox"
+                    id="allowSelfEnrollment"
+                    checked={formData.allowSelfEnrollment}
+                    onChange={(e) => setFormData({...formData, allowSelfEnrollment: e.target.checked})}
+                  />
+                  <label htmlFor="allowSelfEnrollment">
+                    <strong>Generate enrollment code</strong>
+                  </label>
+                </div>
+                <p className="option-description">
+                  Students can join using a 6-character code that will be automatically generated. 
+                  You'll find this code on your class page after creation.
+                </p>
+              </div>
+
+              <div className="divider">
+                <span>AND/OR</span>
+              </div>
+
+              <div className="enrollment-option">
+                <label htmlFor="initialStudents">
+                  <strong>📧 Add students by email (optional)</strong>
+                </label>
+                <textarea
+                  id="initialStudents"
+                  value={formData.initialStudents}
+                  onChange={(e) => setFormData({...formData, initialStudents: e.target.value})}
+                  placeholder="Enter student email addresses, one per line:&#10;student1@school.edu&#10;student2@school.edu"
+                  rows={4}
+                  className="form-textarea student-emails"
+                />
+                <p className="option-description">
+                  Add students directly by entering their email addresses. 
+                  You can always add more students later from the class management page.
+                </p>
+              </div>
+            </div>
           </div>
 
-          <div className="modal-actions">
+          <div className="modal-footer">
             <button type="button" className="btn-secondary" onClick={onClose}>
               Cancel
             </button>
