@@ -20,6 +20,7 @@ import CrossDeviceDebug from './components/CrossDeviceDebug';
 import SaveTestDebug from './components/SaveTestDebug';
 import NoAuthDebug from './components/NoAuthDebug';
 import Sidebar from './components/Sidebar';
+import PracticeTestContainerDirect from './components/PracticeTestContainerDirect';
 import Debug from './components/Debug';  
 import RoleSelection from './components/RoleSelection';
 import ClassManagement from './components/ClassManagement';
@@ -116,6 +117,10 @@ function App() {
                 onClearSearch={() => setSearchTerm('')} 
               />
             } 
+          />
+          <Route 
+            path="/practice-test/:testId" 
+            element={<PracticeTestContainer />} 
           />
           <Route path="/shared-tests" element={<SharedTests />} />
           <Route path="/shared-test/:testId" element={<SharedTestAccess />} />

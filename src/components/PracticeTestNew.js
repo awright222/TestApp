@@ -21,9 +21,39 @@ function PracticeTestNew({ selectedTest, onBackToSelection, searchTerm, onClearS
   // Simple initialization
   useEffect(() => {
     console.log('PracticeTestNew: SIMPLE useEffect triggered');
+    console.log('PracticeTestNew: selectedTest type:', typeof selectedTest);
+    console.log('PracticeTestNew: selectedTest object:', selectedTest);
+    console.log('PracticeTestNew: selectedTest.questions:', selectedTest?.questions);
+    console.log('PracticeTestNew: questions is array?', Array.isArray(selectedTest?.questions));
+    console.log('PracticeTestNew: questions length:', selectedTest?.questions?.length);
     
-    if (!selectedTest || !selectedTest.questions) {
-      console.log('PracticeTestNew: No test or questions, returning');
+    if (!selectedTest) {
+      console.log('PracticeTestNew: No selectedTest - infinite loading will occur!');
+      return;
+    }
+    
+    if (typeof selectedTest === 'string') {
+      console.error('PracticeTestNew: selectedTest is a string, not an object! This causes infinite loading!');
+      console.error('PracticeTestNew: Received string:', selectedTest);
+      console.error('PracticeTestNew: This means PracticeTestContainer is passing the wrong data');
+      return;
+    }
+    
+    if (!selectedTest.questions) {
+      console.log('PracticeTestNew: selectedTest.questions is missing - infinite loading will occur!');
+      console.log('PracticeTestNew: selectedTest keys:', Object.keys(selectedTest));
+      return;
+    }
+    
+    if (!Array.isArray(selectedTest.questions)) {
+      console.log('PracticeTestNew: selectedTest.questions is not an array - infinite loading will occur!');
+      console.log('PracticeTestNew: selectedTest.questions type:', typeof selectedTest.questions);
+      return;
+    }
+    
+    if (selectedTest.questions.length === 0) {
+      console.log('PracticeTestNew: selectedTest.questions is empty array - will show "no questions" error');
+      setLoading(false);
       return;
     }
     
@@ -46,6 +76,7 @@ function PracticeTestNew({ selectedTest, onBackToSelection, searchTerm, onClearS
     setLoading(false);
     
     console.log('PracticeTestNew: Initialization complete - should render now');
+    console.log('PracticeTestNew: Final state - questions:', selectedTest.questions.length, 'loading: false');
   }, [selectedTest]);
 
   console.log('PracticeTestNew: RENDER FUNCTION REACHED! State check - loading:', loading, 'questions.length:', questions.length);

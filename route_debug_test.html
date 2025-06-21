@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Route Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 2rem; background: #FDF0D5; }
+        .test-button { 
+            display: block; 
+            background: #669BBC; 
+            color: white; 
+            padding: 1rem; 
+            margin: 1rem 0; 
+            text-decoration: none; 
+            border-radius: 8px; 
+            text-align: center;
+        }
+        .test-button:hover { background: #003049; }
+        .instructions {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Route Debug Test</h1>
+    
+    <div class="instructions">
+        <h3>Debug Steps:</h3>
+        <ol>
+            <li>Open browser DevTools (F12)</li>
+            <li>Go to Console tab</li>
+            <li>Click test links below</li>
+            <li>Look for debug messages starting with 🚀 and 🔥</li>
+        </ol>
+    </div>
+    
+    <a href="http://localhost:3000/practice-test/mb800-practice" target="_blank" class="test-button">
+        📊 Test mb800-practice (CSV)
+    </a>
+    
+    <a href="http://localhost:3000/practice" target="_blank" class="test-button">
+        📋 Test /practice (selector)
+    </a>
+    
+    <a href="http://localhost:3000/custom-test/mb800-practice" target="_blank" class="test-button">
+        🔧 Test /custom-test/mb800-practice (existing route)
+    </a>
+    
+    <div class="instructions">
+        <h3>Expected Console Output:</h3>
+        <pre>🚀 PracticeTestContainer: Component function called!
+🚀 PracticeTestContainer: Props received: {...}
+🚀 PracticeTestContainer: Hooks initialized
+🚀 PracticeTestContainer: testId from params: mb800-practice
+🔥 PracticeTestContainer: useEffect triggered!
+🔥 PracticeTestContainer: testId: mb800-practice
+🔍 PracticeTestContainer: Starting loadCustomTest...
+🔍 CreatedTestsService.getTestById called with testId: mb800-practice</pre>
+        
+        <p><strong>If you don't see these logs:</strong></p>
+        <ul>
+            <li>The route might not be working</li>
+            <li>There might be a syntax error in the component</li>
+            <li>The React app might not be running</li>
+        </ul>
+    </div>
+    
+    <script>
+        console.log('🧪 Route test page loaded');
+        console.log('🧪 Ready to test routes');
+    </script>
+</body>
+</html>

@@ -203,10 +203,44 @@ export class CreatedTestsService {
   // Get a specific test by ID
   static async getTestById(testId) {
     try {
+      console.log('🔍 CreatedTestsService.getTestById called with testId:', testId);
+      
+      // First check created tests
+      console.log('🔍 CreatedTestsService: Checking created tests...');
       const tests = await this.getCreatedTests();
-      return tests.find(test => test.id === testId) || null;
+      console.log('🔍 CreatedTestsService: Found', tests.length, 'created tests');
+      let foundTest = tests.find(test => test.id === testId);
+      
+      if (foundTest) {
+        console.log('✅ CreatedTestsService: Found test in created tests:', foundTest);
+        return foundTest;
+      }
+      
+      // If not found in created tests, check published tests (localStorage fallback)
+      console.log('🔍 CreatedTestsService: Test not found in created tests, checking published tests...');
+      const publishedTests = localStorage.getItem('publishedTests');
+      console.log('🔍 CreatedTestsService: publishedTests in localStorage:', !!publishedTests);
+      
+      if (publishedTests) {
+        try {
+          const published = JSON.parse(publishedTests);
+          console.log('🔍 CreatedTestsService: Found', published.length, 'published tests');
+          console.log('🔍 CreatedTestsService: Published test IDs:', published.map(t => t.id));
+          foundTest = published.find(test => test.id === testId);
+          if (foundTest) {
+            console.log('✅ CreatedTestsService: Found test in published tests:', foundTest);
+            return foundTest;
+          }
+        } catch (error) {
+          console.error('❌ Error parsing published tests:', error);
+        }
+      }
+      
+      console.log('❌ CreatedTestsService: Test not found in any storage location');
+      console.log('🔍 Searched for testId:', testId);
+      return null;
     } catch (error) {
-      console.error('Error loading test:', error);
+      console.error('❌ Error loading test:', error);
       return null;
     }
   }

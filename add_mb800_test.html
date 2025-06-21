@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add MB-800 Test to localStorage</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 2rem; background: #FDF0D5; }
+        .button { 
+            display: block; 
+            background: #669BBC; 
+            color: white; 
+            padding: 1rem 2rem; 
+            border: none;
+            border-radius: 8px; 
+            cursor: pointer;
+            margin: 1rem 0;
+            font-size: 1rem;
+        }
+        .button:hover { background: #003049; }
+        .success { background: #28a745; }
+        .code { 
+            background: #f8f9fa; 
+            padding: 1rem; 
+            border-radius: 4px; 
+            font-family: monospace; 
+            white-space: pre;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Add MB-800 Test to localStorage</h1>
+    
+    <p>This will add the MB-800 test to localStorage so the original PracticeTestContainer can find it.</p>
+    
+    <button class="button" onclick="addTest()">Add MB-800 Test to localStorage</button>
+    
+    <div id="result"></div>
+    
+    <h3>Then test with:</h3>
+    <a href="http://localhost:3000/practice-test/mb800-practice" target="_blank" class="button">
+        📊 Test MB-800 (Original Format)
+    </a>
+    
+    <script>
+        function addTest() {
+            const test = {
+                id: 'mb800-practice',
+                title: 'MB-800: Microsoft Dynamics 365 Business Central Functional Consultant',
+                description: 'Complete certification preparation with practice questions',
+                questionCount: '65+ Questions',
+                difficulty: 'Intermediate',
+                topics: ['Microsoft Dynamics 365', 'Business Central', 'Functional Consultant'],
+                type: 'practice',
+                source: 'Certification Prep',
+                csvUrl: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTDO68GqAelFKS2G6SwiUWdPs2tw5Gt62D5xLiB_9zyLyBPLSZm5gTthaQz9yCpmDKuymWMc83PV5a2/pub?gid=0&single=true&output=csv',
+                color: '#003049',
+                icon: '💼',
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                isActive: true
+            };
+            
+            try {
+                const existing = JSON.parse(localStorage.getItem('publishedTests') || '[]');
+                const filtered = existing.filter(t => t.id !== 'mb800-practice');
+                filtered.push(test);
+                localStorage.setItem('publishedTests', JSON.stringify(filtered));
+                
+                document.getElementById('result').innerHTML = `
+                    <div style="background: #d4edda; padding: 1rem; border-radius: 8px; color: #155724;">
+                        ✅ <strong>Success!</strong> MB-800 test added to localStorage.<br>
+                        Total tests in publishedTests: ${filtered.length}
+                    </div>
+                `;
+                
+                console.log('✅ MB-800 test added successfully!');
+                console.log('Test:', test);
+            } catch (error) {
+                document.getElementById('result').innerHTML = `
+                    <div style="background: #f8d7da; padding: 1rem; border-radius: 8px; color: #721c24;">
+                        ❌ <strong>Error:</strong> ${error.message}
+                    </div>
+                `;
+                console.error('❌ Error adding test:', error);
+            }
+        }
+        
+        // Check if test already exists
+        const existing = JSON.parse(localStorage.getItem('publishedTests') || '[]');
+        const existingTest = existing.find(t => t.id === 'mb800-practice');
+        
+        if (existingTest) {
+            document.getElementById('result').innerHTML = `
+                <div style="background: #fff3cd; padding: 1rem; border-radius: 8px; color: #856404;">
+                    ⚠️ MB-800 test already exists in localStorage. Click button to update it.
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test URL Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 2rem;
+            background: #FDF0D5;
+        }
+        .test-link {
+            display: block;
+            background: white;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #003049;
+            border-left: 4px solid #669BBC;
+            transition: all 0.2s;
+        }
+        .test-link:hover {
+            background: #669BBC;
+            color: white;
+            transform: translateX(5px);
+        }
+        .csv-test {
+            border-left-color: #28a745;
+        }
+        .csv-test:hover {
+            background: #28a745;
+        }
+        .test-info {
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 0.5rem;
+        }
+        .test-link:hover .test-info {
+            color: rgba(255,255,255,0.8);
+        }
+    </style>
+</head>
+<body>
+    <h1>🔗 Test URL Generator</h1>
+    <p>Click any link below to test the CSV loading or direct question functionality:</p>
+    
+    <div id="test-links"></div>
+    
+    <script>
+        const testLinksDiv = document.getElementById('test-links');
+        
+        function createTestLink(test, source) {
+            const link = document.createElement('a');
+            link.href = `http://localhost:3000/practice-test/${test.id}`;
+            link.target = '_blank';
+            link.className = `test-link ${test.csvUrl ? 'csv-test' : ''}`;
+            
+            link.innerHTML = `
+                <strong>${test.title}</strong>
+                <div class="test-info">
+                    ID: ${test.id} | 
+                    Source: ${source} | 
+                    Type: ${test.csvUrl ? 'CSV-based' : 'Direct questions'} |
+                    Questions: ${test.questions ? test.questions.length : 'N/A'}
+                </div>
+            `;
+            
+            return link;
+        }
+        
+        // Check published tests
+        const publishedTests = localStorage.getItem('publishedTests');
+        if (publishedTests) {
+            try {
+                const tests = JSON.parse(publishedTests);
+                
+                const publishedHeader = document.createElement('h2');
+                publishedHeader.textContent = `📊 Published Tests (${tests.length})`;
+                testLinksDiv.appendChild(publishedHeader);
+                
+                tests.forEach(test => {
+                    testLinksDiv.appendChild(createTestLink(test, 'Published'));
+                });
+                
+                // Show CSV tests specifically
+                const csvTests = tests.filter(t => t.csvUrl);
+                if (csvTests.length > 0) {
+                    const csvHeader = document.createElement('h3');
+                    csvHeader.textContent = `📈 CSV-Based Tests (${csvTests.length}) - These test the CSV loading fix`;
+                    csvHeader.style.color = '#28a745';
+                    testLinksDiv.appendChild(csvHeader);
+                }
+                
+            } catch (error) {
+                console.error('Error parsing published tests:', error);
+            }
+        }
+        
+        // Check created tests
+        const createdTests = localStorage.getItem('created_tests');
+        if (createdTests) {
+            try {
+                const tests = JSON.parse(createdTests);
+                
+                if (tests.length > 0) {
+                    const createdHeader = document.createElement('h2');
+                    createdHeader.textContent = `📝 Created Tests (${tests.length})`;
+                    testLinksDiv.appendChild(createdHeader);
+                    
+                    tests.forEach(test => {
+                        testLinksDiv.appendChild(createTestLink(test, 'Created'));
+                    });
+                }
+            } catch (error) {
+                console.error('Error parsing created tests:', error);
+            }
+        }
+        
+        if (!publishedTests && !createdTests) {
+            const noTestsMsg = document.createElement('p');
+            noTestsMsg.innerHTML = '❌ No tests found in localStorage. Run the add_written_test.js script first.';
+            noTestsMsg.style.color = '#dc3545';
+            testLinksDiv.appendChild(noTestsMsg);
+        }
+    </script>
+</body>
+</html>

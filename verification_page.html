@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Formulate Test Verification</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: #FDF0D5;
+        }
+        h1 {
+            color: #003049;
+            text-align: center;
+        }
+        .console-output {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 1rem;
+            border-radius: 8px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9rem;
+            max-height: 400px;
+            overflow-y: auto;
+            margin: 1rem 0;
+        }
+        .test-links {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+        .test-links h3 {
+            color: #669BBC;
+            margin-top: 0;
+        }
+        .test-links a {
+            display: block;
+            color: #003049;
+            text-decoration: none;
+            padding: 0.5rem;
+            margin: 0.5rem 0;
+            background: #FDF0D5;
+            border-radius: 4px;
+            border: 1px solid #669BBC;
+        }
+        .test-links a:hover {
+            background: #669BBC;
+            color: white;
+        }
+        button {
+            background: #669BBC;
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin: 0.5rem;
+        }
+        button:hover {
+            background: #003049;
+        }
+    </style>
+</head>
+<body>
+    <h1>🚀 Formulate Test App Verification</h1>
+    
+    <p>This page runs comprehensive verification of all the fixes and features implemented in the Formulate test app.</p>
+    
+    <button onclick="runVerification()">🔍 Run Verification</button>
+    <button onclick="clearConsole()">🧹 Clear Console</button>
+    <button onclick="window.open('http://localhost:3000', '_blank')">🌐 Open App</button>
+    
+    <div class="console-output" id="console-output">
+        Click "Run Verification" to see detailed analysis...
+    </div>
+    
+    <div class="test-links" id="test-links" style="display: none;">
+        <h3>📋 Quick Test Links</h3>
+        <div id="csv-tests"></div>
+        <div id="direct-tests"></div>
+    </div>
+    
+    <script>
+        // Capture console output
+        const originalLog = console.log;
+        const outputElement = document.getElementById('console-output');
+        
+        function logToPage(...args) {
+            const message = args.map(arg => 
+                typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+            ).join(' ');
+            
+            outputElement.innerHTML += message + '\n';
+            outputElement.scrollTop = outputElement.scrollHeight;
+            originalLog(...args);
+        }
+        
+        console.log = logToPage;
+        
+        function clearConsole() {
+            outputElement.innerHTML = '';
+        }
+        
+        function runVerification() {
+            clearConsole();
+            
+            // Load and run the verification script
+            fetch('./comprehensive_verification.js')
+                .then(response => response.text())
+                .then(script => {
+                    eval(script);
+                    
+                    // After verification, populate test links
+                    populateTestLinks();
+                })
+                .catch(error => {
+                    console.log('❌ Error loading verification script:', error);
+                    console.log('Falling back to inline verification...');
+                    runInlineVerification();
+                });
+        }
+        
+        function populateTestLinks() {
+            const testLinksElement = document.getElementById('test-links');
+            const csvTestsElement = document.getElementById('csv-tests');
+            const directTestsElement = document.getElementById('direct-tests');
+            
+            // Get localStorage data
+            const publishedTests = localStorage.getItem('publishedTests');
+            const createdTests = localStorage.getItem('created_tests');
+            
+            let allTests = [];
+            
+            if (publishedTests) {
+                allTests = allTests.concat(JSON.parse(publishedTests));
+            }
+            if (createdTests) {
+                allTests = allTests.concat(JSON.parse(createdTests));
+            }
+            
+            const csvTests = allTests.filter(t => t.csvUrl && !t.questions);
+            const directTests = allTests.filter(t => t.questions && Array.isArray(t.questions));
+            
+            if (csvTests.length > 0) {
+                csvTestsElement.innerHTML = '<h4>📊 CSV-Based Tests:</h4>';
+                csvTests.forEach(test => {
+                    const link = document.createElement('a');
+                    link.href = `http://localhost:3000/practice-test/${test.id}`;
+                    link.target = '_blank';
+                    link.textContent = `${test.title} (CSV)`;
+                    csvTestsElement.appendChild(link);
+                });
+            }
+            
+            if (directTests.length > 0) {
+                directTestsElement.innerHTML = '<h4>📝 Direct Question Tests:</h4>';
+                directTests.slice(0, 5).forEach(test => {
+                    const link = document.createElement('a');
+                    link.href = `http://localhost:3000/practice-test/${test.id}`;
+                    link.target = '_blank';
+                    link.textContent = `${test.title} (${test.questions.length} questions)`;
+                    directTestsElement.appendChild(link);
+                });
+            }
+            
+            if (csvTests.length > 0 || directTests.length > 0) {
+                testLinksElement.style.display = 'block';
+            }
+        }
+        
+        function runInlineVerification() {
+            console.log('🚀 FORMULATE TEST APP - INLINE VERIFICATION');
+            console.log('============================================');
+            
+            // Basic localStorage check
+            const publishedTests = localStorage.getItem('publishedTests');
+            const createdTests = localStorage.getItem('created_tests');
+            
+            let testCount = 0;
+            if (publishedTests) testCount += JSON.parse(publishedTests).length;
+            if (createdTests) testCount += JSON.parse(createdTests).length;
+            
+            console.log(`📂 Total tests in localStorage: ${testCount}`);
+            
+            if (testCount > 0) {
+                console.log('✅ localStorage data found');
+                console.log('✅ Ready for testing');
+                populateTestLinks();
+            } else {
+                console.log('⚠️  No test data found in localStorage');
+                console.log('💡 Try running the add_written_test.js script first');
+            }
+        }
+    </script>
+</body>
+</html>
