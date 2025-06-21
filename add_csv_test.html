@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add CSV Test to System</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 2rem; background: #FDF0D5; }
+        .form-group { margin: 1rem 0; }
+        .form-group label { display: block; margin-bottom: 0.5rem; font-weight: bold; color: #003049; }
+        .form-group input, .form-group textarea { 
+            width: 100%; 
+            padding: 0.75rem; 
+            border: 2px solid #669BBC; 
+            border-radius: 8px; 
+            font-size: 1rem;
+        }
+        .button { 
+            background: #669BBC; 
+            color: white; 
+            padding: 1rem 2rem; 
+            border: none;
+            border-radius: 8px; 
+            cursor: pointer;
+            font-size: 1rem;
+            margin: 0.5rem;
+        }
+        .button:hover { background: #003049; }
+        .success { background: #28a745; }
+        .instructions {
+            background: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            border-left: 4px solid #669BBC;
+        }
+        .test-list {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+        .test-item {
+            padding: 0.5rem;
+            margin: 0.5rem 0;
+            background: white;
+            border-radius: 4px;
+            border-left: 3px solid #28a745;
+        }
+    </style>
+</head>
+<body>
+    <h1>📊 Add CSV Test to System</h1>
+    
+    <div class="instructions">
+        <h3>🔗 How to Get Google Sheets CSV URL:</h3>
+        <ol>
+            <li>Open your Google Sheet with test questions</li>
+            <li>Go to <strong>File → Share → Publish to web</strong></li>
+            <li>Choose <strong>Entire Document</strong> and <strong>CSV</strong></li>
+            <li>Click <strong>Publish</strong> and copy the URL</li>
+            <li>Paste the URL below</li>
+        </ol>
+        
+        <h4>📋 Required CSV Format:</h4>
+        <pre>question_text,question_type,choices,correct_answer,explanation
+"What is 2+2?",multiple_choice,"A) 3|B) 4|C) 5","B","Basic math"
+"Explain gravity",essay,"","","Open-ended question"</pre>
+    </div>
+    
+    <form id="csvTestForm">
+        <div class="form-group">
+            <label for="testId">Test ID (no spaces, lowercase):</label>
+            <input type="text" id="testId" placeholder="e.g. my-test-2024" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="testTitle">Test Title:</label>
+            <input type="text" id="testTitle" placeholder="e.g. My Custom Certification Test" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="csvUrl">CSV URL (from Google Sheets):</label>
+            <input type="url" id="csvUrl" placeholder="https://docs.google.com/spreadsheets/d/.../pub?output=csv" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="description">Description:</label>
+            <textarea id="description" placeholder="Brief description of the test"></textarea>
+        </div>
+        
+        <div class="form-group">
+            <label for="difficulty">Difficulty:</label>
+            <select id="difficulty">
+                <option value="Beginner">Beginner</option>
+                <option value="Intermediate" selected>Intermediate</option>
+                <option value="Advanced">Advanced</option>
+                <option value="Expert">Expert</option>
+            </select>
+        </div>
+        
+        <button type="submit" class="button">Add CSV Test</button>
+        <button type="button" class="button" onclick="validateCsv()">Test CSV URL</button>
+    </form>
+    
+    <div id="result"></div>
+    
+    <div class="test-list">
+        <h3>📋 Current CSV Tests:</h3>
+        <div id="currentTests"></div>
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <script>
+        function validateCsv() {
+            const csvUrl = document.getElementById('csvUrl').value;
+            if (!csvUrl) {
+                alert('Please enter a CSV URL first');
+                return;
+            }
+            
+            document.getElementById('result').innerHTML = `
+                <div style="background: #fff3cd; padding: 1rem; border-radius: 8px; color: #856404;">
+                    🔄 Testing CSV URL... Please wait.
+                </div>
+            `;
+            
+            Papa.parse(csvUrl, {
+                download: true,
+                header: true,
+                complete: (result) => {
+                    const questions = result.data.filter(q => q.question_text && q.question_text.trim());
+                    document.getElementById('result').innerHTML = `
+                        <div style="background: #d4edda; padding: 1rem; border-radius: 8px; color: #155724;">
+                            ✅ <strong>CSV Valid!</strong><br>
+                            Found ${questions.length} questions<br>
+                            Sample: ${questions[0]?.question_text?.substring(0, 50)}...
+                        </div>
+                    `;
+                },
+                error: (error) => {
+                    document.getElementById('result').innerHTML = `
+                        <div style="background: #f8d7da; padding: 1rem; border-radius: 8px; color: #721c24;">
+                            ❌ <strong>CSV Error:</strong> ${error.message}
+                        </div>
+                    `;
+                }
+            });
+        }
+        
+        document.getElementById('csvTestForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const test = {
+                id: document.getElementById('testId').value,
+                title: document.getElementById('testTitle').value,
+                description: document.getElementById('description').value || 'CSV-based test',
+                difficulty: document.getElementById('difficulty').value,
+                csvUrl: document.getElementById('csvUrl').value,
+                questionCount: 'Loading...',
+                type: 'practice',
+                source: 'CSV Import',
+                color: '#669BBC',
+                icon: '📊',
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                isActive: true
+            };
+            
+            try {
+                const existing = JSON.parse(localStorage.getItem('publishedTests') || '[]');
+                const filtered = existing.filter(t => t.id !== test.id);
+                filtered.push(test);
+                localStorage.setItem('publishedTests', JSON.stringify(filtered));
+                
+                document.getElementById('result').innerHTML = `
+                    <div style="background: #d4edda; padding: 1rem; border-radius: 8px; color: #155724;">
+                        ✅ <strong>Success!</strong> Test added to system.<br>
+                        Test URL: <a href="http://localhost:3000/practice-test/${test.id}" target="_blank">
+                            http://localhost:3000/practice-test/${test.id}
+                        </a>
+                    </div>
+                `;
+                
+                // Reset form
+                document.getElementById('csvTestForm').reset();
+                loadCurrentTests();
+                
+            } catch (error) {
+                document.getElementById('result').innerHTML = `
+                    <div style="background: #f8d7da; padding: 1rem; border-radius: 8px; color: #721c24;">
+                        ❌ <strong>Error:</strong> ${error.message}
+                    </div>
+                `;
+            }
+        });
+        
+        function loadCurrentTests() {
+            const existing = JSON.parse(localStorage.getItem('publishedTests') || '[]');
+            const csvTests = existing.filter(t => t.csvUrl);
+            
+            const container = document.getElementById('currentTests');
+            if (csvTests.length === 0) {
+                container.innerHTML = '<p style="color: #6c757d;">No CSV tests found.</p>';
+            } else {
+                container.innerHTML = csvTests.map(test => `
+                    <div class="test-item">
+                        <strong>${test.title}</strong> (${test.id})<br>
+                        <small>CSV: ${test.csvUrl.substring(0, 60)}...</small><br>
+                        <a href="http://localhost:3000/practice-test/${test.id}" target="_blank">Take Test</a>
+                    </div>
+                `).join('');
+            }
+        }
+        
+        // Load current tests on page load
+        loadCurrentTests();
+    </script>
+</body>
+</html>

@@ -26,6 +26,7 @@ import RoleSelection from './components/RoleSelection';
 import ClassManagement from './components/ClassManagement';
 import StudentClasses from './components/StudentClasses';
 import DevPanel from './components/DevPanel';
+import ProfileSettings from './components/ProfileSettings';
 
 function App() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -162,6 +163,7 @@ function App() {
             } 
           />
           <Route path="/debug" element={<Debug />} />
+          <Route path="/profile-settings" element={<ProfileSettings />} />
           <Route path="/debug/cross-device" element={<CrossDeviceDebug />} />
           <Route path="/debug/save-test" element={<SaveTestDebug />} />
           <Route path="/debug/clear" element={

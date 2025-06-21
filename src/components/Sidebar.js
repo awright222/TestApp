@@ -74,6 +74,13 @@ function Sidebar({
                   <div className="welcome-text">
                     Welcome, {user.displayName || user.email}
                   </div>
+                  <Link
+                    to="/profile-settings"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="profile-settings-link mobile"
+                  >
+                    👤 Profile Settings
+                  </Link>
                   <button
                     onClick={() => {
                       logout();
@@ -124,6 +131,18 @@ function Sidebar({
           <div>
             <div className="welcome-text">
               Welcome, {user.displayName || user.email}
+            </div>
+            <div className="profile-avatar-section">
+              <Link to="/profile-settings" className="profile-avatar-link">
+                {user.photoURL ? (
+                  <img src={user.photoURL} alt="Profile" className="sidebar-avatar" />
+                ) : (
+                  <div className="sidebar-default-avatar">
+                    {user.displayName ? user.displayName.charAt(0).toUpperCase() : '👤'}
+                  </div>
+                )}
+                <span className="profile-settings-text">Profile Settings</span>
+              </Link>
             </div>
             <div className="sync-status">
               <span className="sync-indicator">☁️ Tests synced across devices</span>

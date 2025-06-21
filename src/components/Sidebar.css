@@ -219,6 +219,52 @@
   gap: 0.25rem;
 }
 
+/* Profile Avatar Section */
+.profile-avatar-section {
+  margin: 8px 0;
+}
+
+.profile-avatar-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px;
+  border-radius: 6px;
+  text-decoration: none;
+  color: #2c3e50;
+  transition: background-color 0.2s;
+}
+
+.profile-avatar-link:hover {
+  background-color: #f8f9fa;
+}
+
+.sidebar-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #3498db;
+}
+
+.sidebar-default-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #3498db;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  font-weight: bold;
+}
+
+.profile-settings-text {
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
 /* Mobile styles */
 @media (max-width: 600px) {
   .sidebar {
@@ -238,4 +284,21 @@
   .mobile-dropdown-menu {
     display: none !important;
   }
+}
+
+.profile-settings-link.mobile {
+  display: block;
+  padding: 8px 12px;
+  margin: 8px 0;
+  background: #f8f9fa;
+  border-radius: 6px;
+  text-decoration: none;
+  color: #2c3e50;
+  font-weight: 500;
+  text-align: center;
+  transition: background-color 0.2s;
+}
+
+.profile-settings-link.mobile:hover {
+  background: #e9ecef;
 }
