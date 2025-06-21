@@ -247,6 +247,20 @@ export default function DevPanel() {
                     >
                       👥 Student Directory
                     </a>
+                    <a 
+                      href="/teacher-directory"
+                      style={{
+                        background: '#fd7e14',
+                        color: 'white',
+                        padding: '0.5rem 1rem',
+                        borderRadius: '4px',
+                        textDecoration: 'none',
+                        fontSize: '0.8rem',
+                        textAlign: 'center'
+                      }}
+                    >
+                      👨‍🏫 Teacher Directory
+                    </a>
                   </>
                 )}
 

@@ -15,13 +15,22 @@ function Sidebar({
   // Define navigation items based on user role
   const getNavigationItems = () => {
     const baseItems = [
-      { path: '/dashboard', icon: '🏠', label: 'Dashboard' },
+      { path: userProfile?.accountType === 'admin' ? '/organization-admin' : '/dashboard', icon: '🏠', label: 'Dashboard' },
       { path: '/test-library', icon: '�', label: 'Test Library' }
     ];
 
     if (!userProfile) return baseItems;
 
-    if (userProfile.accountType === 'teacher') {
+    if (userProfile.accountType === 'admin') {
+      return [
+        { path: '/organization-admin', icon: '👑', label: 'Admin Dashboard' },
+        { path: '/test-library', icon: '📚', label: 'Test Library' },
+        { path: '/class-management', icon: '🎓', label: 'Class Management' },
+        { path: '/student-directory', icon: '👥', label: 'Student Directory' },
+        { path: '/teacher-directory', icon: '👨‍🏫', label: 'Teacher Directory' },
+        { path: '/analytics', icon: '📊', label: 'Analytics' }
+      ];
+    } else if (userProfile.accountType === 'teacher') {
       return [
         ...baseItems,
         { path: '/my-tests', icon: '✨', label: 'My Tests' },

@@ -43,7 +43,10 @@ const OrganizationAdmin = () => {
   }, [user]);
 
   const loadOrganizationData = async () => {
-    if (!user) return;
+    if (!user) {
+      setLoading(false); // Set loading to false if no user
+      return;
+    }
     
     setLoading(true);
     try {
@@ -845,7 +848,12 @@ const AddTeacherModal = ({ onClose, onSubmit, loading }) => {
   };
 
   return (
-    <div className="modal-overlay">
+    <div className="modal-overlay" onClick={(e) => {
+      // Close modal if clicking on the overlay (not the modal content)
+      if (e.target.className === 'modal-overlay') {
+        onClose();
+      }
+    }}>
       <div className="modal">
         <div className="modal-header">
           <h2>Invite Teacher</h2>
@@ -978,7 +986,12 @@ Ms. Lisa Brown,lisa.brown@school.edu,English`
   };
 
   return (
-    <div className="modal-overlay">
+    <div className="modal-overlay" onClick={(e) => {
+      // Close modal if clicking on the overlay (not the modal content)
+      if (e.target.className === 'modal-overlay') {
+        onClose();
+      }
+    }}>
       <div className="modal large">
         <div className="modal-header">
           <h2>Bulk Import {importType === 'students' ? 'Students' : 'Teachers'}</h2>

@@ -25,6 +25,7 @@ import Debug from './components/Debug';
 import RoleSelection from './components/RoleSelection';
 import ClassManagement from './components/ClassManagement';
 import StudentDirectory from './components/StudentDirectory';
+import TeacherDirectory from './components/TeacherDirectory';
 import OrganizationAdmin from './components/OrganizationAdmin';
 import StudentClasses from './components/StudentClasses';
 import DevPanel from './components/DevPanel';
@@ -130,6 +131,7 @@ function App() {
           <Route path="/my-tests" element={<MyCreatedTests />} />
           <Route path="/class-management" element={<ClassManagement />} />
           <Route path="/student-directory" element={<StudentDirectory />} />
+          <Route path="/teacher-directory" element={<TeacherDirectory />} />
           <Route path="/organization-admin" element={<OrganizationAdmin />} />
           <Route path="/my-classes" element={<StudentClasses />} />
           <Route 
