@@ -5,6 +5,7 @@ import { useAuth } from '../firebase/AuthContext';
 import './CreateTest.css';
 
 export default function CreateTest() {
+  console.log('CreateTest component loaded');
   const navigate = useNavigate();
   const { testId } = useParams(); // For editing existing tests
   const { userProfile, canPerformAction, trackUsage, loading } = useAuth();
@@ -32,6 +33,11 @@ export default function CreateTest() {
     correct_answer: '',
     explanation: ''
   });
+
+  // Debug log for currentQuestion changes
+  useEffect(() => {
+    console.log('CurrentQuestion changed:', currentQuestion);
+  }, [currentQuestion]);
 
   // Case Study states
   const [caseStudyTabs, setCaseStudyTabs] = useState([
@@ -801,7 +807,10 @@ Role: Admin","Proper configuration requires setting the department and role corr
                   <select
                     id="question-type"
                     value={currentQuestion.question_type}
-                    onChange={(e) => setCurrentQuestion({...currentQuestion, question_type: e.target.value})}
+                    onChange={(e) => {
+                      console.log('Question type changed to:', e.target.value);
+                      setCurrentQuestion({...currentQuestion, question_type: e.target.value});
+                    }}
                     className="select-input"
                   >
                     <option value="multiple choice">Multiple Choice</option>
@@ -815,10 +824,14 @@ Role: Admin","Proper configuration requires setting the department and role corr
                 <div className="input-group">
                   <div className="label-with-info">
                     <label>
-                      {currentQuestion.question_type === 'essay' ? 'Grading Rubric (Optional)' :
-                       currentQuestion.question_type === 'short answer' ? 'Expected Keywords/Phrases' :
-                       currentQuestion.question_type === 'drag and drop' ? 'Drag Items & Drop Zones' :
-                       'Choices'}
+                      {(() => {
+                        const label = currentQuestion.question_type === 'essay' ? 'Grading Rubric (Optional)' :
+                                     currentQuestion.question_type === 'short answer' ? 'Expected Keywords/Phrases' :
+                                     currentQuestion.question_type === 'drag and drop' ? 'Drag Items & Drop Zones' :
+                                     'Choices';
+                        console.log('Current question type:', currentQuestion.question_type, 'Label:', label);
+                        return label;
+                      })()}
                     </label>
                     <button 
                       type="button"
@@ -864,10 +877,14 @@ Role: Admin","Proper configuration requires setting the department and role corr
                 <div className="input-group">
                   <div className="label-with-info">
                     <label>
-                      {currentQuestion.question_type === 'essay' ? 'Sample Answer (Optional)' :
-                       currentQuestion.question_type === 'short answer' ? 'Correct Keywords/Phrases' :
-                       currentQuestion.question_type === 'drag and drop' ? 'Correct Matches' :
-                       'Correct Answer'}
+                      {(() => {
+                        const label = currentQuestion.question_type === 'essay' ? 'Sample Answer (Optional)' :
+                                     currentQuestion.question_type === 'short answer' ? 'Correct Keywords/Phrases' :
+                                     currentQuestion.question_type === 'drag and drop' ? 'Correct Matches' :
+                                     'Correct Answer';
+                        console.log('Correct answer field label:', label);
+                        return label;
+                      })()}
                     </label>
                     <button 
                       type="button"
@@ -1886,6 +1903,8 @@ Role: Admin","Proper configuration requires setting the department and role corr
                         {/* Drag and Drop Questions */}
                         {question.question_type === 'drag and drop' && question.choices && (() => {
                           // Parse drag and drop data for preview
+                          console.log('=== DRAG AND DROP PREVIEW PARSING ===');
+                          console.log('Question choices:', question.choices);
                           const lines = question.choices.split('\n').filter(line => line.trim());
                           const items = [];
                           const zones = [];
@@ -1912,6 +1931,10 @@ Role: Admin","Proper configuration requires setting the department and role corr
                               zones.push(...line.split(',').map(zone => zone.trim()).filter(zone => zone));
                             }
                           });
+                          
+                          console.log('Final items:', items);
+                          console.log('Final zones:', zones);
+                          console.log('=== END DRAG AND DROP PREVIEW PARSING ===');
 
                           return (
                             <div className="drag-drop-preview">
@@ -2035,6 +2058,8 @@ Role: Admin","Proper configuration requires setting the department and role corr
                             {/* Drag and Drop Questions */}
                             {question.question_type === 'drag and drop' && question.choices && (() => {
                               // Parse drag and drop data for preview
+                              console.log('=== CASE STUDY DRAG AND DROP PREVIEW PARSING ===');
+                              console.log('Question choices:', question.choices);
                               const lines = question.choices.split('\n').filter(line => line.trim());
                               const items = [];
                               const zones = [];
@@ -2061,6 +2086,10 @@ Role: Admin","Proper configuration requires setting the department and role corr
                                   zones.push(...line.split(',').map(zone => zone.trim()).filter(zone => zone));
                                 }
                               });
+                              
+                              console.log('Case Study Final items:', items);
+                              console.log('Case Study Final zones:', zones);
+                              console.log('=== END CASE STUDY DRAG AND DROP PREVIEW PARSING ===');
 
                               return (
                                 <div className="drag-drop-preview">

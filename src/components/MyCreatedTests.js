@@ -93,7 +93,10 @@ export default function MyCreatedTests() {
   };
 
   const launchTest = (testId) => {
-    navigate(`/custom-test/${testId}`);
+    console.log('MyCreatedTests: Launching test with ID:', testId);
+    const url = `/custom-test/${testId}`;
+    console.log('MyCreatedTests: Navigating to URL:', url);
+    navigate(url);
   };
 
   const editTest = (testId) => {

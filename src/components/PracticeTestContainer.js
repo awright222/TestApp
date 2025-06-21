@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import TestSelector from './TestSelector';
-import PracticeTest from './PracticeTest';
+import PracticeTestNew from './PracticeTestNew';
 import { CreatedTestsService } from '../services/CreatedTestsService';
 import { useAuth } from '../firebase/AuthContext';
 
@@ -104,7 +104,10 @@ function PracticeTestContainer({
       setLoading(true);
       try {
         const customTest = await CreatedTestsService.getTestById(testId);
+        console.log('PracticeTestContainer: Loaded custom test:', customTest);
         if (customTest && customTest.questions && Array.isArray(customTest.questions)) {
+          console.log('PracticeTestContainer: Custom test has questions array with length:', customTest.questions.length);
+          console.log('PracticeTestContainer: First question in custom test:', customTest.questions[0]);
           // Transform the custom test to match the expected format
           const transformedTest = {
             title: customTest.title,
@@ -116,6 +119,8 @@ function PracticeTestContainer({
             isCustomTest: true,
             customTestId: customTest.id
           };
+          console.log('PracticeTestContainer: Transformed test:', transformedTest);
+          console.log('PracticeTestContainer: Transformed test questions:', transformedTest.questions);
           setSelectedTest(transformedTest);
         } else {
           // Instead of alert, show an error state with auth context
@@ -308,7 +313,7 @@ function PracticeTestContainer({
 
   return (
     <div className="practice-test-container" style={{ background: '#FDF0D5', borderRadius: '16px', minHeight: 'calc(100vh - 4rem)' }}>
-      <PracticeTest 
+      <PracticeTestNew 
         selectedTest={selectedTest} 
         onBackToSelection={handleBackToSelection}
         searchTerm={searchTerm}

@@ -367,6 +367,16 @@ export default function TakeTest() {
     const question = test.questions[currentQuestion];
     const questionType = question.question_type?.toLowerCase();
     
+    // DEBUG: Log question data to help diagnose drag and drop issues
+    console.log('=== TAKETEST QUESTION DEBUG ===');
+    console.log('Current Question Index:', currentQuestion);
+    console.log('Question Object:', question);
+    console.log('Original question_type:', question.question_type);
+    console.log('Lowercase questionType:', questionType);
+    console.log('Question choices:', question.choices);
+    console.log('Question correct_answer:', question.correct_answer);
+    console.log('=== END TAKETEST QUESTION DEBUG ===');
+    
     return (
       <div className="take-test-container">
         <div className="test-header">
