@@ -240,6 +240,17 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const refreshUserProfile = async () => {
+    if (!user) return;
+    
+    try {
+      const profile = await FirebaseTestsService.getUserProfile(user.uid);
+      setUserProfile(profile);
+    } catch (error) {
+      console.error('Error refreshing user profile:', error);
+    }
+  };
+
   // Role and subscription management functions
   const setUserRole = async (accountType) => {
     if (!user) return { success: false, error: 'No user logged in' };
@@ -400,6 +411,7 @@ export const AuthProvider = ({ children }) => {
     loginWithGoogle,
     logout,
     updateUserProfile,
+    refreshUserProfile,
     setUserRole,
     upgradeSubscription,
     trackUsage,

@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../firebase/AuthContext';
 import { updateProfile } from 'firebase/auth';
-import { doc, updateDoc, getDoc } from 'firebase/firestore';
+import { doc, updateDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../firebase/config';
 import './ProfileSettings.css';
 
 function ProfileSettings() {
-  const { user, userProfile, refreshUserProfile } = useAuth();
+  const { user, userProfile, refreshUserProfile, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
@@ -151,7 +151,9 @@ function ProfileSettings() {
       });
 
       // Refresh user profile in context
-      await refreshUserProfile();
+      if (refreshUserProfile) {
+        await refreshUserProfile();
+      }
       
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
@@ -162,6 +164,29 @@ function ProfileSettings() {
       setLoading(false);
     }
   };
+
+  // Show loading while authentication is loading
+  if (authLoading) {
+    return (
+      <div className="profile-settings">
+        <div className="settings-header">
+          <h1>Loading...</h1>
+        </div>
+      </div>
+    );
+  }
+
+  // Redirect to login if not authenticated
+  if (!user) {
+    return (
+      <div className="profile-settings">
+        <div className="settings-header">
+          <h1>Please Log In</h1>
+          <p>You need to be logged in to access profile settings.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="profile-settings">

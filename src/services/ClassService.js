@@ -4,12 +4,9 @@ import {
   setDoc, 
   getDoc, 
   getDocs, 
-  deleteDoc, 
   updateDoc,
   query,
   where,
-  orderBy,
-  serverTimestamp,
   arrayUnion,
   arrayRemove
 } from 'firebase/firestore';
@@ -76,18 +73,26 @@ export class ClassService {
   // Get all classes for a teacher
   static async getTeacherClasses(teacherId) {
     try {
+      // Simple query to avoid any composite index requirements
       const q = query(
         collection(db, 'classes'),
-        where('teacherId', '==', teacherId),
-        where('settings.isArchived', '==', false),
-        orderBy('createdAt', 'desc')
+        where('teacherId', '==', teacherId)
       );
       
       const snapshot = await getDocs(q);
-      const classes = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
+      const classes = snapshot.docs
+        .map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }))
+        // Filter out archived classes and sort in JavaScript
+        .filter(classData => classData.settings?.isArchived !== true)
+        .sort((a, b) => {
+          // Sort by createdAt descending (newest first)
+          const dateA = a.createdAt?.toDate?.() || new Date(a.createdAt) || new Date(0);
+          const dateB = b.createdAt?.toDate?.() || new Date(b.createdAt) || new Date(0);
+          return dateB - dateA;
+        });
       
       return { success: true, classes };
     } catch (error) {
@@ -99,18 +104,26 @@ export class ClassService {
   // Get classes where user is a student
   static async getStudentClasses(studentId) {
     try {
+      // Simple query to avoid any composite index requirements
       const q = query(
         collection(db, 'classes'),
-        where('students', 'array-contains', studentId),
-        where('settings.isArchived', '==', false),
-        orderBy('createdAt', 'desc')
+        where('students', 'array-contains', studentId)
       );
       
       const snapshot = await getDocs(q);
-      const classes = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
+      const classes = snapshot.docs
+        .map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }))
+        // Filter out archived classes and sort in JavaScript
+        .filter(classData => classData.settings?.isArchived !== true)
+        .sort((a, b) => {
+          // Sort by createdAt descending (newest first)
+          const dateA = a.createdAt?.toDate?.() || new Date(a.createdAt) || new Date(0);
+          const dateB = b.createdAt?.toDate?.() || new Date(b.createdAt) || new Date(0);
+          return dateB - dateA;
+        });
       
       return { success: true, classes };
     } catch (error) {
@@ -199,11 +212,11 @@ export class ClassService {
   // Join class with enrollment code
   static async joinClassWithCode(enrollmentCode, studentId, studentEmail) {
     try {
+      // Simplified query to avoid composite index requirement
       const q = query(
         collection(db, 'classes'),
         where('settings.enrollmentCode', '==', enrollmentCode),
-        where('settings.allowSelfEnrollment', '==', true),
-        where('settings.isArchived', '==', false)
+        where('settings.allowSelfEnrollment', '==', true)
       );
       
       const snapshot = await getDocs(q);
@@ -212,8 +225,16 @@ export class ClassService {
         return { success: false, error: 'Invalid enrollment code' };
       }
       
-      const classDoc = snapshot.docs[0];
-      const classData = classDoc.data();
+      // Filter out archived classes and check if any valid classes remain
+      const validClasses = snapshot.docs
+        .map(doc => ({ id: doc.id, ...doc.data() }))
+        .filter(classData => classData.settings?.isArchived !== true);
+      
+      if (validClasses.length === 0) {
+        return { success: false, error: 'Invalid enrollment code' };
+      }
+      
+      const classData = validClasses[0]; // Take the first valid class
       
       // Check if student is already enrolled
       if (classData.students.includes(studentId)) {
@@ -221,12 +242,12 @@ export class ClassService {
       }
       
       // Add student to class
-      const result = await this.addStudentToClass(classDoc.id, studentId, studentEmail);
+      const result = await this.addStudentToClass(classData.id, studentId, studentEmail);
       
       if (result.success) {
         return { 
           success: true, 
-          classId: classDoc.id,
+          classId: classData.id,
           className: classData.name 
         };
       }
