@@ -100,8 +100,22 @@ function PracticeTestNew({ selectedTest, onBackToSelection, searchTerm, onClearS
     console.log('PracticeTestNew: Parsed items:', items, 'zones:', zones);
     
     const currentAnswer = userAnswers[current] || {};
+    const isSubmitted = questionSubmitted[current];
+    
+    // Parse correct answers for feedback
+    let correctMatches = {};
+    if (isSubmitted && q.correct_answer) {
+      q.correct_answer.split(',').forEach(match => {
+        const [item, zone] = match.split('->').map(s => s.trim());
+        if (item && zone) {
+          correctMatches[item] = zone;
+        }
+      });
+    }
     
     const handleDrop = (item, zone) => {
+      if (isSubmitted) return; // Don't allow changes after submission
+      
       console.log('PracticeTestNew: Dropping item:', item, 'in zone:', zone);
       const newAnswer = { ...currentAnswer, [item]: zone };
       const newAnswers = [...userAnswers];
@@ -110,12 +124,43 @@ function PracticeTestNew({ selectedTest, onBackToSelection, searchTerm, onClearS
     };
     
     const handleRemove = (item) => {
+      if (isSubmitted) return; // Don't allow changes after submission
+      
       console.log('PracticeTestNew: Removing item:', item);
       const newAnswer = { ...currentAnswer };
       delete newAnswer[item];
       const newAnswers = [...userAnswers];
       newAnswers[current] = newAnswer;
       setUserAnswers(newAnswers);
+    };
+
+    // Helper function to get item feedback class
+    const getItemFeedbackClass = (item) => {
+      if (!isSubmitted) return '';
+      const studentZone = currentAnswer[item];
+      const correctZone = correctMatches[item];
+      
+      if (studentZone === correctZone) {
+        return 'item-correct';
+      } else if (studentZone) {
+        return 'item-incorrect';
+      }
+      return '';
+    };
+
+    // Helper function to get zone feedback class
+    const getZoneFeedbackClass = (zone) => {
+      if (!isSubmitted) return '';
+      const itemsInZone = Object.entries(currentAnswer).filter(([_, z]) => z === zone);
+      const allCorrect = itemsInZone.every(([item, _]) => correctMatches[item] === zone);
+      const hasItems = itemsInZone.length > 0;
+      
+      if (hasItems && allCorrect) {
+        return 'zone-correct';
+      } else if (hasItems) {
+        return 'zone-incorrect';
+      }
+      return '';
     };
 
     return (
@@ -133,19 +178,52 @@ function PracticeTestNew({ selectedTest, onBackToSelection, searchTerm, onClearS
                 const isPlaced = currentAnswer[item];
                 if (isPlaced) return null;
                 
+                const feedbackClass = getItemFeedbackClass(item);
+                
                 return (
                   <div
                     key={item}
-                    className="draggable-item"
-                    draggable
+                    className={`draggable-item ${feedbackClass}`}
+                    draggable={!isSubmitted}
                     onDragStart={(e) => {
+                      if (isSubmitted) {
+                        e.preventDefault();
+                        return;
+                      }
                       e.dataTransfer.setData('text/plain', item);
                       console.log('PracticeTestNew: Started dragging:', item);
+                    }}
+                    style={{ 
+                      cursor: isSubmitted ? 'default' : 'grab',
+                      opacity: isSubmitted ? 0.7 : 1
                     }}
                   >
                     {item}
                   </div>
                 );
+              })}
+              {/* Show correctly placed items that should be in the items area */}
+              {isSubmitted && items.map(item => {
+                const isPlaced = currentAnswer[item];
+                const feedbackClass = getItemFeedbackClass(item);
+                
+                // Show items that are incorrectly placed or should be unplaced
+                if (!isPlaced && correctMatches[item]) {
+                  return (
+                    <div
+                      key={`missing-${item}`}
+                      className={`draggable-item item-incorrect`}
+                      style={{ 
+                        cursor: 'default',
+                        opacity: 0.5,
+                        border: '2px dashed #dc3545'
+                      }}
+                    >
+                      {item} <span style={{ fontSize: '0.8em', color: '#dc3545' }}>(should be placed)</span>
+                    </div>
+                  );
+                }
+                return null;
               })}
             </div>
           </div>
@@ -156,39 +234,97 @@ function PracticeTestNew({ selectedTest, onBackToSelection, searchTerm, onClearS
             <div className="drop-zones">
               {zones.map(zone => {
                 const itemsInZone = Object.entries(currentAnswer).filter(([_, z]) => z === zone);
+                const zoneFeedbackClass = getZoneFeedbackClass(zone);
                 
                 return (
                   <div
                     key={zone}
-                    className="drop-zone"
+                    className={`drop-zone ${zoneFeedbackClass} ${itemsInZone.length > 0 ? 'has-items' : ''}`}
                     onDragOver={(e) => {
+                      if (isSubmitted) return;
                       e.preventDefault();
                       console.log('PracticeTestNew: Dragging over zone:', zone);
                     }}
                     onDrop={(e) => {
+                      if (isSubmitted) return;
                       e.preventDefault();
                       const item = e.dataTransfer.getData('text/plain');
                       console.log('PracticeTestNew: Dropped item:', item, 'in zone:', zone);
                       handleDrop(item, zone);
                     }}
+                    style={{
+                      opacity: isSubmitted ? 0.9 : 1
+                    }}
                   >
-                    <div className="zone-label">{zone}</div>
+                    <div className="zone-label">
+                      {zone}
+                      {isSubmitted && (
+                        <span style={{ 
+                          marginLeft: '8px', 
+                          fontSize: '0.9em',
+                          color: zoneFeedbackClass === 'zone-correct' ? '#28a745' : 
+                                 zoneFeedbackClass === 'zone-incorrect' ? '#dc3545' : '#6c757d'
+                        }}>
+                          {zoneFeedbackClass === 'zone-correct' ? '✓' : 
+                           zoneFeedbackClass === 'zone-incorrect' ? '✗' : ''}
+                        </span>
+                      )}
+                    </div>
                     <div className="zone-content">
-                      {itemsInZone.map(([item, _]) => (
-                        <div
-                          key={item}
-                          className="dropped-item"
-                          onClick={() => {
-                            console.log('PracticeTestNew: Removing item:', item);
-                            handleRemove(item);
-                          }}
-                          style={{ cursor: 'pointer' }}
-                        >
-                          {item} <span style={{ color: '#dc3545', marginLeft: '8px' }}>✕</span>
-                        </div>
-                      ))}
-                      {itemsInZone.length === 0 && (
+                      {itemsInZone.map(([item, _]) => {
+                        const itemFeedbackClass = getItemFeedbackClass(item);
+                        
+                        return (
+                          <div
+                            key={item}
+                            className={`dropped-item ${itemFeedbackClass}`}
+                            onClick={() => {
+                              if (isSubmitted) return;
+                              console.log('PracticeTestNew: Removing item:', item);
+                              handleRemove(item);
+                            }}
+                            style={{ 
+                              cursor: isSubmitted ? 'default' : 'pointer',
+                              opacity: isSubmitted ? 0.9 : 1
+                            }}
+                          >
+                            {item} 
+                            {!isSubmitted && <span style={{ color: '#dc3545', marginLeft: '8px' }}>✕</span>}
+                            {isSubmitted && (
+                              <span style={{ 
+                                marginLeft: '8px',
+                                color: itemFeedbackClass === 'item-correct' ? '#28a745' : '#dc3545'
+                              }}>
+                                {itemFeedbackClass === 'item-correct' ? '✓' : '✗'}
+                              </span>
+                            )}
+                          </div>
+                        );
+                      })}
+                      {/* Show what should be in this zone if submitted and incorrect */}
+                      {isSubmitted && Object.entries(correctMatches).map(([correctItem, correctZone]) => {
+                        if (correctZone === zone && !currentAnswer[correctItem]) {
+                          return (
+                            <div
+                              key={`should-be-${correctItem}`}
+                              className="dropped-item item-incorrect"
+                              style={{ 
+                                opacity: 0.5,
+                                border: '2px dashed #28a745',
+                                backgroundColor: 'rgba(40, 167, 69, 0.1)'
+                              }}
+                            >
+                              {correctItem} <span style={{ fontSize: '0.8em', color: '#28a745' }}>(correct answer)</span>
+                            </div>
+                          );
+                        }
+                        return null;
+                      })}
+                      {itemsInZone.length === 0 && !isSubmitted && (
                         <div className="drop-hint">Drop items here</div>
+                      )}
+                      {itemsInZone.length === 0 && isSubmitted && (
+                        <div className="drop-hint" style={{ color: '#6c757d' }}>Empty</div>
                       )}
                     </div>
                   </div>
@@ -208,14 +344,48 @@ function PracticeTestNew({ selectedTest, onBackToSelection, searchTerm, onClearS
     setQuestionSubmitted(newSubmitted);
     setShowExplanation(true);
     
-    // Simple scoring - just mark as 1 point if any answer provided
+    // Scoring logic for drag and drop
     const newScores = [...questionScore];
     const answer = userAnswers[current];
+    
     if (q.question_type?.toLowerCase() === 'drag and drop') {
-      newScores[current] = Object.keys(answer || {}).length > 0 ? 1 : 0;
+      // Parse correct matches from the correct_answer field
+      const correctMatches = {};
+      if (q.correct_answer) {
+        q.correct_answer.split(',').forEach(match => {
+          const [item, zone] = match.split('->').map(s => s.trim());
+          if (item && zone) {
+            correctMatches[item] = zone;
+          }
+        });
+      }
+      
+      console.log('PracticeTestNew: Correct matches:', correctMatches);
+      console.log('PracticeTestNew: Student answer:', answer);
+      
+      // Check if student's matches are correct
+      const studentMatches = answer || {};
+      const allItemsMatched = Object.keys(correctMatches).every(item => 
+        studentMatches[item] === correctMatches[item]
+      );
+      const noExtraMatches = Object.keys(studentMatches).every(item => 
+        correctMatches.hasOwnProperty(item)
+      );
+      
+      // Award full points if all matches are correct, 0 otherwise
+      if (allItemsMatched && noExtraMatches && 
+          Object.keys(correctMatches).length === Object.keys(studentMatches).length) {
+        newScores[current] = Object.keys(correctMatches).length;
+        console.log('PracticeTestNew: All correct! Score:', newScores[current]);
+      } else {
+        newScores[current] = 0;
+        console.log('PracticeTestNew: Some incorrect. Score:', newScores[current]);
+      }
     } else {
+      // Simple scoring for other question types
       newScores[current] = answer && answer.length > 0 ? 1 : 0;
     }
+    
     setQuestionScore(newScores);
   };
 
