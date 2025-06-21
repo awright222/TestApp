@@ -26,6 +26,7 @@ function Sidebar({
         ...baseItems,
         { path: '/my-tests', icon: '✨', label: 'My Tests' },
         { path: '/class-management', icon: '🎓', label: 'Classes' },
+        { path: '/student-directory', icon: '👥', label: 'Students' },
         { path: '/analytics', icon: '📊', label: 'Analytics' },
         { path: '/saved-tests', icon: '📈', label: 'Practice Progress' }
       ];

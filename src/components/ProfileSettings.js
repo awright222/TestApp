@@ -91,12 +91,26 @@ function ProfileSettings() {
       return;
     }
 
+    console.log('Starting photo upload for user:', user?.uid);
+    console.log('File details:', { name: file.name, size: file.size, type: file.type });
+
     setUploadingPhoto(true);
     try {
+      // Check if user is authenticated
+      if (!user) {
+        throw new Error('User not authenticated');
+      }
+
       // Upload to Firebase Storage
-      const storageRef = ref(storage, `profile-photos/${user.uid}/${Date.now()}`);
+      const fileName = `${user.uid}_${Date.now()}_${file.name}`;
+      const storageRef = ref(storage, `profile-photos/${user.uid}/${fileName}`);
+      
+      console.log('Uploading to:', storageRef.fullPath);
+      
       const snapshot = await uploadBytes(storageRef, file);
       const downloadURL = await getDownloadURL(snapshot.ref);
+      
+      console.log('Upload successful, URL:', downloadURL);
       
       // Update profile data
       setProfileData(prev => ({
@@ -106,7 +120,17 @@ function ProfileSettings() {
       
     } catch (error) {
       console.error('Error uploading photo:', error);
-      alert('Failed to upload photo. Please try again.');
+      
+      // Provide more specific error messages
+      if (error.code === 'storage/unauthorized') {
+        alert('Upload failed: You do not have permission to upload files. Please check Firebase Storage rules.');
+      } else if (error.code === 'storage/cors-error') {
+        alert('Upload failed: CORS error. Please check Firebase Storage configuration.');
+      } else if (error.message.includes('CORS')) {
+        alert('Upload failed: CORS policy error. Please configure Firebase Storage rules or try again later.');
+      } else {
+        alert(`Failed to upload photo: ${error.message}`);
+      }
     } finally {
       setUploadingPhoto(false);
     }
@@ -212,6 +236,12 @@ function ProfileSettings() {
             </div>
             
             <div className="photo-upload-controls">
+              {/* Temporarily disabled photo upload */}
+              <div className="upload-btn disabled">
+                📷 Photo Upload (Coming Soon)
+              </div>
+              <p className="upload-hint">Profile photo feature temporarily disabled</p>
+              {/* 
               <label className="upload-btn">
                 {uploadingPhoto ? '📤 Uploading...' : '📷 Upload Avatar'}
                 <input
@@ -223,6 +253,7 @@ function ProfileSettings() {
                 />
               </label>
               <p className="upload-hint">Max 5MB • JPG, PNG, GIF</p>
+              */}
             </div>
           </div>
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../firebase/AuthContext';
 import { ClassService } from '../services/ClassService';
-import './ClassManagement.css';
+import './ClassManagementNew.css';
 
 const ClassManagement = () => {
   const { user, userProfile } = useAuth();
@@ -9,6 +9,7 @@ const ClassManagement = () => {
   const [loading, setLoading] = useState(true);
   const [selectedClass, setSelectedClass] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [showStudentModal, setShowStudentModal] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
 
@@ -52,26 +53,23 @@ const ClassManagement = () => {
     }
   };
 
-  const handleAddStudent = async (studentEmail) => {
+  const handleEditClass = async (classData) => {
     if (!selectedClass) return;
     
-    // For now, we'll add by email - in a real implementation, 
-    // we'd look up the user by email first
-    const result = await ClassService.addStudentToClass(
-      selectedClass.id, 
-      `user_${studentEmail}`, // Placeholder - would be actual user ID
-      studentEmail
-    );
+    const result = await ClassService.updateClass(selectedClass.id, classData);
     
     if (result.success) {
-      // Reload class data
-      const classResult = await ClassService.getClass(selectedClass.id);
-      if (classResult.success) {
-        setSelectedClass(classResult.class);
-      }
-      setShowStudentModal(false);
+      alert(`Class "${classData.name}" updated successfully!`);
+      
+      // Update the selected class data
+      const updatedClass = { ...selectedClass, ...classData };
+      setSelectedClass(updatedClass);
+      
+      // Reload classes list
+      loadClasses();
+      setShowEditModal(false);
     } else {
-      alert('Error adding student: ' + result.error);
+      alert('Error updating class: ' + result.error);
     }
   };
 
@@ -94,6 +92,7 @@ const ClassManagement = () => {
             if (result.success) setSelectedClass(result.class);
           });
         }}
+        onEditClass={() => setShowEditModal(true)}
       />
     );
   }
@@ -142,6 +141,14 @@ const ClassManagement = () => {
         <CreateClassModal
           onClose={() => setShowCreateModal(false)}
           onSubmit={handleCreateClass}
+        />
+      )}
+
+      {showEditModal && selectedClass && (
+        <EditClassModal
+          classData={selectedClass}
+          onClose={() => setShowEditModal(false)}
+          onSubmit={handleEditClass}
         />
       )}
     </div>
@@ -221,7 +228,7 @@ const CreateClassModal = ({ onClose, onSubmit }) => {
 
   return (
     <div className="modal-overlay">
-      <div className="create-class-modal" onClick={(e) => e.stopPropagation()}>
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2>🎓 Create New Class</h2>
           <button className="modal-close" onClick={onClose}>×</button>
@@ -315,7 +322,7 @@ const CreateClassModal = ({ onClose, onSubmit }) => {
             </div>
           </div>
 
-          <div className="modal-footer">
+          <div className="modal-actions">
             <button type="button" className="btn-secondary" onClick={onClose}>
               Cancel
             </button>
@@ -329,10 +336,135 @@ const CreateClassModal = ({ onClose, onSubmit }) => {
   );
 };
 
+// Edit Class Modal Component
+const EditClassModal = ({ classData, onClose, onSubmit }) => {
+  const [formData, setFormData] = useState({
+    name: classData.name || '',
+    description: classData.description || '',
+    subject: classData.subject || '',
+    allowSelfEnrollment: classData.settings?.allowSelfEnrollment || false
+  });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!formData.name.trim()) {
+      alert('Please enter a class name');
+      return;
+    }
+    
+    onSubmit(formData);
+  };
+
+  return (
+    <div className="modal-overlay">
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-header">
+          <h2>✏️ Edit Class</h2>
+          <button className="modal-close" onClick={onClose}>×</button>
+        </div>
+
+        <form onSubmit={handleSubmit}>
+          <div className="modal-body">
+            {/* Class Name */}
+            <div className="form-group">
+              <label htmlFor="editClassName">Class Name *</label>
+              <input
+                type="text"
+                id="editClassName"
+                value={formData.name}
+                onChange={(e) => setFormData({...formData, name: e.target.value})}
+                placeholder="e.g., Biology 101, AP Chemistry, Math 9th Grade"
+                required
+                className="form-input"
+              />
+            </div>
+
+            {/* Subject */}
+            <div className="form-group">
+              <label htmlFor="editSubject">Subject</label>
+              <input
+                type="text"
+                id="editSubject"
+                value={formData.subject}
+                onChange={(e) => setFormData({...formData, subject: e.target.value})}
+                placeholder="e.g., Science, Math, History, English"
+                className="form-input"
+              />
+            </div>
+
+            {/* Description */}
+            <div className="form-group">
+              <label htmlFor="editDescription">Description</label>
+              <textarea
+                id="editDescription"
+                value={formData.description}
+                onChange={(e) => setFormData({...formData, description: e.target.value})}
+                placeholder="Brief description of the class (optional)"
+                rows={3}
+                className="form-textarea"
+              />
+            </div>
+
+            {/* Self-Enrollment Setting */}
+            <div className="enrollment-section">
+              <h3>📝 Student Enrollment</h3>
+              
+              <div className="enrollment-option">
+                <div className="checkbox-group">
+                  <input
+                    type="checkbox"
+                    id="editAllowSelfEnrollment"
+                    checked={formData.allowSelfEnrollment}
+                    onChange={(e) => setFormData({...formData, allowSelfEnrollment: e.target.checked})}
+                  />
+                  <label htmlFor="editAllowSelfEnrollment">
+                    <strong>Allow students to join with enrollment code</strong>
+                  </label>
+                </div>
+                <p className="option-description">
+                  {formData.allowSelfEnrollment 
+                    ? `Current enrollment code: ${classData.settings?.enrollmentCode || 'N/A'}` 
+                    : 'Students will need to be added manually by email.'}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="modal-actions">
+            <button type="button" className="btn-secondary" onClick={onClose}>
+              Cancel
+            </button>
+            <button type="submit" className="btn-primary">
+              Update Class
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
 // Class Detail View Component
-const ClassDetailView = ({ classData, onBack, onUpdate }) => {
+const ClassDetailView = ({ classData, onBack, onUpdate, onEditClass }) => {
   const [activeTab, setActiveTab] = useState('students');
   const [showAddStudent, setShowAddStudent] = useState(false);
+
+  const handleAddStudent = async (studentEmail) => {
+    // Use the ClassService addStudentByEmail method which handles user lookup
+    const result = await ClassService.addStudentByEmail(
+      classData.id, 
+      studentEmail
+    );
+    
+    if (result.success) {
+      alert(`Student ${studentEmail} has been added to the class!`);
+      // Reload class data
+      onUpdate();
+      setShowAddStudent(false);
+    } else {
+      alert('Error adding student: ' + result.error);
+    }
+  };
 
   return (
     <div className="class-detail">
@@ -355,7 +487,7 @@ const ClassDetailView = ({ classData, onBack, onUpdate }) => {
         </div>
 
         <div className="class-actions">
-          <button className="btn-secondary">Edit Class</button>
+          <button className="btn-secondary" onClick={onEditClass}>Edit Class</button>
           <button className="btn-primary">Assign Test</button>
         </div>
       </div>
@@ -407,11 +539,7 @@ const ClassDetailView = ({ classData, onBack, onUpdate }) => {
       {showAddStudent && (
         <AddStudentModal
           onClose={() => setShowAddStudent(false)}
-          onSubmit={(email) => {
-            // Handle adding student
-            setShowAddStudent(false);
-            onUpdate();
-          }}
+          onSubmit={handleAddStudent}
         />
       )}
     </div>
