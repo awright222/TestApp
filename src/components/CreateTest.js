@@ -940,6 +940,81 @@ Role: Admin","Proper configuration requires setting the department and role corr
                   />
                 </div>
 
+                <div className="input-group">
+                  <div className="label-with-info">
+                    <label htmlFor="points">Points</label>
+                    <button 
+                      type="button"
+                      className="info-btn"
+                      title="Set custom points for this question. Default is based on question type:
+• Multiple Choice: 1 point per correct answer
+• Hotspot: 1 point per hotspot area
+• Drag & Drop: 1 point per correct match
+• Essay/Short Answer: 1 point
+
+You can override to weight questions differently (e.g., make essay questions worth more points)."
+                    >
+                      i
+                    </button>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <input
+                      id="points"
+                      type="number"
+                      min="0"
+                      step="0.5"
+                      placeholder="Auto-calculated"
+                      value={currentQuestion.points || ''}
+                      onChange={(e) => setCurrentQuestion({...currentQuestion, points: e.target.value ? parseFloat(e.target.value) : null})}
+                      className="text-input"
+                      style={{ flex: 1 }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setCurrentQuestion({...currentQuestion, points: null})}
+                      className="auto-points-btn"
+                      style={{
+                        padding: '8px 12px',
+                        backgroundColor: '#f8f9fa',
+                        border: '1px solid #dee2e6',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        fontSize: '0.9em'
+                      }}
+                      title="Reset to auto-calculated points based on question type"
+                    >
+                      Auto
+                    </button>
+                  </div>
+                  <div style={{ fontSize: '0.8em', color: '#6c757d', marginTop: '4px' }}>
+                    {currentQuestion.points ? 
+                      `Custom: ${currentQuestion.points} points` : 
+                      `Auto: ${(() => {
+                        if (currentQuestion.question_type === 'drag and drop') {
+                          const choices = currentQuestion.choices || '';
+                          const lines = choices.split('\n');
+                          for (const line of lines) {
+                            if (line.startsWith('Items:')) {
+                              const items = line.replace('Items:', '').split(',').map(item => item.trim()).filter(item => item);
+                              return `${items.length} points (1 per correct match)`;
+                            }
+                          }
+                          return '1 point (default)';
+                        } else if (currentQuestion.question_type === 'multiple choice') {
+                          const correctAnswer = currentQuestion.correct_answer || '';
+                          const correctCount = correctAnswer.split(',').map(ans => ans.trim()).filter(ans => ans).length;
+                          return correctCount > 0 ? `${correctCount} points (1 per correct answer)` : '1 point (default)';
+                        } else if (currentQuestion.question_type === 'hotspot') {
+                          const correctAnswer = currentQuestion.correct_answer || '';
+                          const hotspotCount = correctAnswer.split('\n').filter(line => line.trim().includes(':')).length;
+                          return hotspotCount > 0 ? `${hotspotCount} points (1 per hotspot)` : '1 point (default)';
+                        }
+                        return '1 point (default)';
+                      })()} `
+                    }
+                  </div>
+                </div>
+
                 <button 
                   onClick={addQuestion}
                   disabled={!currentQuestion.question_text.trim()}
@@ -954,11 +1029,55 @@ Role: Admin","Proper configuration requires setting the department and role corr
             {/* Questions List */}
             {questions.length > 0 && (
               <div className="questions-list">
-                <h3>Questions ({questions.length})</h3>
+                <h3>Questions ({questions.length}) - Total Points: {questions.reduce((total, q) => {
+                  if (q.points) return total + q.points;
+                  // Auto-calculate points for questions without custom points
+                  if (q.question_type === 'drag and drop') {
+                    const choices = q.choices || '';
+                    const lines = choices.split('\n');
+                    for (const line of lines) {
+                      if (line.startsWith('Items:')) {
+                        const items = line.replace('Items:', '').split(',').map(item => item.trim()).filter(item => item);
+                        return total + items.length;
+                      }
+                    }
+                  }
+                  return total + 1; // Default 1 point
+                }, 0)}</h3>
                 {questions.map((q, index) => (
                   <div key={q.id} className="question-item">
                     <div className="question-header">
                       <span className="question-number">Q{index + 1}</span>
+                      <span className="question-points" style={{
+                        backgroundColor: '#e3f2fd',
+                        color: '#1565c0',
+                        padding: '2px 8px',
+                        borderRadius: '12px',
+                        fontSize: '0.8em',
+                        fontWeight: 'bold'
+                      }}>
+                        {q.points || (() => {
+                          if (q.question_type === 'drag and drop') {
+                            const choices = q.choices || '';
+                            const lines = choices.split('\n');
+                            for (const line of lines) {
+                              if (line.startsWith('Items:')) {
+                                const items = line.replace('Items:', '').split(',').map(item => item.trim()).filter(item => item);
+                                return items.length;
+                              }
+                            }
+                          } else if (q.question_type === 'multiple choice') {
+                            const correctAnswer = q.correct_answer || '';
+                            const correctCount = correctAnswer.split(',').map(ans => ans.trim()).filter(ans => ans).length;
+                            return correctCount > 0 ? correctCount : 1;
+                          } else if (q.question_type === 'hotspot') {
+                            const correctAnswer = q.correct_answer || '';
+                            const hotspotCount = correctAnswer.split('\n').filter(line => line.trim().includes(':')).length;
+                            return hotspotCount > 0 ? hotspotCount : 1;
+                          }
+                          return 1;
+                        })()} pts
+                      </span>
                       <button 
                         onClick={() => removeQuestion(q.id)}
                         className="remove-question-btn"
@@ -1295,6 +1414,72 @@ Role: Admin","Proper configuration requires setting the department and role corr
                         className="textarea-input"
                         rows="3"
                       />
+                    </div>
+
+                    <div className="input-group">
+                      <div className="label-with-info">
+                        <label htmlFor="case-study-points">Points</label>
+                        <button 
+                          type="button"
+                          className="info-btn"
+                          title="Set custom points for this question. Default is based on question type:
+• Multiple Choice: 1 point
+• Drag & Drop: 1 point per correct match
+• Essay/Short Answer: 1 point
+
+You can override to weight questions differently."
+                        >
+                          i
+                        </button>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <input
+                          id="case-study-points"
+                          type="number"
+                          min="0"
+                          step="0.5"
+                          placeholder="Auto-calculated"
+                          value={currentCaseStudyQuestion.points || ''}
+                          onChange={(e) => setCurrentCaseStudyQuestion({...currentCaseStudyQuestion, points: e.target.value ? parseFloat(e.target.value) : null})}
+                          className="text-input"
+                          style={{ flex: 1 }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setCurrentCaseStudyQuestion({...currentCaseStudyQuestion, points: null})}
+                          className="auto-points-btn"
+                          style={{
+                            padding: '8px 12px',
+                            backgroundColor: '#f8f9fa',
+                            border: '1px solid #dee2e6',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontSize: '0.9em'
+                          }}
+                          title="Reset to auto-calculated points based on question type"
+                        >
+                          Auto
+                        </button>
+                      </div>
+                      <div style={{ fontSize: '0.8em', color: '#6c757d', marginTop: '4px' }}>
+                        {currentCaseStudyQuestion.points ? 
+                          `Custom: ${currentCaseStudyQuestion.points} points` : 
+                          `Auto: ${(() => {
+                            if (currentCaseStudyQuestion.question_type === 'drag and drop') {
+                              const choices = currentCaseStudyQuestion.choices || '';
+                              const lines = choices.split('\n');
+                              for (const line of lines) {
+                                if (line.startsWith('Items:')) {
+                                  const items = line.replace('Items:', '').split(',').map(item => item.trim()).filter(item => item);
+                                  return `${items.length} points (1 per correct match)`;
+                                }
+                              }
+                              return '1 point (default)';
+                            }
+                            return '1 point (default)';
+                          })()} `
+                        }
+                      </div>
                     </div>
 
                     <button 
@@ -1740,6 +1925,72 @@ Role: Admin","Proper configuration requires setting the department and role corr
                         className="textarea-input"
                         rows="3"
                       />
+                    </div>
+
+                    <div className="input-group">
+                      <div className="label-with-info">
+                        <label htmlFor="case-study-points">Points</label>
+                        <button 
+                          type="button"
+                          className="info-btn"
+                          title="Set custom points for this question. Default is based on question type:
+• Multiple Choice: 1 point
+• Drag & Drop: 1 point per correct match
+• Essay/Short Answer: 1 point
+
+You can override to weight questions differently."
+                        >
+                          i
+                        </button>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <input
+                          id="case-study-points"
+                          type="number"
+                          min="0"
+                          step="0.5"
+                          placeholder="Auto-calculated"
+                          value={currentCaseStudyQuestion.points || ''}
+                          onChange={(e) => setCurrentCaseStudyQuestion({...currentCaseStudyQuestion, points: e.target.value ? parseFloat(e.target.value) : null})}
+                          className="text-input"
+                          style={{ flex: 1 }}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setCurrentCaseStudyQuestion({...currentCaseStudyQuestion, points: null})}
+                          className="auto-points-btn"
+                          style={{
+                            padding: '8px 12px',
+                            backgroundColor: '#f8f9fa',
+                            border: '1px solid #dee2e6',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontSize: '0.9em'
+                          }}
+                          title="Reset to auto-calculated points based on question type"
+                        >
+                          Auto
+                        </button>
+                      </div>
+                      <div style={{ fontSize: '0.8em', color: '#6c757d', marginTop: '4px' }}>
+                        {currentCaseStudyQuestion.points ? 
+                          `Custom: ${currentCaseStudyQuestion.points} points` : 
+                          `Auto: ${(() => {
+                            if (currentCaseStudyQuestion.question_type === 'drag and drop') {
+                              const choices = currentCaseStudyQuestion.choices || '';
+                              const lines = choices.split('\n');
+                              for (const line of lines) {
+                                if (line.startsWith('Items:')) {
+                                  const items = line.replace('Items:', '').split(',').map(item => item.trim()).filter(item => item);
+                                  return `${items.length} points (1 per correct match)`;
+                                }
+                              }
+                              return '1 point (default)';
+                            }
+                            return '1 point (default)';
+                          })()} `
+                        }
+                      </div>
                     </div>
 
                     <button 

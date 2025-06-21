@@ -77,7 +77,8 @@ function PracticeTestNew({ selectedTest, onBackToSelection, searchTerm, onClearS
     question_type: q?.question_type,
     question_text: q?.question_text,
     choices: q?.choices,
-    correct_answer: q?.correct_answer
+    correct_answer: q?.correct_answer,
+    full_question_object: q
   });
 
   // Drag and drop logic
@@ -344,9 +345,38 @@ function PracticeTestNew({ selectedTest, onBackToSelection, searchTerm, onClearS
     setQuestionSubmitted(newSubmitted);
     setShowExplanation(true);
     
-    // Scoring logic for drag and drop
+    // Enhanced scoring logic with custom points
     const newScores = [...questionScore];
     const answer = userAnswers[current];
+    
+    // Get question points (custom or auto-calculated)
+    const getQuestionPoints = (question) => {
+      if (question.points) return question.points;
+      
+      // Auto-calculate default points based on question type
+      if (question.question_type?.toLowerCase() === 'drag and drop') {
+        const choices = question.choices || '';
+        const lines = choices.split('\n');
+        for (const line of lines) {
+          if (line.startsWith('Items:')) {
+            const items = line.replace('Items:', '').split(',').map(item => item.trim()).filter(item => item);
+            return items.length; // 1 point per correct match
+          }
+        }
+      } else if (question.question_type?.toLowerCase() === 'multiple choice') {
+        const correctAnswer = question.correct_answer || '';
+        const correctCount = correctAnswer.split(',').map(ans => ans.trim()).filter(ans => ans).length;
+        return correctCount > 0 ? correctCount : 1; // 1 point per correct answer
+      } else if (question.question_type?.toLowerCase() === 'hotspot') {
+        const correctAnswer = question.correct_answer || '';
+        const hotspotCount = correctAnswer.split('\n').filter(line => line.trim().includes(':')).length;
+        return hotspotCount > 0 ? hotspotCount : 1; // 1 point per hotspot
+      }
+      return 1; // Default 1 point for other question types
+    };
+    
+    const maxPoints = getQuestionPoints(q);
+    console.log('PracticeTestNew: Max points for this question:', maxPoints);
     
     if (q.question_type?.toLowerCase() === 'drag and drop') {
       // Parse correct matches from the correct_answer field
@@ -365,25 +395,80 @@ function PracticeTestNew({ selectedTest, onBackToSelection, searchTerm, onClearS
       
       // Check if student's matches are correct
       const studentMatches = answer || {};
-      const allItemsMatched = Object.keys(correctMatches).every(item => 
-        studentMatches[item] === correctMatches[item]
-      );
-      const noExtraMatches = Object.keys(studentMatches).every(item => 
-        correctMatches.hasOwnProperty(item)
-      );
+      const totalCorrectMatches = Object.keys(correctMatches).length;
       
-      // Award full points if all matches are correct, 0 otherwise
-      if (allItemsMatched && noExtraMatches && 
-          Object.keys(correctMatches).length === Object.keys(studentMatches).length) {
-        newScores[current] = Object.keys(correctMatches).length;
-        console.log('PracticeTestNew: All correct! Score:', newScores[current]);
+      if (q.points) {
+        // Custom points: award full points if all correct, 0 if any wrong
+        const allItemsMatched = Object.keys(correctMatches).every(item => 
+          studentMatches[item] === correctMatches[item]
+        );
+        const noExtraMatches = Object.keys(studentMatches).every(item => 
+          correctMatches.hasOwnProperty(item)
+        );
+        
+        if (allItemsMatched && noExtraMatches && 
+            Object.keys(correctMatches).length === Object.keys(studentMatches).length) {
+          newScores[current] = maxPoints;
+          console.log('PracticeTestNew: All correct! Full custom points:', newScores[current]);
+        } else {
+          newScores[current] = 0;
+          console.log('PracticeTestNew: Some incorrect. Custom points:', newScores[current]);
+        }
       } else {
-        newScores[current] = 0;
-        console.log('PracticeTestNew: Some incorrect. Score:', newScores[current]);
+        // Auto points: 1 point per correct match (partial credit)
+        let correctCount = 0;
+        Object.keys(correctMatches).forEach(item => {
+          if (studentMatches[item] === correctMatches[item]) {
+            correctCount++;
+          }
+        });
+        
+        newScores[current] = correctCount;
+        console.log('PracticeTestNew: Partial credit - correct matches:', correctCount, 'out of', totalCorrectMatches);
       }
+    } else if (q.question_type?.toLowerCase() === 'multiple choice') {
+      // Multiple choice scoring with partial credit for multiple correct answers
+      const correctAnswers = (q.correct_answer || '').split(',').map(ans => ans.trim().toUpperCase()).filter(ans => ans);
+      const studentAnswers = Array.isArray(answer) ? answer.map(ans => ans.toUpperCase()) : 
+                            typeof answer === 'string' ? answer.split(',').map(ans => ans.trim().toUpperCase()).filter(ans => ans) : [];
+      
+      if (q.points) {
+        // Custom points: all-or-nothing scoring
+        const allCorrect = correctAnswers.length === studentAnswers.length && 
+                          correctAnswers.every(ans => studentAnswers.includes(ans)) &&
+                          studentAnswers.every(ans => correctAnswers.includes(ans));
+        newScores[current] = allCorrect ? maxPoints : 0;
+        console.log('PracticeTestNew: Multiple choice custom scoring - all correct:', allCorrect, 'score:', newScores[current]);
+      } else {
+        // Auto points: 1 point per correct answer (partial credit)
+        let correctCount = 0;
+        correctAnswers.forEach(correctAns => {
+          if (studentAnswers.includes(correctAns)) {
+            correctCount++;
+          }
+        });
+        // Subtract points for incorrect selections
+        studentAnswers.forEach(studentAns => {
+          if (!correctAnswers.includes(studentAns)) {
+            correctCount = Math.max(0, correctCount - 1);
+          }
+        });
+        newScores[current] = correctCount;
+        console.log('PracticeTestNew: Multiple choice partial credit - correct answers:', correctCount, 'out of', correctAnswers.length);
+      }
+    } else if (q.question_type?.toLowerCase() === 'essay' || q.question_type?.toLowerCase() === 'essay question') {
+      // Essay scoring - award points if answered (manual grading needed)
+      const hasAnswer = answer && answer.trim().length > 0;
+      newScores[current] = hasAnswer ? maxPoints : 0;
+      console.log('PracticeTestNew: Essay score (submitted):', newScores[current]);
+    } else if (q.question_type?.toLowerCase() === 'short answer' || q.question_type?.toLowerCase() === 'short answer question') {
+      // Short answer scoring - award points if answered (could add keyword matching later)
+      const hasAnswer = answer && answer.trim().length > 0;
+      newScores[current] = hasAnswer ? maxPoints : 0;
+      console.log('PracticeTestNew: Short answer score (submitted):', newScores[current]);
     } else {
-      // Simple scoring for other question types
-      newScores[current] = answer && answer.length > 0 ? 1 : 0;
+      // Default scoring for other question types
+      newScores[current] = answer && answer.length > 0 ? maxPoints : 0;
     }
     
     setQuestionScore(newScores);
@@ -400,6 +485,71 @@ function PracticeTestNew({ selectedTest, onBackToSelection, searchTerm, onClearS
 
       <div className="question-navigation">
         <span>Question {current + 1} of {questions.length}</span>
+        <div className="score-display" style={{
+          display: 'flex',
+          gap: '1rem',
+          alignItems: 'center',
+          fontSize: '0.9em'
+        }}>
+          {questionSubmitted[current] && (
+            <span className="current-question-score" style={{
+              backgroundColor: questionScore[current] > 0 ? '#e8f5e9' : '#ffebee',
+              color: questionScore[current] > 0 ? '#2e7d32' : '#c62828',
+              padding: '4px 8px',
+              borderRadius: '12px',
+              fontWeight: 'bold'
+            }}>
+              {questionScore[current]}/{(() => {
+                if (q.points) return q.points;
+                if (q.question_type?.toLowerCase() === 'drag and drop') {
+                  const choices = q.choices || '';
+                  const lines = choices.split('\n');
+                  for (const line of lines) {
+                    if (line.startsWith('Items:')) {
+                      const items = line.replace('Items:', '').split(',').map(item => item.trim()).filter(item => item);
+                      return items.length;
+                    }
+                  }
+                } else if (q.question_type?.toLowerCase() === 'multiple choice') {
+                  const correctAnswer = q.correct_answer || '';
+                  const correctCount = correctAnswer.split(',').map(ans => ans.trim()).filter(ans => ans).length;
+                  return correctCount > 0 ? correctCount : 1;
+                } else if (q.question_type?.toLowerCase() === 'hotspot') {
+                  const correctAnswer = q.correct_answer || '';
+                  const hotspotCount = correctAnswer.split('\n').filter(line => line.trim().includes(':')).length;
+                  return hotspotCount > 0 ? hotspotCount : 1;
+                }
+                return 1;
+              })()} pts
+            </span>
+          )}
+          <span className="total-score" style={{
+            color: '#6c757d'
+          }}>
+            Total: {questionScore.reduce((sum, score) => sum + (score || 0), 0)}/{questions.reduce((total, question) => {
+              if (question.points) return total + question.points;
+              if (question.question_type?.toLowerCase() === 'drag and drop') {
+                const choices = question.choices || '';
+                const lines = choices.split('\n');
+                for (const line of lines) {
+                  if (line.startsWith('Items:')) {
+                    const items = line.replace('Items:', '').split(',').map(item => item.trim()).filter(item => item);
+                    return total + items.length;
+                  }
+                }
+              } else if (question.question_type?.toLowerCase() === 'multiple choice') {
+                const correctAnswer = question.correct_answer || '';
+                const correctCount = correctAnswer.split(',').map(ans => ans.trim()).filter(ans => ans).length;
+                return total + (correctCount > 0 ? correctCount : 1);
+              } else if (question.question_type?.toLowerCase() === 'hotspot') {
+                const correctAnswer = question.correct_answer || '';
+                const hotspotCount = correctAnswer.split('\n').filter(line => line.trim().includes(':')).length;
+                return total + (hotspotCount > 0 ? hotspotCount : 1);
+              }
+              return total + 1;
+            }, 0)} pts
+          </span>
+        </div>
       </div>
 
       <div className="question-text">
@@ -419,6 +569,123 @@ function PracticeTestNew({ selectedTest, onBackToSelection, searchTerm, onClearS
               setUserAnswers(newAnswers);
             }}
             placeholder="Enter your answer"
+          />
+        </div>
+      )}
+
+      {(q.question_type?.toLowerCase() === 'essay' || q.question_type?.toLowerCase() === 'essay question') && (
+        <div className="essay-container">
+          <div className="essay-instructions">
+            <p>Please provide a detailed written response to the question above.</p>
+          </div>
+          <textarea
+            className="essay-textarea"
+            value={userAnswers[current] || ''}
+            onChange={(e) => {
+              const newAnswers = [...userAnswers];
+              newAnswers[current] = e.target.value;
+              setUserAnswers(newAnswers);
+            }}
+            placeholder="Type your essay response here..."
+            rows="10"
+            disabled={questionSubmitted[current]}
+            style={{
+              width: '100%',
+              minHeight: '200px',
+              padding: '1rem',
+              border: '2px solid #e9ecef',
+              borderRadius: '8px',
+              fontSize: '1rem',
+              lineHeight: '1.5',
+              fontFamily: 'inherit',
+              resize: 'vertical',
+              backgroundColor: questionSubmitted[current] ? '#f8f9fa' : 'white'
+            }}
+          />
+          {questionSubmitted[current] && (
+            <div className="essay-feedback" style={{
+              marginTop: '1rem',
+              padding: '1rem',
+              backgroundColor: '#e3f2fd',
+              border: '1px solid #2196f3',
+              borderRadius: '8px',
+              color: '#1565c0'
+            }}>
+              <strong>📝 Essay Submitted</strong>
+              <p>Your essay response has been recorded and will be reviewed by your instructor.</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {(q.question_type?.toLowerCase() === 'short answer' || q.question_type?.toLowerCase() === 'short answer question') && (
+        <div className="short-answer-container">
+          <div className="short-answer-instructions">
+            <p>Please provide a brief written response (typically 1-3 sentences).</p>
+          </div>
+          <textarea
+            className="short-answer-textarea"
+            value={userAnswers[current] || ''}
+            onChange={(e) => {
+              const newAnswers = [...userAnswers];
+              newAnswers[current] = e.target.value;
+              setUserAnswers(newAnswers);
+            }}
+            placeholder="Type your short answer here..."
+            rows="3"
+            disabled={questionSubmitted[current]}
+            style={{
+              width: '100%',
+              minHeight: '80px',
+              maxHeight: '120px',
+              padding: '0.75rem',
+              border: '2px solid #e9ecef',
+              borderRadius: '8px',
+              fontSize: '1rem',
+              lineHeight: '1.4',
+              fontFamily: 'inherit',
+              resize: 'vertical',
+              backgroundColor: questionSubmitted[current] ? '#f8f9fa' : 'white'
+            }}
+          />
+          {questionSubmitted[current] && (
+            <div className="short-answer-feedback" style={{
+              marginTop: '0.75rem',
+              padding: '0.75rem',
+              backgroundColor: '#e8f5e9',
+              border: '1px solid #4caf50',
+              borderRadius: '8px',
+              color: '#2e7d32'
+            }}>
+              <strong>✓ Short Answer Submitted</strong>
+              <p>Your response has been recorded and will be reviewed by your instructor.</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Fallback for unknown question types */}
+      {!['drag and drop', 'multiple choice', 'essay', 'essay question', 'short answer', 'short answer question'].includes(q.question_type?.toLowerCase()) && (
+        <div className="unknown-question-type" style={{
+          padding: '2rem',
+          backgroundColor: '#fff3cd',
+          border: '1px solid #ffeaa7',
+          borderRadius: '8px',
+          textAlign: 'center'
+        }}>
+          <h3>⚠️ Unknown Question Type</h3>
+          <p>Question type: <strong>{q.question_type}</strong></p>
+          <p>This question type is not yet supported in the simplified interface.</p>
+          <textarea
+            value={userAnswers[current] || ''}
+            onChange={(e) => {
+              const newAnswers = [...userAnswers];
+              newAnswers[current] = e.target.value;
+              setUserAnswers(newAnswers);
+            }}
+            placeholder="Enter your answer here..."
+            rows="4"
+            style={{ width: '100%', padding: '0.5rem', marginTop: '1rem' }}
           />
         </div>
       )}
@@ -451,8 +718,36 @@ function PracticeTestNew({ selectedTest, onBackToSelection, searchTerm, onClearS
 
       {showExplanation && (
         <div className="explanation-container">
-          <div className="explanation-header">
+          <div className="explanation-header" style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '0.5rem'
+          }}>
             <strong>Explanation:</strong>
+            <span style={{
+              backgroundColor: questionScore[current] > 0 ? '#e8f5e9' : '#ffebee',
+              color: questionScore[current] > 0 ? '#2e7d32' : '#c62828',
+              padding: '4px 12px',
+              borderRadius: '16px',
+              fontSize: '0.9em',
+              fontWeight: 'bold'
+            }}>
+              Score: {questionScore[current]}/{(() => {
+                if (q.points) return q.points;
+                if (q.question_type?.toLowerCase() === 'drag and drop') {
+                  const choices = q.choices || '';
+                  const lines = choices.split('\n');
+                  for (const line of lines) {
+                    if (line.startsWith('Items:')) {
+                      const items = line.replace('Items:', '').split(',').map(item => item.trim()).filter(item => item);
+                      return items.length;
+                    }
+                  }
+                }
+                return 1;
+              })()} points
+            </span>
           </div>
           <div className="explanation-text">{q.explanation}</div>
           <div className="correct-answer-header">
