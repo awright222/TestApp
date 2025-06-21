@@ -43,6 +43,14 @@ async function createUserWithRole(email, password, displayName, accountType) {
           maxStudentsPerTest: 100,
           storageGB: 0.5
         };
+      } else if (type === 'admin') {
+        return {
+          canCreateTests: true,
+          canViewAnalytics: true,
+          maxTestsPerMonth: -1, // Unlimited
+          maxStudentsPerTest: -1, // Unlimited
+          storageGB: 10 // 10GB for admin
+        };
       }
     };
     
@@ -90,6 +98,14 @@ async function createUserWithRole(email, password, displayName, accountType) {
 async function createTestUsers() {
   console.log('🚀 Creating test users for TestBuilder app...\n');
   
+  // Create admin user
+  await createUserWithRole(
+    'admin@testapp.com',
+    'password123',
+    'Test Admin',
+    'admin'
+  );
+  
   // Create teacher user
   await createUserWithRole(
     'teacher@testapp.com',
@@ -108,9 +124,10 @@ async function createTestUsers() {
   
   console.log('\n🎉 Test users created successfully!');
   console.log('\nYou can now log in with:');
+  console.log('👑 Admin: admin@testapp.com / password123');
   console.log('👨‍🏫 Teacher: teacher@testapp.com / password123');
   console.log('🎓 Student: student@testapp.com / password123');
-  console.log('\nBoth users are pre-configured with their roles and ready to use!');
+  console.log('\nAll users are pre-configured with their roles and ready to use!');
   
   process.exit(0);
 }

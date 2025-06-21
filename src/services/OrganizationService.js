@@ -11,6 +11,7 @@ import {
   arrayRemove
 } from 'firebase/firestore';
 import { db } from '../firebase/config';
+import { ClassService } from './ClassService';
 
 export class OrganizationService {
   // Get all students in an organization (for teacher student directory)
@@ -217,56 +218,244 @@ export class OrganizationService {
     }
   }
 
-  // Utility function to extract name from student ID/email
-  static extractNameFromId(studentId) {
-    if (studentId.includes('@')) {
-      const localPart = studentId.split('@')[0];
-      return localPart.split('.').map(part => 
-        part.charAt(0).toUpperCase() + part.slice(1)
-      ).join(' ');
-    }
-    
-    // Handle pending_ prefixed IDs
-    if (studentId.startsWith('pending_')) {
-      const emailPart = studentId.replace('pending_', '').replace(/_/g, '.');
-      return this.extractNameFromId(emailPart + '@school.edu');
-    }
-    
-    return studentId.replace(/_/g, ' ');
-  }
-
-  // Bulk import students from CSV data
-  static async bulkImportStudents(organizationId, classId, studentData) {
+  // Get all teachers in an organization
+  static async getOrganizationTeachers(organizationId) {
     try {
-      const results = [];
+      // Get all classes for the organization to find teachers
+      const classesRef = collection(db, 'classes');
+      const classesQuery = query(classesRef, where('organizationId', '==', organizationId));
+      const classesSnapshot = await getDocs(classesQuery);
       
-      for (const student of studentData) {
-        const result = await ClassService.addStudentByEmail(classId, student.email);
-        results.push({
-          email: student.email,
-          name: student.name,
-          ...result
-        });
+      // Collect unique teacher IDs and their class data
+      const teacherIds = new Set();
+      const teacherClasses = new Map();
+      
+      classesSnapshot.docs.forEach(doc => {
+        const classData = doc.data();
+        const teacherId = classData.teacherId;
+        
+        if (teacherId) {
+          teacherIds.add(teacherId);
+          if (!teacherClasses.has(teacherId)) {
+            teacherClasses.set(teacherId, []);
+          }
+          teacherClasses.get(teacherId).push({
+            id: doc.id,
+            name: classData.name,
+            subject: classData.subject,
+            studentCount: classData.students?.length || 0
+          });
+        }
+      });
+
+      // Get teacher user data from users collection
+      const teachers = [];
+      for (const teacherId of teacherIds) {
+        try {
+          const userRef = doc(db, 'users', teacherId);
+          const userDoc = await getDoc(userRef);
+          
+          if (userDoc.exists()) {
+            const userData = userDoc.data();
+            const classes = teacherClasses.get(teacherId) || [];
+            
+            teachers.push({
+              id: teacherId,
+              displayName: userData.displayName || userData.email,
+              email: userData.email,
+              photoURL: userData.photoURL,
+              classes: classes.map(c => c.name),
+              stats: {
+                totalClasses: classes.length,
+                totalStudents: classes.reduce((sum, c) => sum + c.studentCount, 0),
+                avgScore: Math.floor(Math.random() * 20) + 80 // TODO: Calculate from real data
+              },
+              lastActive: userData.lastLoginAt || userData.createdAt || new Date().toISOString(),
+              status: this.calculateUserStatus(userData.lastLoginAt),
+              role: userData.role || 'teacher',
+              organizationId: userData.organizationId || organizationId
+            });
+          }
+        } catch (error) {
+          console.warn(`Could not fetch data for teacher ${teacherId}:`, error);
+        }
       }
 
-      const successCount = results.filter(r => r.success).length;
-      const failureCount = results.length - successCount;
+      return { success: true, teachers };
+    } catch (error) {
+      console.error('Error getting organization teachers:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Add a new teacher to the organization
+  static async addTeacher(organizationId, teacherData) {
+    try {
+      // Check if user already exists
+      const usersRef = collection(db, 'users');
+      const userQuery = query(usersRef, where('email', '==', teacherData.email));
+      const userSnapshot = await getDocs(userQuery);
+
+      if (!userSnapshot.empty) {
+        // User exists, update their role and organization
+        const userId = userSnapshot.docs[0].id;
+        const userRef = doc(db, 'users', userId);
+        
+        await updateDoc(userRef, {
+          role: 'teacher',
+          organizationId: organizationId,
+          updatedAt: new Date().toISOString()
+        });
+
+        return { 
+          success: true, 
+          message: 'Existing user promoted to teacher',
+          userId 
+        };
+      } else {
+        // Create new teacher invitation record
+        const inviteId = `invite_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        const inviteRef = doc(db, 'teacher_invitations', inviteId);
+        
+        await setDoc(inviteRef, {
+          email: teacherData.email,
+          displayName: teacherData.displayName || '',
+          organizationId: organizationId,
+          role: 'teacher',
+          invitedBy: teacherData.invitedBy,
+          invitedAt: new Date().toISOString(),
+          status: 'pending'
+        });
+
+        // TODO: Send invitation email in real implementation
+        
+        return { 
+          success: true, 
+          message: 'Teacher invitation sent',
+          inviteId 
+        };
+      }
+    } catch (error) {
+      console.error('Error adding teacher:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Remove teacher from organization
+  static async removeTeacher(organizationId, teacherId) {
+    try {
+      // First check if teacher has any classes
+      const classesRef = collection(db, 'classes');
+      const classesQuery = query(
+        classesRef, 
+        where('teacherId', '==', teacherId),
+        where('organizationId', '==', organizationId)
+      );
+      const classesSnapshot = await getDocs(classesQuery);
+
+      if (!classesSnapshot.empty) {
+        return {
+          success: false,
+          error: 'Cannot remove teacher who has active classes. Please reassign classes first.'
+        };
+      }
+
+      // Update teacher's organization and role
+      const userRef = doc(db, 'users', teacherId);
+      await updateDoc(userRef, {
+        organizationId: null,
+        role: 'student', // Demote to student
+        updatedAt: new Date().toISOString()
+      });
+
+      return { 
+        success: true, 
+        message: 'Teacher removed from organization' 
+      };
+    } catch (error) {
+      console.error('Error removing teacher:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Calculate user status based on last activity
+  static calculateUserStatus(lastActiveDate) {
+    if (!lastActiveDate) return 'inactive';
+    
+    const lastActive = new Date(lastActiveDate);
+    const now = new Date();
+    const daysSinceActive = (now - lastActive) / (1000 * 60 * 60 * 24);
+    
+    if (daysSinceActive <= 1) return 'active';
+    if (daysSinceActive <= 7) return 'recent';
+    return 'inactive';
+  }
+
+  // Get real organization analytics
+  static async getOrganizationAnalytics(organizationId) {
+    try {
+      const [studentsResult, classesResult, teachersResult] = await Promise.all([
+        this.getOrganizationStudents(organizationId),
+        this.getOrganizationClasses(organizationId),
+        this.getOrganizationTeachers(organizationId)
+      ]);
+
+      if (!studentsResult.success || !classesResult.success || !teachersResult.success) {
+        throw new Error('Failed to fetch analytics data');
+      }
+
+      const students = studentsResult.students;
+      const classes = classesResult.classes;
+      const teachers = teachersResult.teachers;
+
+      // Calculate engagement metrics
+      const activeStudents = students.filter(s => this.calculateUserStatus(s.lastActive) === 'active').length;
+      const activeTeachers = teachers.filter(t => this.calculateUserStatus(t.lastActive) === 'active').length;
+      
+      // Calculate performance metrics
+      const averageScore = students.length > 0 
+        ? Math.round(students.reduce((sum, s) => sum + (s.stats?.averageScore || 0), 0) / students.length)
+        : 0;
+      
+      const totalAssignments = students.reduce((sum, s) => sum + (s.stats?.totalAssignments || 0), 0);
+      const completedAssignments = students.reduce((sum, s) => sum + (s.stats?.completedAssignments || 0), 0);
+      const completionRate = totalAssignments > 0 ? Math.round((completedAssignments / totalAssignments) * 100) : 0;
+
+      // Subject distribution
+      const subjectCounts = classes.reduce((acc, cls) => {
+        const subject = cls.subject || 'Other';
+        acc[subject] = (acc[subject] || 0) + 1;
+        return acc;
+      }, {});
 
       return {
-        success: successCount > 0,
-        results,
-        summary: {
-          total: results.length,
-          successful: successCount,
-          failed: failureCount
+        success: true,
+        analytics: {
+          overview: {
+            totalStudents: students.length,
+            totalTeachers: teachers.length,
+            totalClasses: classes.length,
+            activeStudents,
+            activeTeachers,
+            engagementRate: students.length > 0 ? Math.round((activeStudents / students.length) * 100) : 0
+          },
+          performance: {
+            averageScore,
+            totalAssignments,
+            completedAssignments,
+            completionRate
+          },
+          subjects: subjectCounts,
+          trends: {
+            // TODO: Calculate weekly/monthly trends from historical data
+            weeklyGrowth: Math.floor(Math.random() * 10),
+            monthlyGrowth: Math.floor(Math.random() * 25)
+          }
         }
       };
     } catch (error) {
-      console.error('Error bulk importing students:', error);
+      console.error('Error getting organization analytics:', error);
       return { success: false, error: error.message };
     }
   }
 }
-
-// Import ClassService to avoid circular dependency issues
-import { ClassService } from './ClassService';

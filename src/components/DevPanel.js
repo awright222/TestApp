@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../firebase/AuthContext';
 
 export default function DevPanel() {
-  const { user, login, logout } = useAuth();
+  const { user, userProfile, login, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -23,7 +23,12 @@ export default function DevPanel() {
       const result = await login(email, password);
       if (result.success) {
         console.log(`🚀 Dev Login: Switched to ${role}`);
-        window.location.href = '/dashboard';
+        // Redirect based on role
+        if (role === 'Admin') {
+          window.location.href = '/organization-admin';
+        } else {
+          window.location.href = '/dashboard';
+        }
       } else {
         alert(`Login failed: ${result.error}`);
       }
@@ -106,9 +111,31 @@ export default function DevPanel() {
             <p style={{ margin: '0 0 0.5rem 0', fontSize: '0.9rem', color: '#666' }}>
               Current: {user ? user.email : 'Not logged in'}
             </p>
+            {userProfile && (
+              <p style={{ margin: '0', fontSize: '0.8rem', color: '#888' }}>
+                Role: <strong>{userProfile.accountType || 'None'}</strong>
+              </p>
+            )}
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <button 
+              onClick={() => quickLogin('admin@testapp.com', 'password123', 'Admin')}
+              disabled={loading}
+              style={{
+                background: '#6f42c1',
+                color: 'white',
+                border: 'none',
+                padding: '0.5rem 1rem',
+                borderRadius: '4px',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                opacity: loading ? 0.6 : 1,
+                fontSize: '0.9rem'
+              }}
+            >
+              👑 Login as Admin
+            </button>
+
             <button 
               onClick={() => quickLogin('teacher@testapp.com', 'password123', 'Teacher')}
               disabled={loading}
@@ -123,7 +150,7 @@ export default function DevPanel() {
                 fontSize: '0.9rem'
               }}
             >
-              👨‍🏫 Switch to Teacher
+              👨‍🏫 Login as Teacher
             </button>
             
             <button 
@@ -140,7 +167,7 @@ export default function DevPanel() {
                 fontSize: '0.9rem'
               }}
             >
-              🎓 Switch to Student
+              🎓 Login as Student
             </button>
 
             {user && (
@@ -163,6 +190,86 @@ export default function DevPanel() {
               </button>
             )}
           </div>
+
+          {/* Quick Access Links - Only show when logged in */}
+          {user && (
+            <div style={{ 
+              marginTop: '1rem', 
+              paddingTop: '1rem',
+              borderTop: '1px solid #eee'
+            }}>
+              <h5 style={{ margin: '0 0 0.5rem 0', color: '#333', fontSize: '0.9rem' }}>🚀 Quick Access</h5>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                {/* Always show Admin Dashboard in dev mode */}
+                <a 
+                  href="/organization-admin"
+                  style={{
+                    background: '#6f42c1',
+                    color: 'white',
+                    padding: '0.5rem 1rem',
+                    borderRadius: '4px',
+                    textDecoration: 'none',
+                    fontSize: '0.8rem',
+                    textAlign: 'center'
+                  }}
+                >
+                  👑 Admin Dashboard
+                </a>
+
+                {/* Teacher/Admin features */}
+                {(userProfile?.accountType === 'teacher' || userProfile?.accountType === 'admin') && (
+                  <>
+                    <a 
+                      href="/class-management"
+                      style={{
+                        background: '#28a745',
+                        color: 'white',
+                        padding: '0.5rem 1rem',
+                        borderRadius: '4px',
+                        textDecoration: 'none',
+                        fontSize: '0.8rem',
+                        textAlign: 'center'
+                      }}
+                    >
+                      📚 Class Management
+                    </a>
+                    <a 
+                      href="/student-directory"
+                      style={{
+                        background: '#17a2b8',
+                        color: 'white',
+                        padding: '0.5rem 1rem',
+                        borderRadius: '4px',
+                        textDecoration: 'none',
+                        fontSize: '0.8rem',
+                        textAlign: 'center'
+                      }}
+                    >
+                      👥 Student Directory
+                    </a>
+                  </>
+                )}
+
+                {/* Student features */}
+                {userProfile?.accountType === 'student' && (
+                  <a 
+                    href="/dashboard"
+                    style={{
+                      background: '#007bff',
+                      color: 'white',
+                      padding: '0.5rem 1rem',
+                      borderRadius: '4px',
+                      textDecoration: 'none',
+                      fontSize: '0.8rem',
+                      textAlign: 'center'
+                    }}
+                  >
+                    🎯 My Dashboard
+                  </a>
+                )}
+              </div>
+            </div>
+          )}
 
           <div style={{ 
             marginTop: '1rem', 

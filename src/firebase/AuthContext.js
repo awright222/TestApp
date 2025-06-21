@@ -276,6 +276,20 @@ export const AuthProvider = ({ children }) => {
           maxStudentsPerTest: 50,
           storageGB: 0.5
         }
+      },
+      admin: {
+        tier: 'organization', // Organization admin tier
+        features: {
+          canCreateTests: true,
+          canViewAnalytics: true,
+          canManageTeachers: true,
+          canViewOrgAnalytics: true,
+          canBulkImport: true,
+          canManageAllClasses: true,
+          maxTestsPerMonth: -1, // Unlimited
+          maxStudentsPerTest: -1, // Unlimited
+          storageGB: 10 // 10GB for admin
+        }
       }
     };
 
@@ -403,6 +417,39 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Helper function to check user role
+  const isAdmin = () => {
+    return userProfile?.accountType === 'admin';
+  };
+
+  const isTeacher = () => {
+    return userProfile?.accountType === 'teacher';
+  };
+
+  const isStudent = () => {
+    return userProfile?.accountType === 'student';
+  };
+
+  // Helper function to check organization admin permissions
+  const hasOrgAdminPermission = (permission) => {
+    if (!userProfile || !isAdmin()) return false;
+    
+    const features = userProfile.subscription?.features || {};
+    
+    switch (permission) {
+      case 'manage_teachers':
+        return features.canManageTeachers || false;
+      case 'view_org_analytics':
+        return features.canViewOrgAnalytics || false;
+      case 'bulk_import':
+        return features.canBulkImport || false;
+      case 'manage_all_classes':
+        return features.canManageAllClasses || false;
+      default:
+        return false;
+    }
+  };
+
   const value = {
     user,
     userProfile,
@@ -416,6 +463,10 @@ export const AuthProvider = ({ children }) => {
     upgradeSubscription,
     trackUsage,
     canPerformAction,
+    isAdmin,
+    isTeacher,
+    isStudent,
+    hasOrgAdminPermission,
     loading
   };
 
