@@ -64,8 +64,10 @@ const StudentClasses = () => {
   return (
     <div className="student-classes">
       <div className="student-classes-header">
-        <h1>My Classes</h1>
-        <p>View your classes, assignments, and track your progress</p>
+        <div className="header-content">
+          <h1>My Classes</h1>
+          <p>View your classes, assignments, and track your progress</p>
+        </div>
         
         <div className="header-actions">
           <button 
