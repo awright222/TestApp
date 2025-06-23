@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-// Cache bust: 2025-06-21 update
 import { useAuth } from '../firebase/AuthContext';
 import { OrganizationService } from '../services/OrganizationService';
 import { BulkOperationsService } from '../services/BulkOperationsService';
