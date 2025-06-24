@@ -102,8 +102,8 @@ Firebase Functions    // Serverless backend logic (ready for deployment)
 ### **📚 Class Management System**
 ```javascript
 // Teacher Tools
-✅ Class Creation       // Subject-based organization with custom settings
-✅ Student Enrollment   // Multiple invitation methods and bulk import
+✅ Class Creation     
+✅ Student Enrollment  
 ✅ Assignment System    // Test distribution with deadlines and settings
 ✅ Progress Tracking    // Real-time student performance monitoring
 ✅ Gradebook Export     // Multiple format support for grade management
