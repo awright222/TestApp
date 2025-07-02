@@ -134,6 +134,12 @@ export function CaseStudyDetail() {
       const sectionData = Papa.parse(sectionsCsv, { header: true }).data;
       const questionData = Papa.parse(questionsCsv, { header: true }).data;
 
+      console.log('Case Study Data Loaded:', {
+        id,
+        totalQuestions: questionData.length,
+        filteredQuestions: questionData.filter(row => String(row.case_study_id).trim() === String(id).trim()).length
+      });
+
       setMeta(metaData.find(row => String(row.id).trim() === String(id).trim()));
       const filteredSections = sectionData.filter(row => String(row.case_study_id).trim() === String(id).trim());
       setSections(filteredSections);
@@ -634,6 +640,13 @@ function CaseStudyTestInterface({
     setUserAnswers(newAnswers);
   };
 
+  // Handle hotspot question changes
+  const handleHotspotChange = (label, val) => {
+    const newAnswers = [...userAnswers];
+    newAnswers[current] = { ...newAnswers[current], [label]: val };
+    setUserAnswers(newAnswers);
+  };
+
   const submitAnswer = () => {
     if (questions[current]) {
       const newSubmitted = [...questionSubmitted];
@@ -658,6 +671,19 @@ function CaseStudyTestInterface({
         
         // Simple scoring: 1 point per correct answer, -0.5 per incorrect
         score = Math.max(0, correctCount - (incorrectCount * 0.5));
+      } else if (q.question_type?.toLowerCase() === 'hotspot') {
+        const correctHotspotAnswers = {};
+        const lines = q.correct_answer.split(/\r?\n/).filter(Boolean);
+        for (const line of lines) {
+          const [label, answer] = line.split(':');
+          if (label && answer) {
+            correctHotspotAnswers[label.trim()] = answer.trim();
+          }
+        }
+        
+        score = Object.entries(correctHotspotAnswers).filter(
+          ([label, correctAnswer]) => (userAnswers[current] && userAnswers[current][label]) === correctAnswer
+        ).length;
       } else {
         // For other question types, simple correct/incorrect
         score = userAnswers[current] === q.correct_answer ? 1 : 0;
@@ -687,7 +713,49 @@ function CaseStudyTestInterface({
   const q = questions[current];
   if (!q) return null;
 
-  const choices = q.choices ? q.choices.split('\n').filter(Boolean) : [];
+  // Use the same choice parsing as PracticeTest for consistency
+  let choices = q.choices?.match(/^[A-Z]\..+?(?=\n[A-Z]\.|$)/gms)?.map(s => s.trim()) || [];
+  
+  // Fallback: if no choices found with regex, try splitting by newlines and filtering for A-Z format
+  if (choices.length === 0 && q.choices) {
+    choices = q.choices.split(/\r?\n/)
+      .filter(line => line.trim())
+      .filter(line => /^[A-Z]\./.test(line.trim()))
+      .map(line => line.trim());
+  }
+
+  // Hotspot options
+  const hotspotOptions = {};
+  if (q.question_type?.toLowerCase() === 'hotspot') {
+    const lines = q.choices.split(/\r?\n/).filter(Boolean);
+    for (const line of lines) {
+      const [label, rest] = line.split(':');
+      if (label && rest) {
+        hotspotOptions[label.trim()] = rest.split(',').map(opt => opt.trim()).filter(Boolean);
+      }
+    }
+  }
+
+  const correctHotspotAnswers = {};
+  if (q.question_type?.toLowerCase() === 'hotspot') {
+    const lines = q.correct_answer.split(/\r?\n/).filter(Boolean);
+    for (const line of lines) {
+      const [label, answer] = line.split(':');
+      if (label && answer) {
+        correctHotspotAnswers[label.trim()] = answer.trim();
+      }
+    }
+  }
+  
+  // Debug: Log choices data for first question
+  if (current === 0) {
+    console.log('Question 1 hotspot data:', {
+      question_type: q.question_type,
+      hotspotOptions: hotspotOptions,
+      correctHotspotAnswers: correctHotspotAnswers
+    });
+  }
+  
   const runningScore = questionScore.reduce((sum, val) => sum + (val || 0), 0);
 
   // Group sections by section_group for case study info
@@ -1122,6 +1190,62 @@ function CaseStudyTestInterface({
             })}
           </div>
         </>
+      )}
+
+      {/* Hotspot Questions */}
+      {q.question_type?.toLowerCase() === 'hotspot' && (
+        <div className="hotspot-container">
+          {Object.entries(hotspotOptions).map(([label, options]) => {
+            // Determine feedback for this hotspot item after submission
+            let feedbackClass = '';
+            let feedbackIcon = '';
+            if (questionSubmitted[current]) {
+              const userSelection = (userAnswers[current] && userAnswers[current][label]) || '';
+              const correctAnswer = correctHotspotAnswers[label];
+              const isCorrect = userSelection === correctAnswer;
+              
+              if (userSelection) {
+                if (isCorrect) {
+                  feedbackClass = 'hotspot-correct';
+                  feedbackIcon = '✓';
+                } else {
+                  feedbackClass = 'hotspot-incorrect';
+                  feedbackIcon = '✗';
+                }
+              } else if (correctAnswer) {
+                feedbackClass = 'hotspot-missed';
+                feedbackIcon = '!';
+              }
+            }
+            
+            return (
+              <div key={label} className={`hotspot-item ${feedbackClass}`}>
+                <strong className="hotspot-label">{label}:</strong>
+                <select
+                  value={(userAnswers[current] && userAnswers[current][label]) || ''}
+                  onChange={(e) => handleHotspotChange(label, e.target.value)}
+                  disabled={questionSubmitted[current]}
+                  className={`hotspot-select ${feedbackClass}`}
+                >
+                  <option value="">Select...</option>
+                  {options.map((option, idx) => (
+                    <option key={idx} value={option}>{option}</option>
+                  ))}
+                </select>
+                {questionSubmitted[current] && feedbackIcon && (
+                  <div className={`hotspot-feedback-icon ${feedbackClass}`}>
+                    {feedbackIcon}
+                  </div>
+                )}
+                {questionSubmitted[current] && feedbackClass === 'hotspot-missed' && (
+                  <div className="hotspot-correct-answer">
+                    Correct: {correctHotspotAnswers[label]}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
       )}
 
       {/* Submit button and navigation - Combined on one line */}

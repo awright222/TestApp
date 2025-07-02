@@ -677,6 +677,158 @@
   }
 }
 
+/* Hotspot Questions */
+.hotspot-container {
+  margin-bottom: 2.5rem;
+  background: rgba(102, 155, 188, 0.05);
+  padding: 2rem;
+  border-radius: 12px;
+  border: 1px solid rgba(102, 155, 188, 0.2);
+}
+
+.hotspot-item {
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem;
+  background: white;
+  border-radius: 10px;
+  border: 2px solid rgba(102, 155, 188, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+}
+
+.hotspot-item:hover {
+  border-color: rgba(102, 155, 188, 0.3);
+  transform: translateY(-1px);
+}
+
+.hotspot-item:last-child {
+  margin-bottom: 0;
+}
+
+.hotspot-label {
+  color: #003049;
+  min-width: 120px;
+  font-weight: 600;
+  font-size: 1.05rem;
+}
+
+.hotspot-select {
+  padding: 0.75rem 1rem;
+  border: 2px solid #e5e5e5;
+  border-radius: 8px;
+  font-size: 1rem;
+  background: white;
+  flex: 1;
+  max-width: 300px;
+  color: #333;
+  transition: all 0.2s ease;
+  font-weight: 500;
+}
+
+.hotspot-select:focus {
+  outline: none;
+  border-color: #003049;
+  box-shadow: 0 0 0 3px rgba(0, 48, 73, 0.1);
+}
+
+.hotspot-select:hover {
+  border-color: #669BBC;
+}
+
+/* Hotspot feedback styles after submission */
+.hotspot-item.hotspot-correct {
+  border-color: #28a745;
+  background: linear-gradient(135deg, rgba(40, 167, 69, 0.1) 0%, rgba(32, 201, 151, 0.1) 100%);
+  box-shadow: 0 4px 16px rgba(40, 167, 69, 0.2);
+}
+
+.hotspot-item.hotspot-correct .hotspot-label {
+  color: #28a745;
+}
+
+.hotspot-select.hotspot-correct {
+  border-color: #28a745;
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  color: white;
+  font-weight: 600;
+}
+
+.hotspot-item.hotspot-incorrect {
+  border-color: #dc3545;
+  background: linear-gradient(135deg, rgba(220, 53, 69, 0.1) 0%, rgba(200, 35, 51, 0.1) 100%);
+  box-shadow: 0 4px 16px rgba(220, 53, 69, 0.2);
+}
+
+.hotspot-item.hotspot-incorrect .hotspot-label {
+  color: #dc3545;
+}
+
+.hotspot-select.hotspot-incorrect {
+  border-color: #dc3545;
+  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+  color: white;
+  font-weight: 600;
+}
+
+.hotspot-item.hotspot-missed {
+  border-color: #ffc107;
+  background: linear-gradient(135deg, rgba(255, 193, 7, 0.1) 0%, rgba(255, 224, 102, 0.1) 100%);
+  box-shadow: 0 4px 16px rgba(255, 193, 7, 0.2);
+  border-style: dashed;
+}
+
+.hotspot-item.hotspot-missed .hotspot-label {
+  color: #856404;
+}
+
+.hotspot-select.hotspot-missed {
+  border-color: #ffc107;
+  background: rgba(255, 193, 7, 0.1);
+  color: #856404;
+  font-weight: 600;
+}
+
+.hotspot-feedback-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  font-weight: bold;
+  margin-left: 0.5rem;
+}
+
+.hotspot-feedback-icon.hotspot-correct {
+  background: #28a745;
+  color: white;
+}
+
+.hotspot-feedback-icon.hotspot-incorrect {
+  background: #dc3545;
+  color: white;
+}
+
+.hotspot-feedback-icon.hotspot-missed {
+  background: #ffc107;
+  color: #856404;
+}
+
+.hotspot-correct-answer {
+  margin-left: 0.5rem;
+  padding: 0.4rem 0.8rem;
+  background: #28a745;
+  color: white;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
 /* Override modal z-index for case studies to ensure it's on top */
 .question-quiz-modal-overlay {
   z-index: 9999 !important;
