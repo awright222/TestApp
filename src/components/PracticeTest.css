@@ -2354,3 +2354,315 @@
     min-height: 60px;
   }
 }
+
+/* Wrong Answers Review Styles */
+.control-btn.wrong-answers {
+  background: rgba(255, 107, 53, 0.1);
+  border-color: #ff6b35;
+  color: #ff6b35;
+}
+
+.control-btn.wrong-answers:hover {
+  background: #ff6b35;
+  color: white;
+}
+
+.control-btn.active-filter {
+  background: #669BBC;
+  color: white;
+  border-color: #669BBC;
+}
+
+.wrong-nav-controls {
+  display: flex;
+  gap: 0.25rem;
+  margin-top: 0.25rem;
+}
+
+.wrong-nav-btn {
+  background: transparent;
+  border: 1px solid #ff6b35;
+  color: #ff6b35;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.wrong-nav-btn:hover {
+  background: #ff6b35;
+  color: white;
+}
+
+/* Retry Mode Banner */
+.retry-mode-active-banner {
+  background: linear-gradient(135deg, #ff6b35, #ff8c42);
+  color: white;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(255, 107, 53, 0.2);
+}
+
+.retry-banner-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.retry-banner-icon {
+  font-size: 1.2rem;
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.retry-banner-text {
+  flex: 1;
+}
+
+.retry-banner-exit {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.retry-banner-exit:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Wrong Answers Modal */
+.wrong-answers-modal {
+  max-width: 800px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.wrong-answers-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid rgba(255, 107, 53, 0.2);
+}
+
+.wrong-answers-header h3 {
+  color: #ff6b35;
+  margin: 0;
+}
+
+.wrong-answers-summary {
+  background: rgba(255, 107, 53, 0.05);
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  border: 1px solid rgba(255, 107, 53, 0.1);
+}
+
+.summary-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1rem;
+}
+
+.stat-item {
+  text-align: center;
+}
+
+.stat-number {
+  display: block;
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #ff6b35;
+  margin-bottom: 0.25rem;
+}
+
+.stat-label {
+  font-size: 0.9rem;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.wrong-answers-actions {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.wrong-answer-action-btn {
+  flex: 1;
+  min-width: 200px;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.wrong-answer-action-btn.filter-btn {
+  background: #669BBC;
+  color: white;
+}
+
+.wrong-answer-action-btn.filter-btn:hover {
+  background: #5588a3;
+}
+
+.wrong-answer-action-btn.retry-btn {
+  background: #ff6b35;
+  color: white;
+}
+
+.wrong-answer-action-btn.retry-btn:hover {
+  background: #e85a2b;
+}
+
+.wrong-answers-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.wrong-answers-list h4 {
+  color: #333;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #eee;
+}
+
+.wrong-answer-item {
+  background: white;
+  border: 1px solid rgba(255, 107, 53, 0.2);
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 4px rgba(255, 107, 53, 0.1);
+}
+
+.wrong-answer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.question-number {
+  font-weight: bold;
+  color: #ff6b35;
+}
+
+.jump-to-question-btn {
+  background: #669BBC;
+  color: white;
+  border: none;
+  padding: 0.375rem 0.75rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+}
+
+.jump-to-question-btn:hover {
+  background: #5588a3;
+}
+
+.wrong-answer-text {
+  color: #666;
+  margin-bottom: 0.75rem;
+  font-style: italic;
+}
+
+.wrong-answer-details {
+  background: rgba(102, 155, 188, 0.05);
+  padding: 0.75rem;
+  border-radius: 6px;
+  border-left: 3px solid #ff6b35;
+}
+
+.answer-comparison {
+  margin-bottom: 0.5rem;
+}
+
+.user-answer, .correct-answer {
+  margin-bottom: 0.25rem;
+  font-size: 0.9rem;
+}
+
+.user-answer {
+  color: #ff6b35;
+}
+
+.correct-answer {
+  color: #28a745;
+}
+
+.score-display {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.no-wrong-answers {
+  text-align: center;
+  padding: 2rem;
+}
+
+.success-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.retry-mode-banner {
+  background: linear-gradient(135deg, #ff6b35, #ff8c42);
+  color: white;
+  padding: 1rem;
+  margin-top: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(255, 107, 53, 0.2);
+}
+
+.retry-mode-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.retry-icon {
+  font-size: 1.2rem;
+  animation: spin 2s linear infinite;
+}
+
+.retry-text {
+  flex: 1;
+  font-weight: 600;
+}
+
+.exit-retry-btn {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.exit-retry-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}

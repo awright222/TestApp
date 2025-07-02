@@ -25,6 +25,11 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
   const [questionNotes, setQuestionNotes] = useState({});
   const [showReviewPanel, setShowReviewPanel] = useState(false);
   
+  // Wrong Answers Review feature states
+  const [showWrongAnswersOnly, setShowWrongAnswersOnly] = useState(false);
+  const [showWrongAnswersModal, setShowWrongAnswersModal] = useState(false);
+  const [wrongAnswersRetryMode, setWrongAnswersRetryMode] = useState(false);
+  
   // Timer state
   const [timerEnabled, setTimerEnabled] = useState(false);
   const [timerTime, setTimerTime] = useState(0); // in seconds
@@ -158,7 +163,6 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
           
           // Timer warnings
           if (testSettings?.timerWarnings) {
-            const minutes = Math.floor(prev / 60);
             // Warning at 10, 5, and 1 minute(s) remaining
             if (prev === 600) { // 10 minutes
               alert('⏰ Warning: 10 minutes remaining!');
@@ -851,6 +855,111 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
     }
   }, [selectedTest?.settings?.fullScreenRequired, testCompleted]);
 
+  // Wrong Answers Review functions
+  const getWrongAnswerIndices = () => {
+    return questionSubmitted.map((submitted, index) => {
+      if (!submitted) return null; // Question not answered yet
+      
+      const score = questionScore[index];
+      const q = questions[index];
+      
+      // Calculate maximum possible score for this question
+      let maxScore = 1;
+      if (q.question_type?.toLowerCase() === 'multiple choice') {
+        maxScore = q.correct_answer.split(',').length;
+      } else if (q.question_type?.toLowerCase() === 'hotspot') {
+        maxScore = q.correct_answer.split(/\r?\n/).filter(Boolean).length;
+      }
+      
+      // Question is wrong if score is 0 or incomplete
+      return (score === null || score === 0 || score < maxScore) ? index : null;
+    }).filter(index => index !== null);
+  };
+
+  const getWrongAnswersCount = () => {
+    return getWrongAnswerIndices().length;
+  };
+
+  const navigateToNextWrong = () => {
+    const wrongIndices = getWrongAnswerIndices();
+    if (wrongIndices.length === 0) return;
+    
+    const currentIndex = wrongIndices.findIndex(idx => idx > current);
+    const nextWrongIndex = currentIndex !== -1 ? wrongIndices[currentIndex] : wrongIndices[0];
+    
+    setCurrent(nextWrongIndex);
+    setShowExplanation(false);
+  };
+
+  const navigateToPrevWrong = () => {
+    const wrongIndices = getWrongAnswerIndices();
+    if (wrongIndices.length === 0) return;
+    
+    const currentIndex = wrongIndices.findIndex(idx => idx >= current);
+    const prevWrongIndex = currentIndex > 0 ? wrongIndices[currentIndex - 1] : wrongIndices[wrongIndices.length - 1];
+    
+    setCurrent(prevWrongIndex);
+    setShowExplanation(false);
+  };
+
+  const toggleWrongAnswersFilter = () => {
+    if (showWrongAnswersOnly) {
+      // Turn off wrong answers filter - restore original questions
+      setQuestions(originalQuestions);
+      setShowWrongAnswersOnly(false);
+      setCurrent(0);
+    } else {
+      // Turn on wrong answers filter - show only wrong questions
+      const wrongIndices = getWrongAnswerIndices();
+      if (wrongIndices.length === 0) {
+        alert('No wrong answers found! Complete some questions first.');
+        return;
+      }
+      
+      const wrongQuestions = wrongIndices.map(index => originalQuestions[index]);
+      setQuestions(wrongQuestions);
+      setShowWrongAnswersOnly(true);
+      setCurrent(0);
+    }
+    setShowExplanation(false);
+  };
+
+  const startWrongAnswersRetry = () => {
+    const wrongIndices = getWrongAnswerIndices();
+    if (wrongIndices.length === 0) {
+      alert('No wrong answers to retry! Complete some questions first.');
+      return;
+    }
+
+    // Reset only the wrong answers
+    const updatedUserAnswers = [...userAnswers];
+    const updatedQuestionScore = [...questionScore];
+    const updatedQuestionSubmitted = [...questionSubmitted];
+    
+    wrongIndices.forEach(index => {
+      updatedUserAnswers[index] = getInitialUserAnswer(originalQuestions[index]);
+      updatedQuestionScore[index] = null;
+      updatedQuestionSubmitted[index] = false;
+    });
+    
+    setUserAnswers(updatedUserAnswers);
+    setQuestionScore(updatedQuestionScore);
+    setQuestionSubmitted(updatedQuestionSubmitted);
+    setWrongAnswersRetryMode(true);
+    
+    // Jump to first wrong answer
+    setCurrent(wrongIndices[0]);
+    setShowExplanation(false);
+    setShowWrongAnswersModal(false);
+    
+    alert(`✅ Retry mode activated! Reset ${wrongIndices.length} wrong answers. Good luck!`);
+  };
+
+  const exitWrongAnswersRetryMode = () => {
+    setWrongAnswersRetryMode(false);
+    alert('📊 Exited retry mode. You can now review all your progress.');
+  };
+
   // Show loading screen while questions are being loaded
   if (loading) {
     return (
@@ -937,9 +1046,27 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
         </div>
       </div>
 
+      {/* Retry Mode Banner */}
+      {wrongAnswersRetryMode && (
+        <div className="retry-mode-active-banner">
+          <div className="retry-banner-content">
+            <span className="retry-banner-icon">🔄</span>
+            <span className="retry-banner-text">
+              <strong>Retry Mode Active</strong> - Focus on improving your wrong answers
+            </span>
+            <button 
+              onClick={exitWrongAnswersRetryMode}
+              className="retry-banner-exit"
+            >
+              Exit Retry Mode
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Integrated Timer */}
       {(timerEnabled || isPracticeMode) && !timerFloating && 
-       (selectedTest?.settings?.showTimer !== false || isPracticeMode) && (
+       ((selectedTest?.settings?.showTimer !== false) || isPracticeMode) && (
         <div className="integrated-timer">
           <div className="timer-display">
             <div className="timer-time">
@@ -1202,6 +1329,24 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
                 return sum + 1;
               }, 0)
             }
+            {isPracticeMode && getWrongAnswersCount() > 0 && (
+              <div className="wrong-nav-controls">
+                <button 
+                  onClick={navigateToPrevWrong}
+                  className="wrong-nav-btn"
+                  title="Previous wrong answer"
+                >
+                  ◄❌
+                </button>
+                <button 
+                  onClick={navigateToNextWrong}
+                  className="wrong-nav-btn"
+                  title="Next wrong answer"
+                >
+                  ❌►
+                </button>
+              </div>
+            )}
           </div>
         </div>
         
@@ -1246,6 +1391,26 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
               >
                 <span className="btn-icon">📌</span>
                 <span className="btn-text">Review ({markedQuestions.length})</span>
+              </button>
+            )}
+            {getWrongAnswersCount() > 0 && (
+              <button 
+                onClick={() => setShowWrongAnswersModal(true)}
+                className="control-btn compact wrong-answers"
+                title={`${getWrongAnswersCount()} wrong answer(s) to review`}
+              >
+                <span className="btn-icon">❌</span>
+                <span className="btn-text">Wrong ({getWrongAnswersCount()})</span>
+              </button>
+            )}
+            {showWrongAnswersOnly && (
+              <button 
+                onClick={toggleWrongAnswersFilter}
+                className="control-btn compact active-filter"
+                title="Show all questions"
+              >
+                <span className="btn-icon">🔍</span>
+                <span className="btn-text">Show All</span>
               </button>
             )}
           </div>
@@ -1712,6 +1877,144 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
                 </div>
               )}
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Wrong Answers Review Modal */}
+      {showWrongAnswersModal && (
+        <div className="modal-overlay" onClick={() => setShowWrongAnswersModal(false)}>
+          <div className="modal-content wrong-answers-modal" onClick={e => e.stopPropagation()}>
+            <div className="wrong-answers-header">
+              <h3>❌ Wrong Answers Review</h3>
+              <button 
+                className="modal-close" 
+                onClick={() => setShowWrongAnswersModal(false)}
+                aria-label="Close wrong answers review"
+              >
+                &times;
+              </button>
+            </div>
+            
+            <div className="wrong-answers-content">
+              {getWrongAnswersCount() === 0 ? (
+                <div className="no-wrong-answers">
+                  <div className="success-icon">🎉</div>
+                  <p><strong>Great job! No wrong answers found.</strong></p>
+                  <p>Complete more questions to use this feature.</p>
+                </div>
+              ) : (
+                <>
+                  <div className="wrong-answers-summary">
+                    <div className="summary-stats">
+                      <div className="stat-item">
+                        <span className="stat-number">{getWrongAnswersCount()}</span>
+                        <span className="stat-label">Wrong Answers</span>
+                      </div>
+                      <div className="stat-item">
+                        <span className="stat-number">{answeredCount() - getWrongAnswersCount()}</span>
+                        <span className="stat-label">Correct Answers</span>
+                      </div>
+                      <div className="stat-item">
+                        <span className="stat-number">
+                          {answeredCount() > 0 ? Math.round(((answeredCount() - getWrongAnswersCount()) / answeredCount()) * 100) : 0}%
+                        </span>
+                        <span className="stat-label">Accuracy</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="wrong-answers-actions">
+                    <button 
+                      onClick={toggleWrongAnswersFilter}
+                      className="wrong-answer-action-btn filter-btn"
+                    >
+                      <span className="btn-icon">🔍</span>
+                      <span className="btn-text">
+                        {showWrongAnswersOnly ? 'Show All Questions' : 'Filter Wrong Answers Only'}
+                      </span>
+                    </button>
+                    
+                    <button 
+                      onClick={startWrongAnswersRetry}
+                      className="wrong-answer-action-btn retry-btn"
+                    >
+                      <span className="btn-icon">🔄</span>
+                      <span className="btn-text">Retry Wrong Answers</span>
+                    </button>
+                  </div>
+
+                  <div className="wrong-answers-list">
+                    <h4>📋 Wrong Answers Details:</h4>
+                    {getWrongAnswerIndices().map(questionIndex => {
+                      const question = originalQuestions[questionIndex];
+                      const userAnswer = userAnswers[questionIndex];
+                      const score = questionScore[questionIndex];
+                      
+                      return (
+                        <div key={questionIndex} className="wrong-answer-item">
+                          <div className="wrong-answer-header">
+                            <span className="question-number">Question {questionIndex + 1}</span>
+                            <div className="wrong-answer-actions">
+                              <button 
+                                onClick={() => {
+                                  setCurrent(questionIndex);
+                                  setShowWrongAnswersModal(false);
+                                  setShowExplanation(true);
+                                }}
+                                className="jump-to-question-btn"
+                              >
+                                Review Question
+                              </button>
+                            </div>
+                          </div>
+                          
+                          <div className="wrong-answer-text">
+                            {question.question_text.substring(0, 80)}
+                            {question.question_text.length > 80 ? '...' : ''}
+                          </div>
+                          
+                          <div className="wrong-answer-details">
+                            <div className="answer-comparison">
+                              <div className="user-answer">
+                                <strong>Your Answer:</strong> 
+                                {Array.isArray(userAnswer) ? 
+                                  (userAnswer.length > 0 ? userAnswer.join(', ') : 'Not answered') :
+                                  typeof userAnswer === 'object' && userAnswer ? 
+                                    Object.entries(userAnswer).map(([k,v]) => `${k}: ${v}`).join(', ') :
+                                    userAnswer || 'Not answered'
+                                }
+                              </div>
+                              <div className="correct-answer">
+                                <strong>Correct Answer:</strong> {question.correct_answer}
+                              </div>
+                            </div>
+                            <div className="score-display">
+                              <strong>Score:</strong> {score || 0} points
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+            </div>
+            
+            {wrongAnswersRetryMode && (
+              <div className="retry-mode-banner">
+                <div className="retry-mode-content">
+                  <span className="retry-icon">🔄</span>
+                  <span className="retry-text">Retry Mode Active</span>
+                  <button 
+                    onClick={exitWrongAnswersRetryMode}
+                    className="exit-retry-btn"
+                  >
+                    Exit Retry Mode
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
