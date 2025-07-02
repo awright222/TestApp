@@ -604,13 +604,14 @@ function CaseStudyTestInterface({
         const correctAnswers = q.correct_answer.split(',').map(s => s.trim());
         const userSelections = Array.isArray(userAnswers[index]) ? userAnswers[index] : [];
         
-        const correctCount = userSelections.filter(answer => {
-          const choiceLabel = getChoiceLabel(answer);
-          return correctAnswers.includes(choiceLabel);
-        }).length;
+        // Get the labels of user selections
+        const userLabels = userSelections.map(answer => getChoiceLabel(answer)).filter(Boolean);
         
-        const incorrectCount = userSelections.length - correctCount;
-        isCorrect = correctCount === correctAnswers.length && incorrectCount === 0;
+        // Check if user selected exactly the correct answers (no more, no less)
+        const hasAllCorrect = correctAnswers.every(correct => userLabels.includes(correct));
+        const hasNoIncorrect = userLabels.every(userLabel => correctAnswers.includes(userLabel));
+        
+        isCorrect = hasAllCorrect && hasNoIncorrect && userLabels.length === correctAnswers.length;
       } else if (q.question_type?.toLowerCase() === 'hotspot') {
         const correctHotspotAnswers = {};
         const lines = q.correct_answer.split(/\r?\n/).filter(Boolean);
@@ -756,16 +757,11 @@ function CaseStudyTestInterface({
         const correctAnswers = q.correct_answer.split(',').map(s => s.trim());
         const userSelections = Array.isArray(userAnswers[current]) ? userAnswers[current] : [];
         
-        // Score based on correct selections
-        const correctCount = userSelections.filter(answer => {
+        // Award 1 point for each correct answer selected (no penalty for incorrect selections)
+        score = userSelections.filter(answer => {
           const choiceLabel = getChoiceLabel(answer);
           return correctAnswers.includes(choiceLabel);
         }).length;
-        
-        const incorrectCount = userSelections.length - correctCount;
-        
-        // Simple scoring: 1 point per correct answer, -0.5 per incorrect
-        score = Math.max(0, correctCount - (incorrectCount * 0.5));
       } else if (q.question_type?.toLowerCase() === 'hotspot') {
         const correctHotspotAnswers = {};
         const lines = q.correct_answer.split(/\r?\n/).filter(Boolean);
@@ -776,11 +772,12 @@ function CaseStudyTestInterface({
           }
         }
         
+        // Award 1 point for each correct hotspot selection
         score = Object.entries(correctHotspotAnswers).filter(
           ([label, correctAnswer]) => (userAnswers[current] && userAnswers[current][label]) === correctAnswer
         ).length;
       } else {
-        // For other question types, simple correct/incorrect
+        // For other question types, simple correct/incorrect (1 point)
         score = userAnswers[current] === q.correct_answer ? 1 : 0;
       }
       
