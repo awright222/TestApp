@@ -104,7 +104,7 @@ Firebase Functions    // Serverless backend logic (ready for deployment)
 // Teacher Tools
 ✅ Class Creation     
 ✅ Student Enrollment  
-✅ Assignment System    // Test distribution with deadlines and settings
+✅ Assignment System    settings
 ✅ Progress Tracking    // Real-time student performance monitoring
 ✅ Gradebook Export     // Multiple format support for grade management
 ```

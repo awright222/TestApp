@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import Papa from 'papaparse';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import QuestionQuizWithSave from './QuestionQuizWithSave';
 import { SavedTestsService } from './SavedTestsService';
+import SaveModal from './SaveModal';
 import './CaseStudies.css';
+import './components/PracticeTest.css';
+import './QuestionQuiz.css';
 
 const META_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTDO68GqAelFKS2G6SwiUWdPs2tw5Gt62D5xLiB_9zyLyBPLSZm5gTthaQz9yCpmDKuymWMc83PV5a2/pub?gid=2042421471&single=true&output=csv';
 const SECTIONS_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTDO68GqAelFKS2G6SwiUWdPs2tw5Gt62D5xLiB_9zyLyBPLSZm5gTthaQz9yCpmDKuymWMc83PV5a2/pub?gid=905416087&single=true&output=csv';
@@ -94,6 +96,9 @@ export function CaseStudyDetail() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState(null);
   const [modalSection, setModalSection] = useState(null);
+  const [showTestInterface, setShowTestInterface] = useState(false);
+  
+  // Test state for the PracticeTest-style interface
   const [savedProgress, setSavedProgress] = useState(null);
 
   // Check for saved progress for this case study
@@ -117,33 +122,6 @@ export function CaseStudyDetail() {
     
     checkSavedProgress();
   }, [id]);
-
-  // Save progress function
-  const handleSaveProgress = async (saveData) => {
-    try {
-      // Add case study specific information and include questions
-      const caseStudySaveData = {
-        ...saveData,
-        type: 'case-study',
-        caseStudyId: id,
-        caseStudyTitle: meta?.title || 'Case Study',
-        title: `${meta?.title || 'Case Study'} - ${saveData.title}`,
-        questions: questions.map(q => ({ ...q })), // Include the questions array
-        // Include original case study metadata
-        originalTest: {
-          caseStudyId: id,
-          caseStudyTitle: meta?.title || 'Case Study',
-          type: 'case-study'
-        }
-      };
-      
-      await SavedTestsService.saveTest(caseStudySaveData);
-      alert('Case study progress saved successfully!');
-    } catch (error) {
-      console.error('Error saving case study:', error);
-      throw error;
-    }
-  };
 
   useEffect(() => {
     setLoading(true);
@@ -174,6 +152,32 @@ export function CaseStudyDetail() {
     );
   }
 
+  // If we have questions and user wants to see test interface
+  if (questions.length > 0 && showTestInterface) {
+    const testData = {
+      title: `${meta.title} - Case Study Test`,
+      questions: questions,
+      isCaseStudy: true,
+      caseStudyId: id,
+      caseStudyTitle: meta.title,
+      caseStudyMeta: meta,
+      caseStudySections: sections,
+      savedProgress: savedProgress?.progress,
+      savedTestInfo: savedProgress
+    };
+
+    return <CaseStudyTestInterface 
+      selectedTest={testData}
+      onBackToSelection={() => setShowTestInterface(false)}
+      sections={sections}
+      meta={meta}
+      activeTab={activeTab}
+      setActiveTab={setActiveTab}
+      modalSection={modalSection}
+      setModalSection={setModalSection}
+    />;
+  }
+
   // Group sections by section_group
   const groupedSections = sections.reduce((acc, section) => {
     const group = section.section_group || 'General';
@@ -183,68 +187,49 @@ export function CaseStudyDetail() {
   }, {});
 
   return (
-    <div className="case-study-detail">
-      {/* Header with Back Button */}
-      <div className="case-study-detail-header">
-        <button
-          onClick={() => navigate('/practice')}
-          className="back-to-case-studies-btn"
-        >
-          ← Back to Practice Tests
-        </button>
-        <div>
-          <div className="case-studies-subtitle">
-            📋 Interactive Case Study
+    <>
+      <div className="case-study-detail">
+        {/* Header - simplified to match existing format */}
+        <div className="case-study-detail-header">
+          <button
+            onClick={() => navigate('/practice')}
+            className="back-to-case-studies-btn"
+          >
+            ← Back to Practice Tests
+          </button>
+          <div className="case-study-header-content">
+            <div className="case-studies-subtitle">
+              📋 Interactive Case Study
+            </div>
+            <h1 className="case-study-detail-title">
+              {meta.title}
+            </h1>
+            <p className="case-study-description">
+              {meta.description}
+            </p>
           </div>
-          <h1 className="case-study-detail-title">
-            {meta.title}
-          </h1>
-          <p className="case-study-description">
-            {meta.description}
-          </p>
         </div>
-      </div>
 
       {/* Show saved progress notification */}
       {savedProgress && (
-        <div style={{
-          background: 'linear-gradient(135deg, #669BBC 0%, #4a90a4 100%)',
-          color: 'white',
-          padding: '1.5rem',
-          borderRadius: '12px',
-          marginBottom: '2rem',
-          boxShadow: '0 4px 20px rgba(102, 155, 188, 0.3)',
-          border: '1px solid rgba(255, 255, 255, 0.2)'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <div style={{ fontSize: '2rem' }}>💾</div>
-            <div>
-              <strong style={{ fontSize: '1.1rem' }}>Saved Progress Found!</strong>
-              <p style={{ margin: '0.5rem 0 0 0', opacity: 0.9 }}>
-                Your answers and current position have been restored from your previous session.
-              </p>
+        <div className="saved-progress-notification">
+          <div className="saved-progress-content">
+            <div className="saved-progress-icon">💾</div>
+            <div className="saved-progress-info">
+              <strong>Saved Progress Found!</strong>
+              <p>Your answers and current position have been restored from your previous session.</p>
             </div>
           </div>
         </div>
       )}
 
-      {/* Section Tabs */}
-      <div style={{ 
-        background: 'white',
-        borderRadius: '12px',
-        padding: '2rem',
-        marginBottom: '2rem',
-        boxShadow: '0 4px 20px rgba(0, 48, 73, 0.08)',
-        border: '1px solid rgba(102, 155, 188, 0.1)'
-      }}>
-        <h2 style={{
-          color: '#003049',
-          fontSize: '1.5rem',
-          marginBottom: '1.5rem',
-          fontWeight: '600'
-        }}>
-          📖 Case Study Information
-        </h2>
+      {/* Section Tabs - using existing styling format */}
+      <div className="question-quiz-box" style={{ marginBottom: '2rem' }}>
+        <div className="question-quiz-header">
+          <h2 className="question-quiz-title">
+            📖 Case Study Information
+          </h2>
+        </div>
 
         <div style={{ 
           display: 'flex', 
@@ -255,30 +240,15 @@ export function CaseStudyDetail() {
           {Object.keys(groupedSections).map(group => (
             <button
               key={group}
+              className={`question-quiz-nav-btn ${activeTab === group ? 'active' : ''}`}
               style={{
-                padding: '0.75rem 1.5rem',
-                borderRadius: '25px',
-                border: 'none',
                 background: activeTab === group 
-                  ? 'linear-gradient(135deg, #003049 0%, #00243a 100%)' 
+                  ? '#669BBC' 
                   : 'rgba(102, 155, 188, 0.1)',
                 color: activeTab === group ? 'white' : '#669BBC',
-                fontWeight: '600',
-                cursor: 'pointer',
-                transition: 'all 0.3s ease',
-                fontSize: '0.95rem'
+                border: activeTab === group ? 'none' : '2px solid #669BBC'
               }}
               onClick={() => setActiveTab(group)}
-              onMouseEnter={(e) => {
-                if (activeTab !== group) {
-                  e.target.style.background = 'rgba(102, 155, 188, 0.2)';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (activeTab !== group) {
-                  e.target.style.background = 'rgba(102, 155, 188, 0.1)';
-                }
-              }}
             >
               {group}
             </button>
@@ -295,70 +265,50 @@ export function CaseStudyDetail() {
             {groupedSections[activeTab].map((section, index) => (
               <div
                 key={section.id || section.section_title}
-                style={{
-                  background: 'linear-gradient(135deg, #F8F9FA 0%, #FFFFFF 100%)',
-                  borderRadius: '12px',
-                  padding: '1.5rem',
-                  border: '1px solid rgba(102, 155, 188, 0.15)',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease',
-                  position: 'relative'
-                }}
+                className="question-quiz-choice"
+                style={{ cursor: 'pointer' }}
                 onClick={() => setModalSection(section)}
-                onMouseEnter={(e) => {
-                  e.target.style.transform = 'translateY(-4px)';
-                  e.target.style.boxShadow = '0 8px 30px rgba(0, 48, 73, 0.12)';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.transform = 'translateY(0)';
-                  e.target.style.boxShadow = 'none';
-                }}
               >
                 <div style={{
+                  background: '#669BBC',
+                  color: 'white',
+                  borderRadius: '50%',
+                  width: '32px',
+                  height: '32px',
                   display: 'flex',
-                  alignItems: 'flex-start',
-                  gap: '1rem'
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontWeight: 'bold',
+                  fontSize: '0.9rem',
+                  flexShrink: 0,
+                  marginRight: '1rem'
                 }}>
-                  <div style={{
-                    background: 'linear-gradient(135deg, #669BBC 0%, #4a90a4 100%)',
-                    color: 'white',
-                    borderRadius: '50%',
-                    width: '32px',
-                    height: '32px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontWeight: 'bold',
-                    fontSize: '0.9rem',
-                    flexShrink: 0
+                  {index + 1}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <h4 style={{
+                    color: '#003049',
+                    fontSize: '1.1rem',
+                    fontWeight: '600',
+                    margin: '0 0 0.5rem 0',
+                    lineHeight: '1.3'
                   }}>
-                    {index + 1}
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <h4 style={{
-                      color: '#003049',
-                      fontSize: '1.1rem',
-                      fontWeight: '600',
-                      margin: '0 0 0.5rem 0',
-                      lineHeight: '1.3'
-                    }}>
-                      {section.section_title}
-                    </h4>
-                    <p style={{
-                      color: '#669BBC',
-                      fontSize: '0.9rem',
-                      margin: 0,
-                      lineHeight: '1.4'
-                    }}>
-                      Click to read the full information
-                    </p>
-                  </div>
-                  <div style={{
+                    {section.section_title}
+                  </h4>
+                  <p style={{
                     color: '#669BBC',
-                    fontSize: '1.2rem'
+                    fontSize: '0.9rem',
+                    margin: 0,
+                    lineHeight: '1.4'
                   }}>
-                    →
-                  </div>
+                    Click to read the full information
+                  </p>
+                </div>
+                <div style={{
+                  color: '#669BBC',
+                  fontSize: '1.2rem'
+                }}>
+                  →
                 </div>
               </div>
             ))}
@@ -366,68 +316,56 @@ export function CaseStudyDetail() {
         )}
       </div>
 
-      {/* Modal for section content */}
-      {modalSection && (
-        <div
-          className="modal-overlay"
-          style={{
-            position: 'fixed',
-            top: 0, left: 0, right: 0, bottom: 0,
-            background: 'rgba(0, 48, 73, 0.8)',
-            backdropFilter: 'blur(4px)',
-            zIndex: 1000,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '2rem'
-          }}
-          onClick={() => setModalSection(null)}
-        >
-          <div
-            className="modal-content"
-            style={{
-              background: 'linear-gradient(135deg, #FFFFFF 0%, #FDF0D5 100%)',
-              borderRadius: '16px',
-              padding: '2.5rem',
-              minWidth: '320px',
-              maxWidth: '800px',
-              width: '100%',
-              maxHeight: '80vh',
-              overflowY: 'auto',
-              boxShadow: '0 20px 60px rgba(0, 48, 73, 0.3)',
-              border: '1px solid rgba(102, 155, 188, 0.2)',
-              position: 'relative'
-            }}
-            onClick={e => e.stopPropagation()}
-          >
+      {/* Start Practice Questions Button */}
+      {questions.length > 0 && (
+        <div className="question-quiz-box" style={{ textAlign: 'center' }}>
+          <div className="question-quiz-header">
+            <h2 className="question-quiz-title">
+              📝 Practice Questions
+            </h2>
+          </div>
+          <div className="question-quiz-text">
+            <p style={{ marginBottom: '1.5rem' }}>
+              Ready to test your understanding? Start the practice questions for this case study.
+            </p>
             <button
-              className="modal-close"
+              onClick={() => setShowTestInterface(true)}
+              className="question-quiz-nav-btn"
               style={{
-                position: 'absolute',
-                top: '1rem',
-                right: '1rem',
-                background: 'rgba(102, 155, 188, 0.1)',
-                border: 'none',
-                borderRadius: '50%',
-                width: '40px',
-                height: '40px',
-                fontSize: '20px',
-                color: '#669BBC',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                transition: 'all 0.2s ease'
+                fontSize: '1.1rem',
+                padding: '1rem 2rem',
+                background: '#669BBC',
+                color: 'white'
               }}
+            >
+              🚀 Start Practice Questions ({questions.length} questions)
+            </button>
+          </div>
+        </div>
+      )}
+      
+      {/* No Questions Available */}
+      {questions.length === 0 && (
+        <div className="question-quiz-box" style={{ textAlign: 'center' }}>
+          <div className="question-quiz-header">
+            <h2 className="question-quiz-title">
+              📝 No Questions Available
+            </h2>
+          </div>
+          <div className="question-quiz-text">
+            <p style={{ margin: 0 }}>This case study doesn't have practice questions yet.</p>
+          </div>
+        </div>
+      )}
+      </div>
+
+      {/* Modal for section content - moved outside container for proper overlay */}
+      {modalSection && (
+        <div className="question-quiz-modal-overlay" onClick={() => setModalSection(null)}>
+          <div className="question-quiz-modal-content" onClick={e => e.stopPropagation()}>
+            <button
+              className="question-quiz-modal-close"
               onClick={() => setModalSection(null)}
-              onMouseEnter={(e) => {
-                e.target.style.background = '#669BBC';
-                e.target.style.color = 'white';
-              }}
-              onMouseLeave={(e) => {
-                e.target.style.background = 'rgba(102, 155, 188, 0.1)';
-                e.target.style.color = '#669BBC';
-              }}
               aria-label="Close"
             >
               ✕
@@ -440,7 +378,7 @@ export function CaseStudyDetail() {
               marginBottom: '2rem'
             }}>
               <div style={{
-                background: 'linear-gradient(135deg, #003049 0%, #00243a 100%)',
+                background: '#669BBC',
                 color: 'white',
                 borderRadius: '12px',
                 padding: '0.75rem',
@@ -448,25 +386,16 @@ export function CaseStudyDetail() {
               }}>
                 📄
               </div>
-              <h3 style={{
-                color: '#003049',
-                fontSize: '1.8rem',
-                fontWeight: '600',
-                margin: 0,
-                lineHeight: '1.3'
-              }}>
+              <h3 className="question-quiz-modal-title">
                 {modalSection.section_title}
               </h3>
             </div>
             
-            <div style={{ 
-              color: '#003049',
-              fontSize: '1.1rem',
-              lineHeight: '1.7',
+            <div className="question-quiz-modal-text" style={{ 
               whiteSpace: 'pre-line',
               background: 'rgba(102, 155, 188, 0.05)',
-              padding: '2rem',
-              borderRadius: '12px',
+              padding: '1.5rem',
+              borderRadius: '8px',
               border: '1px solid rgba(102, 155, 188, 0.1)'
             }}>
               {modalSection.content}
@@ -478,23 +407,395 @@ export function CaseStudyDetail() {
             }}>
               <button
                 onClick={() => setModalSection(null)}
-                style={{
-                  background: 'linear-gradient(135deg, #669BBC 0%, #4a90a4 100%)',
-                  color: 'white',
-                  border: 'none',
-                  padding: '0.75rem 2rem',
-                  borderRadius: '25px',
-                  fontSize: '1rem',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.transform = 'scale(1.05)';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.transform = 'scale(1)';
-                }}
+                className="question-quiz-nav-btn"
+              >
+                Got it!
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+// New component that combines case study info with full PracticeTest interface
+function CaseStudyTestInterface({ 
+  selectedTest, 
+  onBackToSelection, 
+  sections, 
+  meta, 
+  activeTab, 
+  setActiveTab, 
+  modalSection, 
+  setModalSection 
+}) {
+  const [questions, setQuestions] = useState([]);
+  const [originalQuestions, setOriginalQuestions] = useState([]);
+  const [current, setCurrent] = useState(0);
+  const [userAnswers, setUserAnswers] = useState([]);
+  const [questionScore, setQuestionScore] = useState([]);
+  const [questionSubmitted, setQuestionSubmitted] = useState([]);
+  const [showSaveModal, setShowSaveModal] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [currentSavedTest, setCurrentSavedTest] = useState(null);
+  const [testCompleted, setTestCompleted] = useState(false);
+  
+  // Mark for Review feature states
+  const [markedQuestions, setMarkedQuestions] = useState([]);
+  const [questionNotes, setQuestionNotes] = useState({});
+  
+  // Timer state - simplified for case studies (practice mode only)
+  const [timerEnabled, setTimerEnabled] = useState(false);
+  const [timerTime, setTimerTime] = useState(0);
+  const [timerRunning, setTimerRunning] = useState(false);
+  const [timerInputMinutes, setTimerInputMinutes] = useState(90);
+  const [timerTimeHidden, setTimerTimeHidden] = useState(false);
+
+  // Helper function to get initial answer based on question type
+  function getInitialUserAnswer(q) {
+    if (q?.question_type?.toLowerCase() === 'multiple choice') {
+      return [];
+    } else if (q?.question_type?.toLowerCase() === 'hotspot') {
+      return {};
+    }
+    return '';
+  }
+
+  // Initialize questions and state
+  useEffect(() => {
+    if (selectedTest && selectedTest.questions) {
+      const questionArray = selectedTest.questions;
+      setQuestions(questionArray);
+      setOriginalQuestions(questionArray);
+      
+      // Restore saved progress if available
+      if (selectedTest.savedProgress) {
+        setCurrent(selectedTest.savedProgress.current || 0);
+        setUserAnswers(selectedTest.savedProgress.userAnswers || questionArray.map(getInitialUserAnswer));
+        setQuestionScore(selectedTest.savedProgress.questionScore || Array(questionArray.length).fill(null));
+        setQuestionSubmitted(selectedTest.savedProgress.questionSubmitted || Array(questionArray.length).fill(false));
+        setMarkedQuestions(selectedTest.savedProgress.markedQuestions || []);
+        setQuestionNotes(selectedTest.savedProgress.questionNotes || {});
+      } else {
+        setUserAnswers(questionArray.map(getInitialUserAnswer));
+        setQuestionScore(Array(questionArray.length).fill(null));
+        setQuestionSubmitted(Array(questionArray.length).fill(false));
+      }
+      
+      if (selectedTest.savedTestInfo) {
+        setCurrentSavedTest(selectedTest.savedTestInfo);
+      }
+    }
+  }, [selectedTest]);
+
+  // Timer initialization
+  useEffect(() => {
+    setTimerTime(timerInputMinutes * 60);
+  }, [timerInputMinutes]);
+
+  // Timer countdown effect
+  useEffect(() => {
+    let interval;
+    if (timerEnabled && timerRunning && timerTime > 0 && !testCompleted) {
+      interval = setInterval(() => {
+        setTimerTime(prev => {
+          if (prev <= 1) {
+            setTimerRunning(false);
+            alert('⏰ Time\'s up! You can still continue working, but your time is recorded.');
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [timerEnabled, timerRunning, timerTime, testCompleted]);
+
+  // Timer utility functions
+  const formatTime = (seconds) => {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  };
+
+  const toggleTimer = () => {
+    setTimerEnabled(!timerEnabled);
+    if (!timerEnabled) {
+      setTimerTime(timerInputMinutes * 60);
+      setTimerRunning(false);
+    }
+  };
+
+  const startStopTimer = () => {
+    setTimerRunning(!timerRunning);
+  };
+
+  const resetTimer = () => {
+    setTimerRunning(false);
+    setTimerTime(timerInputMinutes * 60);
+  };
+
+  const updateTimerMinutes = (minutes) => {
+    if (!timerRunning) {
+      setTimerInputMinutes(minutes);
+      setTimerTime(minutes * 60);
+    }
+  };
+
+  const toggleTimerTimeVisibility = () => {
+    setTimerTimeHidden(!timerTimeHidden);
+  };
+
+  // Shuffle function
+  function shuffleArray(array) {
+    const arr = [...array];
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  // Mark for Review functions
+  const toggleMarkQuestion = (questionIndex = current) => {
+    setMarkedQuestions(prev => {
+      if (prev.includes(questionIndex)) {
+        return prev.filter(i => i !== questionIndex);
+      } else {
+        return [...prev, questionIndex];
+      }
+    });
+  };
+
+  const isQuestionMarked = (questionIndex) => {
+    return markedQuestions.includes(questionIndex);
+  };
+
+  const updateQuestionNote = (questionIndex, note) => {
+    setQuestionNotes(prev => ({
+      ...prev,
+      [questionIndex]: note
+    }));
+  };
+
+  // Navigation functions
+  const allQuestionsAttempted = () => {
+    return questionSubmitted.every(Boolean);
+  };
+
+  const answeredCount = () => {
+    return questionSubmitted.filter(Boolean).length;
+  };
+
+  const handleFinishTest = () => {
+    setTestCompleted(true);
+    // Implementation for test completion
+  };
+
+  // Save progress function
+  const handleSaveProgress = async (saveData) => {
+    try {
+      const caseStudySaveData = {
+        ...saveData,
+        type: 'case-study',
+        caseStudyId: selectedTest.caseStudyId,
+        caseStudyTitle: selectedTest.caseStudyTitle,
+        title: `${selectedTest.caseStudyTitle} - ${saveData.title}`,
+        questions: questions.map(q => ({ ...q })),
+        originalTest: {
+          caseStudyId: selectedTest.caseStudyId,
+          caseStudyTitle: selectedTest.caseStudyTitle,
+          type: 'case-study'
+        },
+        progress: {
+          current,
+          userAnswers,
+          questionScore,
+          questionSubmitted,
+          markedQuestions,
+          questionNotes
+        }
+      };
+      
+      await SavedTestsService.saveTest(caseStudySaveData);
+      alert('✅ Case study progress saved successfully!');
+    } catch (error) {
+      console.error('Error saving case study:', error);
+      throw error;
+    }
+  };
+
+  // Answer handling
+  const updateUserAnswer = (answer) => {
+    const newAnswers = [...userAnswers];
+    newAnswers[current] = answer;
+    setUserAnswers(newAnswers);
+  };
+
+  const submitAnswer = () => {
+    if (questions[current]) {
+      const newSubmitted = [...questionSubmitted];
+      newSubmitted[current] = true;
+      setQuestionSubmitted(newSubmitted);
+      
+      // Calculate score for this question
+      const q = questions[current];
+      let score = 0;
+      
+      if (q.question_type?.toLowerCase() === 'multiple choice') {
+        const correctAnswers = q.correct_answer.split(',').map(s => s.trim());
+        const userSelections = Array.isArray(userAnswers[current]) ? userAnswers[current] : [];
+        
+        // Score based on correct selections
+        const correctCount = userSelections.filter(answer => {
+          const choiceLabel = getChoiceLabel(answer);
+          return correctAnswers.includes(choiceLabel);
+        }).length;
+        
+        const incorrectCount = userSelections.length - correctCount;
+        
+        // Simple scoring: 1 point per correct answer, -0.5 per incorrect
+        score = Math.max(0, correctCount - (incorrectCount * 0.5));
+      } else {
+        // For other question types, simple correct/incorrect
+        score = userAnswers[current] === q.correct_answer ? 1 : 0;
+      }
+      
+      const newScores = [...questionScore];
+      newScores[current] = score;
+      setQuestionScore(newScores);
+    }
+  };
+
+  // Get choice label helper
+  function getChoiceLabel(choice) {
+    const match = choice.match(/^([A-Z])\./);
+    return match ? match[1] : null;
+  }
+
+  if (!questions.length) {
+    return (
+      <div className="case-study-test-loading">
+        <div className="case-study-test-loading-icon">📚</div>
+        <div className="case-study-test-loading-text">Loading Case Study Test...</div>
+      </div>
+    );
+  }
+
+  const q = questions[current];
+  if (!q) return null;
+
+  const choices = q.choices ? q.choices.split('\n').filter(Boolean) : [];
+  const runningScore = questionScore.reduce((sum, val) => sum + (val || 0), 0);
+
+  // Group sections by section_group for case study info
+  const groupedSections = sections.reduce((acc, section) => {
+    const group = section.section_group || 'General';
+    if (!acc[group]) acc[group] = [];
+    acc[group].push(section);
+    return acc;
+  }, {});
+
+  return (
+    <>
+      <div className="practice-test case-study-test">
+      {/* Case Study Information Box - Always visible at top */}
+      <div className="case-study-info-box">
+        <div className="case-study-info-header">
+          <div className="case-study-info-title">
+            <span className="case-study-icon">📋</span>
+            <h2>{meta.title} - Case Study Information</h2>
+          </div>
+          <div className="case-study-info-tabs">
+            {Object.keys(groupedSections).map(group => (
+              <button
+                key={group}
+                className={`case-study-tab ${activeTab === group ? 'active' : ''}`}
+                onClick={() => setActiveTab(group)}
+              >
+                📖 {group}
+              </button>
+            ))}
+          </div>
+        </div>
+        
+        {activeTab && groupedSections[activeTab] && (
+          <div className="case-study-info-content">
+            {groupedSections[activeTab].map((section, index) => (
+              <div
+                key={section.id || section.section_title}
+                className="case-study-info-item"
+                onClick={() => setModalSection(section)}
+              >
+                <div className="case-study-info-item-number">{index + 1}</div>
+                <div className="case-study-info-item-content">
+                  <h4>{section.section_title}</h4>
+                  <p>Click to read full information</p>
+                </div>
+                <div className="case-study-info-item-arrow">→</div>
+              </div>
+            ))}
+          </div>
+        )}
+        
+        {!activeTab && (
+          <div className="case-study-info-summary">
+            <p>Click any tab above to view available case study sections.</p>
+          </div>
+        )}
+      </div>
+
+      {/* Modal for section content */}
+      {modalSection && (
+        <div className="question-quiz-modal-overlay" onClick={() => setModalSection(null)}>
+          <div className="question-quiz-modal-content" onClick={e => e.stopPropagation()}>
+            <button
+              className="question-quiz-modal-close"
+              onClick={() => setModalSection(null)}
+              aria-label="Close"
+            >
+              ✕
+            </button>
+            
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '1rem',
+              marginBottom: '2rem'
+            }}>
+              <div style={{
+                background: '#669BBC',
+                color: 'white',
+                borderRadius: '12px',
+                padding: '0.75rem',
+                fontSize: '1.5rem'
+              }}>
+                �
+              </div>
+              <h3 className="question-quiz-modal-title">
+                {modalSection.section_title}
+              </h3>
+            </div>
+            
+            <div className="question-quiz-modal-text" style={{ 
+              whiteSpace: 'pre-line',
+              background: 'rgba(102, 155, 188, 0.05)',
+              padding: '1.5rem',
+              borderRadius: '8px',
+              border: '1px solid rgba(102, 155, 188, 0.1)'
+            }}>
+              {modalSection.content}
+            </div>
+            
+            <div style={{
+              marginTop: '2rem',
+              textAlign: 'center'
+            }}>
+              <button
+                onClick={() => setModalSection(null)}
+                className="question-quiz-nav-btn"
               >
                 Got it!
               </button>
@@ -503,60 +804,488 @@ export function CaseStudyDetail() {
         </div>
       )}
 
-      {/* Questions Section */}
-      <div style={{ 
-        background: 'white',
-        borderRadius: '12px',
-        padding: '2rem',
-        boxShadow: '0 4px 20px rgba(0, 48, 73, 0.08)',
-        border: '1px solid rgba(102, 155, 188, 0.1)'
-      }}>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '1rem',
-          marginBottom: '2rem'
-        }}>
-          <div style={{
-            background: 'linear-gradient(135deg, #003049 0%, #00243a 100%)',
-            color: 'white',
-            borderRadius: '12px',
-            padding: '0.75rem',
-            fontSize: '1.5rem'
-          }}>
-            🎯
+      {/* Clean Header */}
+      <div className="practice-test-header">
+        <div className="header-top">
+          <button onClick={onBackToSelection} className="back-to-tests-btn">
+            ← Back to Case Study
+          </button>
+          <div className="mode-info">
+            <span className="mode-badge practice-mode">
+              🎯 Practice Mode
+            </span>
+            <p className="mode-description">
+              Get immediate feedback as you submit each answer
+            </p>
           </div>
-          <h2 style={{
-            color: '#003049',
-            fontSize: '1.5rem',
-            margin: 0,
-            fontWeight: '600'
-          }}>
-            Practice Questions
-          </h2>
         </div>
-
-        {questions.length > 0 ? (
-          <QuestionQuizWithSave 
-            questions={questions} 
-            onSaveProgress={handleSaveProgress}
-            caseStudyTitle={meta?.title}
-            initialProgress={savedProgress?.progress}
-            existingSavedTest={savedProgress}
-          />
-        ) : (
-          <div style={{
-            textAlign: 'center',
-            padding: '3rem 2rem',
-            color: '#669BBC'
-          }}>
-            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📝</div>
-            <h3 style={{ color: '#669BBC', margin: '0 0 0.5rem 0' }}>No Questions Available</h3>
-            <p style={{ margin: 0 }}>This case study doesn't have practice questions yet.</p>
+        <div className="header-bottom">
+          <div className="test-info">
+            <h1 className="test-title">
+              {selectedTest.title}
+            </h1>
           </div>
-        )}
+        </div>
       </div>
-    </div>
+
+      {/* Integrated Timer */}
+      {timerEnabled && (
+        <div className="integrated-timer">
+          <div className="timer-display">
+            <div className="timer-time">
+              <span className={`timer-value ${timerTime < 300 && timerTime > 0 ? 'timer-warning' : ''} ${timerTime === 0 ? 'timer-expired' : ''} ${timerTimeHidden ? 'timer-hidden' : ''}`}>
+                {timerTimeHidden ? '••:••:••' : formatTime(timerTime)}
+              </span>
+              <span className="timer-label">
+                {timerTimeHidden && timerEnabled ? 'Timer Hidden (Still Running)' : 'Practice Timer'}
+              </span>
+            </div>
+            
+            <div className="timer-controls">
+              <button 
+                onClick={toggleTimerTimeVisibility}
+                className="timer-btn timer-hide-time"
+                title={timerTimeHidden ? 'Show time' : 'Hide time'}
+              >
+                {timerTimeHidden ? '👁️' : '🙈'}
+              </button>
+              
+              <button 
+                onClick={toggleTimer}
+                className={`timer-btn ${timerEnabled ? 'timer-enabled' : 'timer-disabled'}`}
+                title={timerEnabled ? 'Disable timer' : 'Enable timer'}
+              >
+                {timerEnabled ? '⏰' : '⏱️'}
+              </button>
+              
+              <button 
+                onClick={startStopTimer}
+                className={`timer-btn ${timerRunning ? 'timer-pause' : 'timer-play'}`}
+                title={timerRunning ? 'Pause timer' : 'Start timer'}
+              >
+                {timerRunning ? '⏸️' : '▶️'}
+              </button>
+              
+              <button 
+                onClick={resetTimer}
+                className="timer-btn timer-reset"
+                title="Reset timer"
+              >
+                🔄
+              </button>
+              
+              <input
+                type="number"
+                min="1"
+                max="300"
+                value={timerInputMinutes}
+                onChange={(e) => updateTimerMinutes(parseInt(e.target.value) || 1)}
+                className="timer-input"
+                disabled={timerRunning}
+                title="Set timer minutes"
+              />
+              <span className="timer-unit">min</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Ultra-Compact Test Navigation & Controls */}
+      <div className="compact-test-bar">
+        <div className="test-bar-left">
+          <div className="question-nav">
+            <span className="current-question">Q {current + 1}/{questions.length}</span>
+            <input
+              type="number"
+              min="1"
+              max={questions.length}
+              value={current + 1}
+              onChange={(e) => {
+                const questionNum = parseInt(e.target.value);
+                if (questionNum >= 1 && questionNum <= questions.length) {
+                  setCurrent(questionNum - 1);
+                }
+              }}
+              className="question-jump-input compact"
+              title="Jump to question"
+              placeholder={`1-${questions.length}`}
+            />
+          </div>
+          <div className="score-compact">
+            Score: {runningScore}/{
+              questions.reduce((sum, q) => {
+                if (q.question_type?.toLowerCase() === 'multiple choice') {
+                  return sum + q.correct_answer.split(',').length;
+                } else if (q.question_type?.toLowerCase() === 'hotspot') {
+                  return sum + q.correct_answer.split(/\r?\n/).filter(Boolean).length;
+                }
+                return sum + 1;
+              }, 0)
+            }
+          </div>
+        </div>
+        
+        <div className="test-bar-center">
+          <div className="test-controls-compact">
+            <button
+              onClick={() => {
+                setQuestions(shuffleArray(originalQuestions));
+                setCurrent(0);
+              }}
+              className="control-btn compact"
+              title="Shuffle Questions"
+            >
+              <span className="btn-icon">🔀</span>
+              <span className="btn-text">Shuffle</span>
+            </button>
+            <button
+              onClick={() => {
+                setQuestions(originalQuestions);
+                setCurrent(0);
+                setUserAnswers(originalQuestions.map(getInitialUserAnswer));
+                setQuestionScore(Array(originalQuestions.length).fill(null));
+                setQuestionSubmitted(Array(originalQuestions.length).fill(false));
+              }}
+              className="control-btn compact"
+              title="Reset Test"
+            >
+              <span className="btn-icon">🔄</span>
+              <span className="btn-text">Reset</span>
+            </button>
+            <button onClick={() => setShowSaveModal(true)} className="control-btn compact" title="Save Progress">
+              <span className="btn-icon">💾</span>
+              <span className="btn-text">Save</span>
+            </button>
+            <button 
+              onClick={toggleTimer}
+              className={`control-btn compact ${timerEnabled ? 'timer-enabled' : 'timer-disabled'}`}
+              title={timerEnabled ? 'Disable timer' : 'Enable timer'}
+            >
+              <span className="btn-icon">{timerEnabled ? '⏰' : '⏱️'}</span>
+              <span className="btn-text">Timer</span>
+            </button>
+            {markedQuestions.length > 0 && (
+              <button 
+                onClick={() => alert(`${markedQuestions.length} question(s) marked for review. Review functionality coming soon!`)}
+                className="control-btn compact"
+                title={`${markedQuestions.length} question(s) marked for review`}
+              >
+                <span className="btn-icon">📌</span>
+                <span className="btn-text">Review ({markedQuestions.length})</span>
+              </button>
+            )}
+          </div>
+        </div>
+        
+        <div className="test-bar-right">
+          {!testCompleted && (
+            <div className="finish-test-compact">
+              {allQuestionsAttempted() ? (
+                <button
+                  onClick={handleFinishTest}
+                  className="finish-test-btn compact ready"
+                >
+                  <span className="btn-icon">✅</span>
+                  <span className="btn-text">Finish</span>
+                </button>
+              ) : (
+                <button
+                  onClick={handleFinishTest}
+                  className="finish-test-btn compact partial"
+                  title={`${questions.length - answeredCount()} questions remaining`}
+                >
+                  <span className="btn-icon">📝</span>
+                  <span className="btn-text">Finish ({answeredCount()}/{questions.length})</span>
+                </button>
+              )}
+            </div>
+          )}
+          
+          {testCompleted && (
+            <div className="test-completed-compact">
+              <span className="btn-icon">🎉</span>
+              <span className="btn-text">Complete!</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Question Content */}
+      <div className="question-text">
+        <div className="question-header">
+          <strong>{q.question_text}</strong>
+          <div className="question-header-buttons">
+            <button
+              onClick={() => toggleMarkQuestion(current)}
+              className={`mark-review-btn ${isQuestionMarked(current) ? 'marked' : ''}`}
+              title={isQuestionMarked(current) ? 'Remove mark for review' : 'Mark for review'}
+            >
+              {isQuestionMarked(current) ? '📌 Marked' : '📌 Mark'}
+            </button>
+            <button
+              className="info-btn"
+              onClick={() => setShowModal(true)}
+              aria-label="Show explanation"
+              title="Show explanation and correct answer"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
+                <path d="M12 16v-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                <path d="M12 8h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Notes Section for Marked Questions */}
+      {isQuestionMarked(current) && (
+        <div className="question-notes-section">
+          <label className="notes-label">
+            📝 Notes for this question:
+          </label>
+          <textarea
+            className="question-notes-textarea"
+            placeholder="Add your notes about this question..."
+            value={questionNotes[current] || ''}
+            onChange={(e) => updateQuestionNote(current, e.target.value)}
+            rows="3"
+          />
+        </div>
+      )}
+
+      {/* Multiple Choice Questions */}
+      {q.question_type?.toLowerCase() === 'multiple choice' && (
+        <>
+          {(() => {
+            const correctAnswers = q.correct_answer.split(',').map(s => s.trim());
+            const maxSelections = correctAnswers.length;
+            const currentSelections = Array.isArray(userAnswers[current]) ? userAnswers[current].length : 0;
+            const limitReached = currentSelections >= maxSelections;
+            
+            return (
+              <div className={`selection-info ${limitReached ? 'limit-reached' : ''}`}>
+                {limitReached 
+                  ? `Selection limit reached: ${currentSelections}/${maxSelections} choices selected`
+                  : `Select up to ${maxSelections} answer${maxSelections > 1 ? 's' : ''} (${currentSelections}/${maxSelections} selected)`
+                }
+              </div>
+            );
+          })()}
+          <div className="choices-container">
+            {choices.map((choice, idx) => {
+              const isSelected = Array.isArray(userAnswers[current]) 
+                ? userAnswers[current].includes(choice)
+                : userAnswers[current] === choice;
+              
+              // Determine if this choice is correct/incorrect after submission
+              let feedbackClass = '';
+              if (questionSubmitted[current]) {
+                const correctAnswers = q.correct_answer.split(',').map(s => s.trim());
+                const choiceLabel = getChoiceLabel(choice);
+                const isCorrectChoice = correctAnswers.includes(choiceLabel);
+                
+                if (isSelected) {
+                  feedbackClass = isCorrectChoice ? 'choice-correct' : 'choice-incorrect';
+                } else if (isCorrectChoice) {
+                  feedbackClass = 'choice-missed';
+                }
+              }
+              
+              return (
+                <div key={idx} className="choice-item">
+                  <label className={`choice-label ${isSelected ? 'selected' : ''} ${feedbackClass}`}>
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={() => {
+                        const currentAnswers = Array.isArray(userAnswers[current]) ? userAnswers[current] : [];
+                        const isCurrentlySelected = currentAnswers.includes(choice);
+                        
+                        if (isCurrentlySelected) {
+                          updateUserAnswer(currentAnswers.filter(c => c !== choice));
+                        } else {
+                          const correctAnswers = q.correct_answer.split(',').map(s => s.trim());
+                          const maxSelections = correctAnswers.length;
+                          
+                          if (currentAnswers.length < maxSelections) {
+                            updateUserAnswer([...currentAnswers, choice]);
+                          }
+                        }
+                      }}
+                      disabled={questionSubmitted[current]}
+                    />
+                    <span className="choice-text">{choice}</span>
+                  </label>
+                </div>
+              );
+            })}
+          </div>
+        </>
+      )}
+
+      {/* Submit button and navigation - Combined on one line */}
+      <div className="question-actions-navigation">
+        <button
+          onClick={() => {
+            setCurrent(Math.max(0, current - 1));
+          }}
+          disabled={current === 0}
+          className="nav-btn prev"
+        >
+          ← Previous
+        </button>
+
+        <div className="submit-section">
+          {!questionSubmitted[current] && (
+            <button 
+              onClick={submitAnswer}
+              disabled={
+                (q.question_type?.toLowerCase() === 'multiple choice' && 
+                 (!Array.isArray(userAnswers[current]) || userAnswers[current].length === 0)) ||
+                (q.question_type?.toLowerCase() !== 'multiple choice' && !userAnswers[current])
+              }
+              className="submit-answer-btn"
+            >
+              Submit Answer
+            </button>
+          )}
+          
+          {questionSubmitted[current] && (
+            <div className="answer-submitted">
+              ✅ Answer submitted
+            </div>
+          )}
+        </div>
+        
+        <button
+          onClick={() => {
+            setCurrent(Math.min(questions.length - 1, current + 1));
+          }}
+          disabled={current === questions.length - 1}
+          className="nav-btn next"
+        >
+          Next →
+        </button>
+      </div>
+
+      {/* Explanation modal */}
+      {showModal && (
+        <div className="question-quiz-modal-overlay" onClick={() => setShowModal(false)}>
+          <div className="question-quiz-modal-content" onClick={e => e.stopPropagation()}>
+            <button
+              className="question-quiz-modal-close"
+              onClick={() => setShowModal(false)}
+              aria-label="Close"
+            >
+              ✕
+            </button>
+            
+            <h3 className="question-quiz-modal-title">
+              Question {current + 1} - Explanation
+            </h3>
+            
+            <div className="question-quiz-modal-text">
+              <p><strong>Correct Answer:</strong> {q.correct_answer}</p>
+              {q.explanation && (
+                <div>
+                  <strong>Explanation:</strong>
+                  <div style={{ marginTop: '0.5rem' }}>{q.explanation}</div>
+                </div>
+              )}
+            </div>
+            
+            <div style={{
+              marginTop: '2rem',
+              textAlign: 'center'
+            }}>
+              <button
+                onClick={() => setShowModal(false)}
+                className="question-quiz-nav-btn"
+              >
+                Got it!
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Save Modal */}
+      {showSaveModal && (
+        <SaveModal
+          isOpen={showSaveModal}
+          onClose={() => setShowSaveModal(false)}
+          onSave={handleSaveProgress}
+          currentProgress={{
+            current,
+            userAnswers,
+            questionScore,
+            questionSubmitted,
+            markedQuestions,
+            questionNotes
+          }}
+          existingSavedTest={currentSavedTest}
+        />
+      )}
+      </div>
+
+      {/* Modal for section content - moved outside container for proper overlay */}
+      {modalSection && (
+        <div className="question-quiz-modal-overlay" onClick={() => setModalSection(null)}>
+          <div className="question-quiz-modal-content" onClick={e => e.stopPropagation()}>
+            <button
+              className="question-quiz-modal-close"
+              onClick={() => setModalSection(null)}
+              aria-label="Close"
+            >
+              ✕
+            </button>
+            
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '1rem',
+              marginBottom: '2rem'
+            }}>
+              <div style={{
+                background: '#669BBC',
+                color: 'white',
+                borderRadius: '12px',
+                padding: '0.75rem',
+                fontSize: '1.5rem'
+              }}>
+                📄
+              </div>
+              <h3 className="question-quiz-modal-title">
+                {modalSection.section_title}
+              </h3>
+            </div>
+            
+            <div className="question-quiz-modal-text" style={{ 
+              whiteSpace: 'pre-line',
+              background: 'rgba(102, 155, 188, 0.05)',
+              padding: '1.5rem',
+              borderRadius: '8px',
+              border: '1px solid rgba(102, 155, 188, 0.1)'
+            }}>
+              {modalSection.content}
+            </div>
+            
+            <div style={{
+              marginTop: '2rem',
+              textAlign: 'center'
+            }}>
+              <button
+                onClick={() => setModalSection(null)}
+                className="question-quiz-nav-btn"
+              >
+                Got it!
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 

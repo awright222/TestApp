@@ -8,7 +8,7 @@ export default function QuestionQuizWithSave({
   caseStudyTitle,
   showSaveButton = true,
   initialProgress = null,
-  existingSavedTest = null // New prop to track if this is loaded from a saved test
+  existingSavedTest = null // Prop to track if this is loaded from a saved test
 }) {
   const [current, setCurrent] = useState(initialProgress?.current || 0);
   const [userAnswers, setUserAnswers] = useState(
