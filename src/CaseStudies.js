@@ -451,6 +451,11 @@ function CaseStudyTestInterface({
   const [markedQuestions, setMarkedQuestions] = useState([]);
   const [questionNotes, setQuestionNotes] = useState({});
   
+  // Wrong Answers feature states
+  const [showWrongAnswersModal, setShowWrongAnswersModal] = useState(false);
+  const [wrongAnswersFilter, setWrongAnswersFilter] = useState(false);
+  const [retryMode, setRetryMode] = useState(false);
+  
   // Timer state - simplified for case studies (practice mode only)
   const [timerEnabled, setTimerEnabled] = useState(false);
   const [timerTime, setTimerTime] = useState(0);
@@ -483,6 +488,8 @@ function CaseStudyTestInterface({
         setQuestionSubmitted(selectedTest.savedProgress.questionSubmitted || Array(questionArray.length).fill(false));
         setMarkedQuestions(selectedTest.savedProgress.markedQuestions || []);
         setQuestionNotes(selectedTest.savedProgress.questionNotes || {});
+        setWrongAnswersFilter(selectedTest.savedProgress.wrongAnswersFilter || false);
+        setRetryMode(selectedTest.savedProgress.retryMode || false);
       } else {
         setUserAnswers(questionArray.map(getInitialUserAnswer));
         setQuestionScore(Array(questionArray.length).fill(null));
@@ -586,6 +593,92 @@ function CaseStudyTestInterface({
     }));
   };
 
+  // Wrong Answers functionality
+  const getWrongAnswers = () => {
+    return questions.map((q, index) => {
+      if (!questionSubmitted[index]) return null;
+      
+      let isCorrect = false;
+      
+      if (q.question_type?.toLowerCase() === 'multiple choice') {
+        const correctAnswers = q.correct_answer.split(',').map(s => s.trim());
+        const userSelections = Array.isArray(userAnswers[index]) ? userAnswers[index] : [];
+        
+        const correctCount = userSelections.filter(answer => {
+          const choiceLabel = getChoiceLabel(answer);
+          return correctAnswers.includes(choiceLabel);
+        }).length;
+        
+        const incorrectCount = userSelections.length - correctCount;
+        isCorrect = correctCount === correctAnswers.length && incorrectCount === 0;
+      } else if (q.question_type?.toLowerCase() === 'hotspot') {
+        const correctHotspotAnswers = {};
+        const lines = q.correct_answer.split(/\r?\n/).filter(Boolean);
+        for (const line of lines) {
+          const [label, answer] = line.split(':');
+          if (label && answer) {
+            correctHotspotAnswers[label.trim()] = answer.trim();
+          }
+        }
+        
+        isCorrect = Object.entries(correctHotspotAnswers).every(
+          ([label, correctAnswer]) => (userAnswers[index] && userAnswers[index][label]) === correctAnswer
+        );
+      } else {
+        isCorrect = userAnswers[index] === q.correct_answer;
+      }
+      
+      return isCorrect ? null : { questionIndex: index, question: q };
+    }).filter(Boolean);
+  };
+
+  const getWrongAnswersCount = () => getWrongAnswers().length;
+
+  const navigateToNextWrong = () => {
+    const wrongAnswers = getWrongAnswers();
+    if (wrongAnswers.length === 0) return;
+    
+    const currentWrongIndex = wrongAnswers.findIndex(wa => wa.questionIndex === current);
+    const nextWrongIndex = (currentWrongIndex + 1) % wrongAnswers.length;
+    setCurrent(wrongAnswers[nextWrongIndex].questionIndex);
+  };
+
+  const navigateToPrevWrong = () => {
+    const wrongAnswers = getWrongAnswers();
+    if (wrongAnswers.length === 0) return;
+    
+    const currentWrongIndex = wrongAnswers.findIndex(wa => wa.questionIndex === current);
+    const prevWrongIndex = currentWrongIndex <= 0 ? wrongAnswers.length - 1 : currentWrongIndex - 1;
+    setCurrent(wrongAnswers[prevWrongIndex].questionIndex);
+  };
+
+  const startRetryMode = () => {
+    const wrongAnswers = getWrongAnswers();
+    if (wrongAnswers.length === 0) return;
+    
+    setRetryMode(true);
+    setWrongAnswersFilter(true);
+    
+    // Reset submissions and answers for wrong questions only
+    const newSubmitted = [...questionSubmitted];
+    const newAnswers = [...userAnswers];
+    const newScores = [...questionScore];
+    
+    wrongAnswers.forEach(({ questionIndex }) => {
+      newSubmitted[questionIndex] = false;
+      newAnswers[questionIndex] = getInitialUserAnswer(questions[questionIndex]);
+      newScores[questionIndex] = null;
+    });
+    
+    setQuestionSubmitted(newSubmitted);
+    setUserAnswers(newAnswers);
+    setQuestionScore(newScores);
+    
+    // Navigate to first wrong answer
+    setCurrent(wrongAnswers[0].questionIndex);
+    setShowWrongAnswersModal(false);
+  };
+
   // Navigation functions
   const allQuestionsAttempted = () => {
     return questionSubmitted.every(Boolean);
@@ -621,7 +714,9 @@ function CaseStudyTestInterface({
           questionScore,
           questionSubmitted,
           markedQuestions,
-          questionNotes
+          questionNotes,
+          wrongAnswersFilter,
+          retryMode
         }
       };
       
@@ -990,6 +1085,24 @@ function CaseStudyTestInterface({
                 return sum + 1;
               }, 0)
             }
+            {getWrongAnswersCount() > 0 && (
+              <div className="wrong-nav-controls">
+                <button 
+                  onClick={navigateToPrevWrong}
+                  className="wrong-nav-btn"
+                  title="Previous wrong answer"
+                >
+                  ◄❌
+                </button>
+                <button 
+                  onClick={navigateToNextWrong}
+                  className="wrong-nav-btn"
+                  title="Next wrong answer"
+                >
+                  ❌►
+                </button>
+              </div>
+            )}
           </div>
         </div>
         
@@ -1024,22 +1137,14 @@ function CaseStudyTestInterface({
               <span className="btn-icon">💾</span>
               <span className="btn-text">Save</span>
             </button>
-            <button 
-              onClick={toggleTimer}
-              className={`control-btn compact ${timerEnabled ? 'timer-enabled' : 'timer-disabled'}`}
-              title={timerEnabled ? 'Disable timer' : 'Enable timer'}
-            >
-              <span className="btn-icon">{timerEnabled ? '⏰' : '⏱️'}</span>
-              <span className="btn-text">Timer</span>
-            </button>
-            {markedQuestions.length > 0 && (
+            {getWrongAnswersCount() > 0 && (
               <button 
-                onClick={() => alert(`${markedQuestions.length} question(s) marked for review. Review functionality coming soon!`)}
-                className="control-btn compact"
-                title={`${markedQuestions.length} question(s) marked for review`}
+                onClick={() => setShowWrongAnswersModal(true)}
+                className="control-btn compact wrong-answers"
+                title={`${getWrongAnswersCount()} wrong answer(s) to review`}
               >
-                <span className="btn-icon">📌</span>
-                <span className="btn-text">Review ({markedQuestions.length})</span>
+                <span className="btn-icon">❌</span>
+                <span className="btn-text">Wrong ({getWrongAnswersCount()})</span>
               </button>
             )}
           </div>
@@ -1077,6 +1182,56 @@ function CaseStudyTestInterface({
           )}
         </div>
       </div>
+
+      {/* Secondary controls row for timer and review when needed */}
+      {(timerEnabled || markedQuestions.length > 0) && (
+        <div className="compact-test-bar secondary">
+          <div className="test-bar-left">
+            {timerEnabled && (
+              <div className="timer-controls-compact">
+                <button 
+                  onClick={toggleTimer}
+                  className={`control-btn compact small ${timerEnabled ? 'timer-enabled' : 'timer-disabled'}`}
+                  title={timerEnabled ? 'Disable timer' : 'Enable timer'}
+                >
+                  <span className="btn-icon">{timerEnabled ? '⏰' : '⏱️'}</span>
+                </button>
+                <button 
+                  onClick={startStopTimer}
+                  className={`control-btn compact small ${timerRunning ? 'timer-pause' : 'timer-play'}`}
+                  title={timerRunning ? 'Pause timer' : 'Start timer'}
+                >
+                  <span className="btn-icon">{timerRunning ? '⏸️' : '▶️'}</span>
+                </button>
+                <button 
+                  onClick={resetTimer}
+                  className="control-btn compact small timer-reset"
+                  title="Reset timer"
+                >
+                  <span className="btn-icon">🔄</span>
+                </button>
+              </div>
+            )}
+          </div>
+          
+          <div className="test-bar-center">
+            {/* Center space for future use */}
+          </div>
+          
+          <div className="test-bar-right">
+            {markedQuestions.length > 0 && (
+              <button 
+                onClick={() => alert(`${markedQuestions.length} question(s) marked for review. Review functionality coming soon!`)}
+                className="control-btn compact small"
+                title={`${markedQuestions.length} question(s) marked for review`}
+              >
+                <span className="btn-icon">📌</span>
+                <span className="btn-text">Review ({markedQuestions.length})</span>
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Question Content */}
       <div className="question-text">
@@ -1350,6 +1505,109 @@ function CaseStudyTestInterface({
           }}
           existingSavedTest={currentSavedTest}
         />
+      )}
+
+      {/* Wrong Answers Modal */}
+      {showWrongAnswersModal && (
+        <div className="question-quiz-modal-overlay" onClick={() => setShowWrongAnswersModal(false)}>
+          <div className="question-quiz-modal-content wrong-answers-modal" onClick={e => e.stopPropagation()}>
+            <button
+              className="question-quiz-modal-close"
+              onClick={() => setShowWrongAnswersModal(false)}
+              aria-label="Close"
+            >
+              ✕
+            </button>
+            
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
+              <div style={{
+                background: '#dc3545',
+                color: 'white',
+                borderRadius: '12px',
+                padding: '0.75rem',
+                fontSize: '1.5rem'
+              }}>
+                ❌
+              </div>
+              <h3 className="question-quiz-modal-title">
+                Wrong Answers Review
+              </h3>
+            </div>
+            
+            <div className="wrong-answers-summary">
+              <div className="wrong-answers-stats">
+                <div className="stat-item">
+                  <span className="stat-number">{getWrongAnswersCount()}</span>
+                  <span className="stat-label">Wrong Answers</span>
+                </div>
+                <div className="stat-item">
+                  <span className="stat-number">{questions.filter((_, i) => questionSubmitted[i]).length - getWrongAnswersCount()}</span>
+                  <span className="stat-label">Correct Answers</span>
+                </div>
+                <div className="stat-item">
+                  <span className="stat-number">{Math.round((questions.filter((_, i) => questionSubmitted[i]).length - getWrongAnswersCount()) / Math.max(1, questions.filter((_, i) => questionSubmitted[i]).length) * 100)}%</span>
+                  <span className="stat-label">Accuracy</span>
+                </div>
+              </div>
+              
+              {getWrongAnswersCount() > 0 && (
+                <div className="wrong-answers-list">
+                  <h4>Questions to Review:</h4>
+                  <div className="wrong-questions-grid">
+                    {getWrongAnswers().map(({ questionIndex, question }) => (
+                      <div 
+                        key={questionIndex}
+                        className="wrong-question-item"
+                        onClick={() => {
+                          setCurrent(questionIndex);
+                          setShowWrongAnswersModal(false);
+                        }}
+                      >
+                        <div className="wrong-question-number">Q{questionIndex + 1}</div>
+                        <div className="wrong-question-text">
+                          {question.question_text.substring(0, 80)}...
+                        </div>
+                        <div className="wrong-question-arrow">→</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            <div className="wrong-answers-actions">
+              {getWrongAnswersCount() > 0 && (
+                <>
+                  <button
+                    onClick={startRetryMode}
+                    className="question-quiz-nav-btn retry-btn"
+                    style={{ background: '#dc3545', color: 'white' }}
+                  >
+                    🔄 Retry Wrong Answers
+                  </button>
+                  <button
+                    onClick={() => {
+                      if (getWrongAnswersCount() > 0) {
+                        setCurrent(getWrongAnswers()[0].questionIndex);
+                      }
+                      setShowWrongAnswersModal(false);
+                    }}
+                    className="question-quiz-nav-btn"
+                  >
+                    📖 Review First Wrong Answer
+                  </button>
+                </>
+              )}
+              <button
+                onClick={() => setShowWrongAnswersModal(false)}
+                className="question-quiz-nav-btn"
+                style={{ background: '#6c757d', color: 'white' }}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
       )}
       </div>
 
