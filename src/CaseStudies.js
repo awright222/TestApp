@@ -455,6 +455,9 @@ function CaseStudyTestInterface({
   const [showWrongAnswersModal, setShowWrongAnswersModal] = useState(false);
   const [wrongAnswersFilter, setWrongAnswersFilter] = useState(false);
   const [retryMode, setRetryMode] = useState(false);
+  const [retryQuestions, setRetryQuestions] = useState([]); // Filtered questions for retry mode
+  const [retryProgress, setRetryProgress] = useState({ completed: 0, remaining: 0 }); // Track retry progress
+  const [showStudyTipsModal, setShowStudyTipsModal] = useState(false);
   
   // Timer state - simplified for case studies (practice mode only)
   const [timerEnabled, setTimerEnabled] = useState(false);
@@ -657,28 +660,125 @@ function CaseStudyTestInterface({
     const wrongAnswers = getWrongAnswers();
     if (wrongAnswers.length === 0) return;
     
+    // Create a focused test with only wrong answer questions
+    const wrongQuestions = wrongAnswers.map(({ questionIndex, question }) => ({
+      ...question,
+      originalIndex: questionIndex // Keep track of original position
+    }));
+    
     setRetryMode(true);
     setWrongAnswersFilter(true);
+    setRetryQuestions(wrongQuestions);
+    setRetryProgress({ completed: 0, remaining: wrongQuestions.length });
     
-    // Reset submissions and answers for wrong questions only
-    const newSubmitted = [...questionSubmitted];
-    const newAnswers = [...userAnswers];
-    const newScores = [...questionScore];
+    // Switch to retry questions and reset state for retry mode
+    setQuestions(wrongQuestions);
+    setCurrent(0);
+    setUserAnswers(wrongQuestions.map(getInitialUserAnswer));
+    setQuestionScore(Array(wrongQuestions.length).fill(null));
+    setQuestionSubmitted(Array(wrongQuestions.length).fill(false));
     
-    wrongAnswers.forEach(({ questionIndex }) => {
-      newSubmitted[questionIndex] = false;
-      newAnswers[questionIndex] = getInitialUserAnswer(questions[questionIndex]);
-      newScores[questionIndex] = null;
-    });
-    
-    setQuestionSubmitted(newSubmitted);
-    setUserAnswers(newAnswers);
-    setQuestionScore(newScores);
-    
-    // Navigate to first wrong answer
-    setCurrent(wrongAnswers[0].questionIndex);
     setShowWrongAnswersModal(false);
+    
+    // Show study tips modal for retry mode
+    setShowStudyTipsModal(true);
   };
+
+  // Exit retry mode and return to original test
+  const exitRetryMode = () => {
+    setRetryMode(false);
+    setWrongAnswersFilter(false);
+    setRetryQuestions([]);
+    setRetryProgress({ completed: 0, remaining: 0 });
+    
+    // Restore original questions and state
+    setQuestions(originalQuestions);
+    setCurrent(0);
+    
+    // Restore the original progress but don't reset scores for questions that were correct
+    setUserAnswers(originalQuestions.map(getInitialUserAnswer));
+    setQuestionScore(Array(originalQuestions.length).fill(null));
+    setQuestionSubmitted(Array(originalQuestions.length).fill(false));
+  };
+
+  // Update retry progress when questions are completed
+  const updateRetryProgress = () => {
+    if (!retryMode || retryQuestions.length === 0) return;
+    
+    const correctCount = questions.filter((q, index) => {
+      if (!questionSubmitted[index]) return false;
+      return isQuestionCorrect(q, index);
+    }).length;
+    
+    setRetryProgress({ completed: correctCount, remaining: retryQuestions.length - correctCount });
+    
+    // Dynamic elimination: Remove correctly answered questions from retry set
+    if (correctCount > retryProgress.completed) {
+      const stillWrongQuestions = questions.filter((q, index) => {
+        if (!questionSubmitted[index]) return true; // Keep unanswered questions
+        return !isQuestionCorrect(q, index); // Keep incorrectly answered questions
+      });
+      
+      if (stillWrongQuestions.length !== questions.length) {
+        // Update the questions array to only include still-wrong questions
+        setQuestions(stillWrongQuestions);
+        setRetryQuestions(stillWrongQuestions);
+        
+        // Reset arrays to match new question count
+        const newUserAnswers = stillWrongQuestions.map(getInitialUserAnswer);
+        const newQuestionScore = Array(stillWrongQuestions.length).fill(null);
+        const newQuestionSubmitted = Array(stillWrongQuestions.length).fill(false);
+        
+        setUserAnswers(newUserAnswers);
+        setQuestionScore(newQuestionScore);
+        setQuestionSubmitted(newQuestionSubmitted);
+        
+        // Adjust current index if needed
+        if (current >= stillWrongQuestions.length) {
+          setCurrent(Math.max(0, stillWrongQuestions.length - 1));
+        }
+      }
+    }
+  };
+
+  // Helper function to check if a question is correct
+  const isQuestionCorrect = (q, index) => {
+    if (q.question_type?.toLowerCase() === 'multiple choice') {
+      const correctAnswers = q.correct_answer.split(',').map(s => s.trim());
+      const userSelections = Array.isArray(userAnswers[index]) ? userAnswers[index] : [];
+      const userLabels = userSelections.map(answer => getChoiceLabel(answer)).filter(Boolean);
+      const hasAllCorrect = correctAnswers.every(correct => userLabels.includes(correct));
+      const hasNoIncorrect = userLabels.every(userLabel => correctAnswers.includes(userLabel));
+      return hasAllCorrect && hasNoIncorrect && userLabels.length === correctAnswers.length;
+    } else if (q.question_type?.toLowerCase() === 'hotspot') {
+      const correctHotspotAnswers = {};
+      const lines = q.correct_answer.split(/\r?\n/).filter(Boolean);
+      for (const line of lines) {
+        const [label, answer] = line.split(':');
+        if (label && answer) {
+          correctHotspotAnswers[label.trim()] = answer.trim();
+        }
+      }
+      return Object.entries(correctHotspotAnswers).every(
+        ([label, correctAnswer]) => (userAnswers[index] && userAnswers[index][label]) === correctAnswer
+      );
+    } else {
+      return userAnswers[index] === q.correct_answer;
+    }
+  };
+
+  // Call updateRetryProgress when relevant state changes
+  React.useEffect(() => {
+    updateRetryProgress();
+    
+    // Check if retry mode is complete
+    if (retryMode && retryProgress.remaining === 0 && retryProgress.completed > 0) {
+      setTimeout(() => {
+        alert('🎉 Excellent! You\'ve successfully answered all the questions you got wrong. Great job improving your understanding!');
+        exitRetryMode();
+      }, 1000);
+    }
+  }, [questionSubmitted, userAnswers, retryMode, retryProgress.completed, retryProgress.remaining]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Navigation functions
   const allQuestionsAttempted = () => {
@@ -784,6 +884,46 @@ function CaseStudyTestInterface({
       const newScores = [...questionScore];
       newScores[current] = score;
       setQuestionScore(newScores);
+      
+      // Show celebration message in retry mode if question is answered correctly
+      if (retryMode && isQuestionCorrect(q, current)) {
+        const encouragementMessages = [
+          "🎉 Excellent! You got it right this time!",
+          "✨ Great improvement! Well done!",
+          "🌟 Perfect! You're mastering this!",
+          "🎊 Fantastic! Keep up the great work!",
+          "💪 Nice job! You're getting stronger!",
+          "🚀 Awesome! You're on fire!",
+          "🎯 Bulls-eye! Great understanding!",
+          "⭐ Brilliant! You've got this!"
+        ];
+        
+        const randomMessage = encouragementMessages[Math.floor(Math.random() * encouragementMessages.length)];
+        
+        // Show a brief celebration toast
+        const toast = document.createElement('div');
+        toast.className = 'retry-success-toast';
+        toast.textContent = randomMessage;
+        toast.style.cssText = `
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+          color: white;
+          padding: 1rem 1.5rem;
+          border-radius: 10px;
+          font-weight: 600;
+          z-index: 10000;
+          animation: slideInRight 0.3s ease-out;
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        `;
+        
+        document.body.appendChild(toast);
+        setTimeout(() => {
+          toast.style.animation = 'slideOutRight 0.3s ease-in';
+          setTimeout(() => document.body.removeChild(toast), 300);
+        }, 2000);
+      }
     }
   };
 
@@ -971,11 +1111,20 @@ function CaseStudyTestInterface({
             ← Back to Case Study
           </button>
           <div className="mode-info">
-            <span className="mode-badge practice-mode">
-              🎯 Practice Mode
-            </span>
+            {retryMode ? (
+              <span className="mode-badge retry-mode">
+                🔄 Retry Mode
+              </span>
+            ) : (
+              <span className="mode-badge practice-mode">
+                🎯 Practice Mode
+              </span>
+            )}
             <p className="mode-description">
-              Get immediate feedback as you submit each answer
+              {retryMode 
+                ? `Focus on wrong answers • ${retryProgress.remaining} remaining • ${retryProgress.completed} corrected`
+                : 'Get immediate feedback as you submit each answer'
+              }
             </p>
           </div>
         </div>
@@ -983,6 +1132,7 @@ function CaseStudyTestInterface({
           <div className="test-info">
             <h1 className="test-title">
               {selectedTest.title}
+              {retryMode && <span className="retry-indicator"> - Retry Mode</span>}
             </h1>
           </div>
         </div>
@@ -1050,6 +1200,18 @@ function CaseStudyTestInterface({
         </div>
       )}
 
+      {/* Retry Mode Progress Bar */}
+      {retryMode && (
+        <div className="retry-progress-bar">
+          <div 
+            className="retry-progress-fill"
+            style={{ 
+              width: `${retryProgress.completed > 0 ? (retryProgress.completed / (retryProgress.completed + retryProgress.remaining)) * 100 : 0}%` 
+            }}
+          />
+        </div>
+      )}
+
       {/* Ultra-Compact Test Navigation & Controls */}
       <div className="compact-test-bar">
         <div className="test-bar-left">
@@ -1105,6 +1267,16 @@ function CaseStudyTestInterface({
         
         <div className="test-bar-center">
           <div className="test-controls-compact">
+            {retryMode && (
+              <button
+                onClick={exitRetryMode}
+                className="control-btn compact exit-retry"
+                title="Exit Retry Mode"
+              >
+                <span className="btn-icon">🚪</span>
+                <span className="btn-text">Exit Retry</span>
+              </button>
+            )}
             <button
               onClick={() => {
                 setQuestions(shuffleArray(originalQuestions));
@@ -1112,6 +1284,7 @@ function CaseStudyTestInterface({
               }}
               className="control-btn compact"
               title="Shuffle Questions"
+              disabled={retryMode}
             >
               <span className="btn-icon">🔀</span>
               <span className="btn-text">Shuffle</span>
@@ -1126,6 +1299,7 @@ function CaseStudyTestInterface({
               }}
               className="control-btn compact"
               title="Reset Test"
+              disabled={retryMode}
             >
               <span className="btn-icon">🔄</span>
               <span className="btn-text">Reset</span>
@@ -1134,7 +1308,7 @@ function CaseStudyTestInterface({
               <span className="btn-icon">💾</span>
               <span className="btn-text">Save</span>
             </button>
-            {getWrongAnswersCount() > 0 && (
+            {getWrongAnswersCount() > 0 && !retryMode && (
               <button 
                 onClick={() => setShowWrongAnswersModal(true)}
                 className="control-btn compact wrong-answers"
@@ -1659,6 +1833,76 @@ function CaseStudyTestInterface({
                 className="question-quiz-nav-btn"
               >
                 Got it!
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Study Tips Modal for Retry Mode */}
+      {showStudyTipsModal && (
+        <div className="question-quiz-modal-overlay" onClick={() => setShowStudyTipsModal(false)}>
+          <div className="question-quiz-modal-content study-tips-modal" onClick={e => e.stopPropagation()}>
+            <button
+              className="question-quiz-modal-close"
+              onClick={() => setShowStudyTipsModal(false)}
+              aria-label="Close"
+            >
+              ✕
+            </button>
+            
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
+              <div style={{
+                background: 'linear-gradient(135deg, #28a745 0%, #20c997 100%)',
+                color: 'white',
+                borderRadius: '12px',
+                padding: '0.75rem',
+                fontSize: '1.5rem'
+              }}>
+                🎯
+              </div>
+              <h3 className="question-quiz-modal-title">
+                Retry Mode Study Tips
+              </h3>
+            </div>
+            
+            <div className="study-tips-content">
+              <div className="study-tip">
+                <h4>🔄 Focus Mode Active</h4>
+                <p>You're now in retry mode! Only the questions you got wrong will appear. As you answer each question correctly, it will be automatically removed from your retry set.</p>
+              </div>
+              
+              <div className="study-tip">
+                <h4>📚 Study Strategies</h4>
+                <ul>
+                  <li>Read each question carefully and take your time</li>
+                  <li>Use the case study information tabs above for reference</li>
+                  <li>Look for keywords that might have been missed initially</li>
+                  <li>Consider why your previous answer was incorrect</li>
+                </ul>
+              </div>
+              
+              <div className="study-tip">
+                <h4>💡 Dynamic Progress</h4>
+                <p>Watch the progress bar at the top! Each correct answer reduces your retry set. The goal is to get all questions right and clear your retry list completely.</p>
+              </div>
+              
+              <div className="study-tip">
+                <h4>🎉 Celebrate Success</h4>
+                <p>You'll get encouraging messages when you answer correctly. Keep going until you've mastered all the challenging questions!</p>
+              </div>
+            </div>
+            
+            <div style={{
+              marginTop: '2rem',
+              textAlign: 'center'
+            }}>
+              <button
+                onClick={() => setShowStudyTipsModal(false)}
+                className="question-quiz-nav-btn"
+                style={{ background: '#28a745', color: 'white', fontSize: '1.1rem', padding: '0.75rem 1.5rem' }}
+              >
+                🚀 Start Retry Mode
               </button>
             </div>
           </div>
