@@ -45,20 +45,16 @@ A comprehensive React-based test creation and management platform designed for m
 ## 🏗️ **Technical Architecture**
 
 ### **Frontend Stack**
-```javascript
-React 19.1.0          // Modern React with hooks and concurrent features
-React Router 7.6.2    // Client-side routing and navigation
-Firebase 11.9.1       // Authentication, database, and real-time sync
-CSS3 + Modern Design  // Responsive design with glassmorphism effects
-```
+- React 19.1.0
+- React Router 7.6.2
+- Firebase 11.9.1
+- CSS3 + Modern Design
 
 ### **Backend Services**
-```javascript
-Firebase Firestore    // Scalable NoSQL database
-Firebase Auth         // Secure authentication with Google Sign-In
-Firebase Storage      // File uploads and document management
-Firebase Functions    // Serverless backend logic (ready for deployment)
-```
+- Firebase Firestore
+- Firebase Auth
+- Firebase Storage
+- Firebase Functions
 
 ### **State Management**
 - **React Context API**: Centralized authentication and app state
@@ -89,85 +85,67 @@ Firebase Functions    // Serverless backend logic (ready for deployment)
 - **🔄 Automatic Migration**: Seamless transition from local to cloud storage
 
 ### **🏫 Organization Administration**
-```javascript
-// Admin Dashboard Features
-✅ Teacher Management     // Add, edit, remove, and assign teachers
-✅ Student Directory     // Bulk operations and advanced filtering
-✅ Class Oversight       // Organization-wide class management
-✅ Usage Analytics      // Performance metrics and engagement data
-✅ Bulk Import/Export   // CSV operations for large-scale management
-✅ Role-Based Access    // Secure permissions with development overrides
-```
+- Teacher Management
+- Student Directory
+- Class Oversight
+- Usage Analytics
+- Bulk Import/Export
+- Role-Based Access
 
 ### **📚 Class Management System**
-```javascript
-// Teacher Tools
-✅ Class Creation     
-✅ Student Enrollment  
-✅ Assignment System    settings
-✅ Progress Tracking    // Real-time student performance monitoring
-✅ Gradebook Export     // Multiple format support for grade management
-```
+- Class Creation
+- Student Enrollment
+- Assignment System
+- Progress Tracking
+- Gradebook Export
 
 ### **📝 Test Creation & Management**
-```javascript
-// Advanced Test Builder
-✅ Question Types       // Multiple choice, T/F, short answer, essay
-✅ Media Support        // Images, audio, video in questions
-✅ Timer Settings       // Flexible time limits with grace periods
-✅ Security Options     // Browser lockdown and integrity measures
-✅ Randomization        // Question/answer shuffling algorithms
-✅ Import/Export        // Multiple format support for test content
-```
+- Multiple Question Types
+- Media Support
+- Timer Settings
+- Security Options
+- Randomization
+- Import/Export
 
 ### **🛡️ Security & Proctoring**
-```javascript
-// Academic Integrity Features
-✅ Browser Lockdown     // Prevents external navigation and tab switching
-✅ Full-Screen Mode     // Maintains focus during test sessions
-✅ Linear Progression   // Prevents backtracking to previous questions
-✅ Time Enforcement     // Automatic submission with configurable grace periods
-✅ Access Codes         // Secure test distribution and enrollment
-✅ Session Monitoring   // Real-time test-taking progress tracking
-```
+- Browser Lockdown
+- Full-Screen Mode
+- Linear Progression
+- Time Enforcement
+- Access Codes
+- Session Monitoring
 
 ### **📊 Analytics & Reporting**
-```javascript
-// Comprehensive Data Insights
-✅ Student Analytics    // Individual performance and improvement trends
-✅ Class Performance    // Aggregated class metrics and comparisons
-✅ Question Analysis    // Difficulty assessment and response patterns
-✅ Export Capabilities  // PDF, Excel, CSV report generation
-✅ Real-time Dashboards // Live performance monitoring and alerts
-```
+- Student Analytics
+- Class Performance
+- Question Analysis
+- Export Capabilities
+- Real-time Dashboards
 
 ## 🚀 **Installation & Setup**
 
 ### **Prerequisites**
-```bash
-Node.js 18+           # Latest LTS version recommended
-npm or yarn          # Package manager
-Firebase Account     # For backend services
-Modern Browser       # Chrome, Firefox, Safari, Edge
-```
+- Node.js 18+
+- npm or yarn
+- Firebase Account
+- Modern Browser
 
 ### **Quick Start**
 ```bash
-# 1. Clone the repository
+# Clone the repository
 git clone <repository-url>
 cd TestApp
 
-# 2. Install dependencies
+# Install dependencies
 npm install
 
-# 3. Configure Firebase
+# Configure Firebase
 # Create src/firebase/config.js with your Firebase configuration
-# Enable Firestore, Authentication, and Storage in Firebase Console
 
-# 4. Start development server
+# Start development server
 npm start
 
-# 5. Open in browser
+# Open in browser
 # Navigate to http://localhost:3000
 ```
 
@@ -232,27 +210,24 @@ REACT_APP_FIREBASE_APP_ID=your-app-id
 
 ### **Available Scripts**
 ```bash
-npm start              # Start development server (http://localhost:3000)
-npm test              # Run test suite in watch mode
+npm start              # Start development server
+npm test              # Run test suite
 npm run build         # Build production bundle
-npm run lint          # Run ESLint for code quality
+npm run lint          # Run ESLint
 npm run format        # Format code with Prettier
 ```
 
 ### **Development Panel**
-- **🧪 Quick Login**: Switch between user roles instantly
-- **🚀 Fast Navigation**: Direct access to admin and management features
-- **🔧 Development Tools**: Testing utilities and debugging helpers
-- **⚡ Live Reloading**: Automatic updates during development
+- Quick Login for role switching
+- Fast Navigation to admin features
+- Development Tools and debugging helpers
+- Live Reloading during development
 
 ### **Code Quality**
-```javascript
-// Linting & Formatting
-ESLint               // Code quality and error detection
-Prettier            // Consistent code formatting
-Husky               // Git hooks for quality gates
-lint-staged         // Pre-commit linting and formatting
-```
+- ESLint for code quality
+- Prettier for consistent formatting
+- Husky for git hooks
+- lint-staged for pre-commit checks
 
 ## 📊 **Performance & Scalability**
 
@@ -336,219 +311,3 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 **Built with ❤️ for educators worldwide**
 
 *Formulate - Where Tests Take Shape*
-- **Firebase Auth**: Secure user authentication and management
-- **Real-time Synchronization**: Cross-device data syncing
-- **Cloud Functions**: Serverless backend logic (ready for implementation)
-
-### State Management
-- **Context API**: Centralized user and app state management
-- **Local Storage**: Offline capability and data persistence
-- **Firebase Integration**: Seamless cloud synchronization
-
-## 📱 **User Experience**
-
-### For Teachers
-1. **Quick Setup**: Create account, select teacher role, start creating classes
-2. **Class Management**: Organize students, assign tests, monitor progress
-3. **Test Creation**: Build assessments with advanced settings and security
-4. **Analytics Dashboard**: Comprehensive insights into student performance
-5. **Export & Share**: Multiple formats for test distribution and reporting
-
-### For Students
-1. **Easy Enrollment**: Join classes using enrollment codes from teachers
-2. **Assignment Dashboard**: View upcoming tests and due dates
-3. **Secure Test Taking**: Guided experience with built-in security measures
-4. **Progress Tracking**: Monitor personal performance and improvement
-5. **Multi-device Access**: Seamless experience across devices
-
-## 🎨 **User Interface**
-
-### Modern Design System
-- **Consistent Color Palette**: Professional blue/teal theme with accessibility in mind
-- **Responsive Grid Layouts**: Adapts to all screen sizes and devices
-- **Interactive Components**: Smooth animations and micro-interactions
-- **Accessibility First**: WCAG compliant with keyboard navigation support
-
-### Component Library
-- **Reusable UI Components**: Modular design system for consistency
-- **Custom Form Controls**: Specialized inputs for test creation
-- **Data Visualization**: Charts and graphs for analytics display
-- **Modal System**: Layered interface for complex workflows
-
-## 🔧 **Installation & Setup**
-
-### Prerequisites
-- Node.js 18+ and npm
-- Firebase project with Firestore and Authentication enabled
-- Modern web browser with JavaScript enabled
-
-### Quick Start
-
-### Quick Start
-
-```bash
-# Clone and install dependencies
-git clone <repository-url>
-cd TestApp
-npm install
-
-# Configure Firebase
-# Create src/firebase/config.js with your Firebase configuration
-
-# Start development server
-npm start
-```
-
-## Available Scripts
-
-In the project directory, you can run:
-
-### `npm start`
-
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
-
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
-
-### `npm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
-
-Firebase Configuration - Your app is connected to your Firebase project (test-builder-app)
-
-User Authentication
-
-Sign in/Sign up with email and password
-Google Sign-in integration
-User profile management
-Auth state management with React Context
-Cloud Data Storage
-
-Tests are automatically saved to Firestore when users are logged in
-Falls back to localStorage for anonymous users
-Data migration: When users log in, their localStorage tests are automatically migrated to Firebase
-UI Integration
-
-Sign In button in both desktop and mobile sidebars
-User profile display with welcome message
-Sign Out functionality
-🚀 How It Works:
-For Anonymous Users: Tests are saved to localStorage (existing behavior)
-For Logged-in Users: Tests are saved to Firebase Firestore in the cloud
-Migration: When a user signs in, any existing localStorage tests are automatically moved to Firebase
-🔧 Key Files Created/Updated:
-config.js - Firebase configuration with your project credentials
-testsService.js - Firebase Firestore operations
-AuthContext.js - React authentication context
-AuthModal.js - Login/registration modal
-SavedTestsService.js - Updated to use Firebase when logged in
-App.js - Added authentication UI to sidebar
-index.js - Wrapped app with AuthProvider
-
-
-🔮 Future Enhancements Ready to Build:
-The foundation is now in place for:
-
-User settings/preferences storage
-Test sharing between users
-Social features like public test libraries
-Advanced analytics and user insights
-
-✅ Settings are test-specific - each test has its own independent settings
-✅ Settings persist during creation - won't be lost when switching tabs
-✅ Settings don't interfere - creating multiple tests won't share settings
-✅ Editing preserves settings - editing a test loads its specific settings
-✅ Clean slate for new tests - each new test starts fresh
-✅ Visual confirmation - clear indication of which test the settings apply to
-
-✅ True Cross-Device Access: Start test on computer, continue on phone
-✅ Data Safety: Tests backed up in cloud, never lost
-✅ Clear Communication: Users understand when/why login is needed
-✅ No Data Loss: Migration preserves all existing data
-✅ Seamless Experience: Automatic login detection and redirection
-
-Timer Settings:
-✅ Auto-submit when time expires
-✅ Show/hide timer to students
-✅ Timer warnings at 10, 5, and 1 minute
-✅ Grace period after time expires
-Security & Navigation:
-✅ Browser lockdown (disables copy/paste, right-click, tab switching)
-✅ Full screen requirement
-✅ Linear mode (answer in order)
-✅ No backtracking
-✅ One-time only tests
-Test Taking Experience:
-✅ Consolidated UI with compact controls
-✅ All security restrictions enforced during test taking
-✅ Timer countdown with warnings and auto-submit
-✅ Navigation restrictions based on test settings
-
-1. Enhanced AuthContext
-Role Management: Teacher/Student account types
-Subscription Tiers: Free, Paid, School with feature flags
-Usage Tracking: Tests created, student attempts, storage
-Permission System: canPerformAction() helper function
-Backward Compatibility: Existing users default to teacher role
-2. Role Selection System
-Beautiful Modal: New users choose Teacher or Student role
-Clear Value Props: Features and pricing for each role
-Smart Defaults: Existing users grandfathered as teachers
-Non-Breaking: Seamless integration without disrupting current users
-3. Usage Tracking & Display
-Usage Display Component: Shows current limits and usage
-Upgrade Prompts: Contextual upgrade messaging
-Progress Visualization: Visual progress bars for limits
-Subscription Badges: Clear tier indicators

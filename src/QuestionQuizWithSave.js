@@ -378,7 +378,7 @@ export default function QuestionQuizWithSave({
                     {showFeedback && (
                       <div style={{ marginTop: '0.25rem' }}>
                         {isCorrect
-                          ? <span style={{ color: 'green' }}>✅</span>
+                          ? <span style={{ color: 'green' }}>Correct</span>
                           : (
                             <>
                               <span style={{ color: 'red' }}>❌</span>
@@ -434,7 +434,7 @@ export default function QuestionQuizWithSave({
         {questionSubmitted[current] && (
           <div style={{ marginTop: '1rem', backgroundColor: '#f0f0f0', color: '#003049', padding: '1rem', borderRadius: 8 }}>
             <strong>
-              {questionScore[current] > 0 ? '✅ Correct!' : '❌ Incorrect.'}
+              {questionScore[current] > 0 ? 'Correct!' : 'Incorrect.'}
             </strong>
             <p><strong>Explanation:</strong> {q.explanation || 'No explanation provided.'}</p>
             <p><strong>Correct Answer:</strong> {q.correct_answer}</p>
@@ -571,7 +571,7 @@ export default function QuestionQuizWithSave({
                         <div style={{ marginTop: '0.5rem' }}>
                           {questionSubmitted[questionIndex] ? (
                             <span style={{ color: '#28a745', fontSize: '0.85rem', fontWeight: '600' }}>
-                              ✅ Answered
+                              Answered
                             </span>
                           ) : (
                             <span style={{ color: '#ffc107', fontSize: '0.85rem', fontWeight: '600' }}>

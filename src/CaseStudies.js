@@ -774,7 +774,7 @@ function CaseStudyTestInterface({
     // Check if retry mode is complete
     if (retryMode && retryProgress.remaining === 0 && retryProgress.completed > 0) {
       setTimeout(() => {
-        alert('🎉 Excellent! You\'ve successfully answered all the questions you got wrong. Great job improving your understanding!');
+        alert('All retry questions completed! Great work!');
         exitRetryMode();
       }, 1000);
     }
@@ -791,7 +791,7 @@ function CaseStudyTestInterface({
 
   const handleFinishTest = () => {
     setTestCompleted(true);
-    // Implementation for test completion
+    // Complete the test
   };
 
   // Save progress function
@@ -822,7 +822,7 @@ function CaseStudyTestInterface({
       };
       
       await SavedTestsService.saveTest(caseStudySaveData);
-      alert('✅ Case study progress saved successfully!');
+      alert('Case study progress saved!');
     } catch (error) {
       console.error('Error saving case study:', error);
       throw error;

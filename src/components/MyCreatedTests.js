@@ -84,7 +84,7 @@ export default function MyCreatedTests() {
       try {
         await CreatedTestsService.deleteTest(testId);
         await loadCreatedTests(); // Reload the list
-        alert('Test deleted successfully!');
+        alert('Test deleted!');
       } catch (error) {
         console.error('Error deleting test:', error);
         alert('Failed to delete test. Please try again.');
@@ -133,7 +133,7 @@ export default function MyCreatedTests() {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
       
-      alert('Test exported as JSON successfully!');
+      alert('Test exported as JSON!');
     } catch (error) {
       console.error('JSON export failed:', error);
       alert('Failed to export test as JSON. Please try again.');
@@ -168,7 +168,7 @@ export default function MyCreatedTests() {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
       
-      alert('Test exported as CSV successfully!');
+      alert('Test exported as CSV!');
     } catch (error) {
       console.error('CSV export failed:', error);
       alert('Failed to export test as CSV. Please try again.');
@@ -292,7 +292,7 @@ export default function MyCreatedTests() {
       document.body.removeChild(link);
       URL.revokeObjectURL(url);
       
-      alert('Test exported as text file successfully! You can open this in Word or any text editor.');
+      alert('Test exported as text file! You can open this in Word or any text editor.');
     } catch (error) {
       console.error('Word export failed:', error);
       alert('Failed to export test as text file. Please try again.');

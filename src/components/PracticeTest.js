@@ -187,7 +187,7 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
                 alert(`⏰ Time's up! You have ${gracePeriod} seconds to finish your current answer.`);
               } else {
                 handleFinishTest();
-                alert('⏰ Time\'s up! Test has been automatically submitted.');
+                alert('Time\'s up! Test has been submitted.');
               }
             } else {
               alert('⏰ Time\'s up! You can still continue working, but your time is recorded.');
@@ -475,11 +475,10 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
       
       setShowSaveModal(false);
       
-      // Enhanced success message
       alert(
-        '✅ Test saved successfully!\n\n' +
-        '📍 You can find it in the "Saved Tests" section in the sidebar.\n' +
-        '☁️ If you\'re logged in, it\'s automatically synced across your devices!'
+        'Test saved successfully!\n\n' +
+        'You can find it in the "Saved Tests" section in the sidebar.\n' +
+        'Your progress is synced across devices when logged in.'
       );
     } catch (error) {
       console.error('Error saving test:', error);
@@ -952,7 +951,7 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
     setShowExplanation(false);
     setShowWrongAnswersModal(false);
     
-    alert(`✅ Retry mode activated! Reset ${wrongIndices.length} wrong answers. Good luck!`);
+    alert(`Retry mode activated! Reset ${wrongIndices.length} wrong answers.`);
   };
 
   const exitWrongAnswersRetryMode = () => {

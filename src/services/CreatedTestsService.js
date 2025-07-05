@@ -212,7 +212,7 @@ export class CreatedTestsService {
       let foundTest = tests.find(test => test.id === testId);
       
       if (foundTest) {
-        console.log('✅ CreatedTestsService: Found test in created tests:', foundTest);
+        console.log('Found test in created tests:', foundTest);
         return foundTest;
       }
       
@@ -228,7 +228,7 @@ export class CreatedTestsService {
           console.log('🔍 CreatedTestsService: Published test IDs:', published.map(t => t.id));
           foundTest = published.find(test => test.id === testId);
           if (foundTest) {
-            console.log('✅ CreatedTestsService: Found test in published tests:', foundTest);
+            console.log('Found test in published tests:', foundTest);
             return foundTest;
           }
         } catch (error) {
@@ -348,7 +348,7 @@ export class CreatedTestsService {
 
       console.log(`Migration completed: ${migratedCount} tests migrated`);
       
-      // Optionally clear localStorage after successful migration
+      // Clear localStorage after successful migration
       if (migratedCount > 0) {
         localStorage.removeItem(STORAGE_KEY);
         console.log('Cleared localStorage after migration');

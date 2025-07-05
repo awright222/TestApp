@@ -23,12 +23,12 @@ export class SavedTestsService {
           }
           
           // If Firebase is empty, check localStorage 
-          console.log('Firebase empty, checking localStorage...');
+          console.log('Firebase empty, checking localStorage');
           const localTests = localStorage.getItem(this.STORAGE_KEY);
           if (localTests) {
             const parsedLocal = JSON.parse(localTests);
             console.log('Found', parsedLocal.length, 'tests in localStorage');
-            console.log('Note: These tests need to be migrated to Firebase. Save a new test to trigger migration.');
+            console.log('These tests need to be migrated to Firebase. Save a new test to trigger migration.');
             return parsedLocal; // Return local tests for now
           }
           
@@ -76,52 +76,32 @@ export class SavedTestsService {
         throw new Error('Cannot save test without questions array. Make sure the test data includes a questions array with at least one question.');
       }
       
-      console.log('✅ Questions validation passed:', testData.questions.length, 'questions found');
+      console.log('Questions validation passed:', testData.questions.length, 'questions found');
       
       // If user is logged in, try to save to Firebase
       if (auth.currentUser) {
         try {
-          console.log('🔥 User is logged in, attempting Firebase save...');
-          console.log('🔥 Firebase save - user UID:', auth.currentUser.uid);
-          console.log('🔥 Test data structure check:', {
-            hasQuestions: !!testData.questions,
-            questionsLength: testData.questions?.length || 0,
-            hasProgressQuestions: !!testData.progress?.questions,
-            progressQuestionsLength: testData.progress?.questions?.length || 0
-          });
+          console.log('User is logged in, attempting Firebase save');
           
-          console.log('🔥 Calling FirebaseTestsService.saveUserProgress...');
           const result = await FirebaseTestsService.saveUserProgress(auth.currentUser.uid, testData);
-          console.log('🔥 Firebase save result:', result);
           
           if (result && result.success) {
-            console.log('🔥 ✅ Successfully saved to Firebase - RETURNING EARLY');
-            // Dispatch event to notify SavedTests component
-            console.log('📢 Dispatching testSaved event from Firebase save');
+            console.log('Saved to Firebase');
             window.dispatchEvent(new CustomEvent('testSaved'));
             return result;
           } else {
-            console.error('🔥 ❌ Firebase save failed (result.success = false), falling back to localStorage');
-            console.error('🔥 Full result object:', result);
+            console.error('Firebase save failed, falling back to localStorage');
           }
         } catch (firebaseError) {
-          console.error('🔥 ❌ Firebase save error, falling back to localStorage:', firebaseError);
-          console.error('🔥 Firebase error details:', {
-            name: firebaseError.name,
-            code: firebaseError.code,
-            message: firebaseError.message,
-            stack: firebaseError.stack
-          });
-          // Fall through to localStorage save
+          console.error('Firebase save error, falling back to localStorage:', firebaseError);
         }
       } else {
-        console.log('🔥 User not logged in, using localStorage only');
+        console.log('User not logged in, using localStorage only');
       }
       
       // Use localStorage (either user not logged in or Firebase failed)
-      console.log('💾 Saving to localStorage...');
+      console.log('Saving to localStorage');
       const savedTests = await this.getSavedTests();
-      console.log('💾 Current saved tests:', savedTests);
       
       // Check if a test with the same title already exists
       const existingIndex = savedTests.findIndex(test => test.title === testData.title);
@@ -145,7 +125,7 @@ export class SavedTestsService {
       console.log('Successfully saved to localStorage');
       
       // Dispatch event to notify SavedTests component
-      console.log('📢 Dispatching testSaved event from localStorage save');
+      console.log('Dispatching testSaved event from localStorage save');
       window.dispatchEvent(new CustomEvent('testSaved'));
       
       return true;
@@ -185,8 +165,7 @@ export class SavedTestsService {
 
   static async clearAllTests() {
     try {
-      // If user is logged in, this would need a Firebase implementation
-      // For now, just clear localStorage
+      // Clear localStorage for now
       localStorage.removeItem(this.STORAGE_KEY);
       return true;
     } catch (error) {
@@ -218,8 +197,7 @@ export class SavedTestsService {
       }
 
       // Clear localStorage after successful migration
-      localStorage.removeItem(this.STORAGE_KEY);
-      console.log('Migration completed successfully');
+      localStorage.removeItem(this.STORAGE_KEY);        console.log('Migration completed successfully');
     } catch (error) {
       console.error('Error migrating tests to Firebase:', error);
       // Don't throw here - migration is optional

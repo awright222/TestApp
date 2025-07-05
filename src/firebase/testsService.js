@@ -121,32 +121,22 @@ export class FirebaseTestsService {
   // Save test progress to user's collection (for SavedTestsService)
   static async saveUserProgress(userId, progressData) {
     try {
-      console.log('🔥🔥 FirebaseTestsService.saveUserProgress called with:', {
-        userId,
-        progressDataKeys: Object.keys(progressData),
-        progressData: { 
-          ...progressData, 
-          progress: progressData.progress ? 'present' : 'missing',
-          questions: progressData.questions ? progressData.questions.length + ' questions' : 'NO QUESTIONS'
-        }
-      });
+      console.log('FirebaseTestsService.saveUserProgress called');
       
       // Validate that questions are included
       if (!progressData.questions || !Array.isArray(progressData.questions) || progressData.questions.length === 0) {
-        console.error('🔥🔥 ❌ CRITICAL: Attempting to save test without questions!');
-        console.error('🔥🔥 progressData keys:', Object.keys(progressData));
-        console.error('🔥🔥 This will cause "Continue Test" to fail');
+        console.error('Error: Attempting to save test without questions');
         
         // Return error instead of saving incomplete data
         throw new Error('Cannot save test without questions array');
       }
       
-      console.log('🔥🔥 ✅ Questions validation passed:', progressData.questions.length, 'questions found');
+      console.log('Questions validation passed:', progressData.questions.length, 'questions found');
       
       const progressId = progressData.id || Date.now().toString();
       const userProgressRef = doc(db, 'users', userId, 'testProgress', progressId);
       
-      console.log('🔥🔥 Attempting to save to Firebase with:', {
+      console.log('Attempting to save to Firebase with:', {
         collection: 'users',
         userId: userId,
         subcollection: 'testProgress',
@@ -161,20 +151,13 @@ export class FirebaseTestsService {
         synced: true
       };
       
-      console.log('🔥🔥 Data structure being saved:', {
-        ...dataToSave,
-        questions: dataToSave.questions ? `${dataToSave.questions.length} questions` : 'NO QUESTIONS',
-        progress: dataToSave.progress ? 'present' : 'missing'
-      });
-      
       // Prepare the data for Firestore (handle nested arrays)
-      console.log('🔥🔥 Preparing data for Firestore...');
+      console.log('Preparing data for Firestore');
       const preparedData = this.prepareForFirestore(dataToSave);
-      console.log('🔥🔥 Data prepared for Firestore');
       
       await setDoc(userProgressRef, preparedData);
       
-      console.log('🔥🔥 ✅ Successfully saved to Firebase');
+      console.log('Successfully saved to Firebase');
       return { success: true, id: progressId };
     } catch (error) {
       console.error('Error saving test progress to Firebase:', error);
@@ -190,16 +173,15 @@ export class FirebaseTestsService {
   // Get all user's test progress
   static async getUserProgress(userId) {
     try {
-      console.log('🔥🔥 FirebaseTestsService.getUserProgress called for userId:', userId);
+      console.log('FirebaseTestsService.getUserProgress called for userId:', userId);
       const progressRef = collection(db, 'users', userId, 'testProgress');
-      console.log('🔥🔥 Collection reference:', progressRef.path);
       
       const querySnapshot = await getDocs(progressRef);
-      console.log('🔥🔥 Query snapshot size:', querySnapshot.size);
+      console.log('Query snapshot size:', querySnapshot.size);
       
       const progress = [];
       querySnapshot.forEach((doc) => {
-        console.log('🔥🔥 Document found:', {
+        console.log('Document found:', {
           id: doc.id,
           data: {
             title: doc.data().title,
@@ -215,10 +197,10 @@ export class FirebaseTestsService {
         progress.push({ id: doc.id, ...restoredData });
       });
       
-      console.log('🔥🔥 Returning', progress.length, 'progress records');
+      console.log('Returning', progress.length, 'progress records');
       return progress;
     } catch (error) {
-      console.error('🔥🔥 Error loading test progress:', error);
+      console.error('Error loading test progress:', error);
       return [];
     }
   }
