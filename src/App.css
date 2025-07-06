@@ -774,7 +774,7 @@ button:hover {
 }
 
 /* Fix for main content pages to ensure proper backgrounds and text visibility */
-.main-content > * {
+.main-content > *:not(.dashboard-container) {
   background: #FDF0D5; /* Light cream background for all main content */
   color: #003049; /* Dark blue text for good contrast */
   min-height: calc(100vh - 4rem);
@@ -787,14 +787,25 @@ button:hover {
 .create-test-container,
 .practice-test-container,
 .my-created-tests-container,
-.case-studies-container,
-.dashboard-container {
+.case-studies-container {
   background: #FDF0D5 !important;
   color: #003049 !important;
   padding: 2rem;
   border-radius: 16px;
   margin: 0;
   min-height: calc(100vh - 4rem);
+}
+
+/* Dashboard gets its own background styling */
+.dashboard-container {
+  background: linear-gradient(135deg, #FDF0D5 0%, #F5E6D3 100%) !important;
+  color: #003049 !important;
+  padding: 1.5rem;
+  border-radius: 16px 0 0 0;
+  margin: 0;
+  min-height: calc(100vh - 4rem);
+  width: 100%;
+  max-width: none;
 }
 
 /* Fix for any headers that might be invisible */
