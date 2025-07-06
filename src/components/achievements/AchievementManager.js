@@ -20,19 +20,6 @@ const AchievementManager = ({ compact = false, maxDisplay = 4 }) => {
     }
   }, [user]);
 
-  // Add a method to manually refresh achievements (for testing)
-  const refreshAchievements = () => {
-    checkAchievements();
-  };
-
-  // Expose refresh function globally for debugging
-  useEffect(() => {
-    window.refreshAchievements = refreshAchievements;
-    return () => {
-      delete window.refreshAchievements;
-    };
-  }, []);
-
   const checkAchievements = async () => {
     try {
       const earnedAchievements = [];

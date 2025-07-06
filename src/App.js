@@ -28,8 +28,6 @@ import ClassManagement from './components/ClassManagement';
 import StudentDirectory from './components/StudentDirectory';
 import TeacherDirectory from './components/TeacherDirectory';
 import OrganizationAdmin from './components/OrganizationAdmin';
-import XPTestControls from './components/debug/XPTestControls';
-import MedalDebugger from './components/debug/MedalDebugger';
 import StudentClasses from './components/StudentClasses';
 import DevPanel from './components/DevPanel';
 import ProfileSettings from './components/ProfileSettings';
@@ -219,12 +217,6 @@ function App() {
 
       {/* Dev Panel - only shows in development */}
       <DevPanel />
-      
-      {/* XP Test Controls - for testing medal system */}
-      <XPTestControls />
-      
-      {/* Medal Debugger - to see medal system data */}
-      <MedalDebugger />
     </div>
   );
 }
