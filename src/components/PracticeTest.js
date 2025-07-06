@@ -696,21 +696,19 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
     }
 
     // Navigate back to dashboard or test library after completion
-    setTimeout(() => {
-      if (selectedTest?.isSharedTest) {
-        // For shared tests, go back to shared tests page
-        window.location.href = '/shared-tests';
-      } else if (selectedTest?.customTestId) {
-        // For custom tests, go back to my tests
-        window.location.href = '/my-tests';
-      } else if (selectedTest?.savedProgress) {
-        // For saved tests, go back to saved tests
-        window.location.href = '/saved-tests';
-      } else {
-        // For regular practice tests, go back to test library
-        window.location.href = '/test-library';
-      }
-    }, 4000); // Give time to see XP notifications
+    if (selectedTest?.isSharedTest) {
+      // For shared tests, go back to shared tests page
+      window.location.href = '/shared-tests';
+    } else if (selectedTest?.customTestId) {
+      // For custom tests, go back to my tests
+      window.location.href = '/my-tests';
+    } else if (selectedTest?.savedProgress) {
+      // For saved tests, go back to saved tests
+      window.location.href = '/saved-tests';
+    } else {
+      // For regular practice tests, go back to test library
+      window.location.href = '/test-library';
+    }
   };
 
   // Navigation functions
