@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../firebase/AuthContext';
-import { SavedTestsService } from '../SavedTestsService';
 import { CreatedTestsService } from '../services/CreatedTestsService';
 import { PublishedTestsService } from '../services/PublishedTestsService';
 import Papa from 'papaparse';
@@ -73,24 +72,13 @@ function TestLibrary({ searchTerm, onClearSearch }) {
         }
       ];
 
-      // Load practice tests (existing saved tests logic)
-      const savedTests = await SavedTestsService.getSavedTests();
-      const savedPracticeTests = savedTests.map(test => ({
-        ...test,
-        type: 'practice',
-        source: 'Saved Practice'
-      }));
-
-      // Combine original practice tests with saved tests
-      const allPracticeTests = [...originalPracticeTests, ...savedPracticeTests];
-
       // Load case studies from Google Sheets
       const caseStudiesData = await loadCaseStudies();
 
       // Load shared/published tests
       const sharedTestsData = await loadSharedTests();
 
-      setPracticeTests(allPracticeTests);
+      setPracticeTests(originalPracticeTests);
       setCaseStudies(caseStudiesData);
       setSharedTests(sharedTestsData);
     } catch (error) {
