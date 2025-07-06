@@ -44,7 +44,8 @@ A comprehensive React-based test creation and management platform designed for m
 
 ### 🎮 **Gamification & Motivation**
 - **🏆 Achievement System**: 14+ unique badges across 6 categories
-- **⚡ XP & Levels**: 15-level progression with titles and rewards
+- **⚡ XP & Levels**: 100-level progression with exponential scaling
+- **🏅 Medal System**: Special medals at levels 1, 10, 25, 50, 75, and 100
 - **🔥 Login Streaks**: Daily engagement tracking with bonuses
 - **🏆 Leaderboards**: Competitive learning environment
 - **🎉 Celebration Effects**: Animated notifications and level-up celebrations
@@ -427,24 +428,36 @@ We welcome contributions! Please read our contributing guidelines before submitt
 - **Navigation**: Sidebar → "🏆 Achievements"
 
 ### **⚡ XP System Quick Stats**
-- **Max Level**: 15 (🧙‍♂️ Wisdom Sage)
+- **Max Level**: 100 (💎 Diamond Emperor)
+- **Medal Milestones**: Levels 1, 10, 25, 50, 75, 100
 - **XP Sources**: Tests, creation, login streaks, achievements
 - **Bonus Multipliers**: Perfect scores, speed, difficulty
+- **Level Progression**: Exponential scaling with themed titles
 - **Navigation**: Sidebar → "⚡ XP & Levels"
+
+### **🏅 Medal System**
+- **🥉 First Steps Medal**: Level 1 (Bronze)
+- **🥉 Bronze Dedication Medal**: Level 10 (Bronze)
+- **🥈 Silver Achiever Medal**: Level 25 (Silver)
+- **🥇 Gold Scholar Medal**: Level 50 (Gold)
+- **🏆 Platinum Expert Medal**: Level 75 (Platinum)
+- **💎 Diamond Master Medal**: Level 100 (Diamond)
 
 ### **🎮 Gamification Components**
 ```javascript
 // Core Components
-<XPDashboard />              // Level progress widget
+<XPDashboard />              // Level progress widget with medals
 <AchievementGallery />       // Badge collection
 <XPNotification />           // XP gain popups
-<LevelUpNotification />      // Level celebration
+<LevelUpNotification />      // Level celebration with medals
 <AchievementBadge />         // Individual badges
+<MedalDisplay />             // Medal showcase in XP page
 ```
 
 ### **📊 Key Metrics Tracked**
 - **XP Earned**: Total and by source
-- **Level Progress**: Current level and next level requirements
+- **Level Progress**: Current level and next level requirements (up to 100)
+- **Medal Progress**: Earned medals and next medal targets
 - **Login Streaks**: Consecutive days active
 - **Achievement Count**: Badges earned vs. available
 - **Leaderboard Rank**: Position among all users

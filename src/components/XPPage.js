@@ -10,6 +10,8 @@ const XPPage = () => {
   const [xpData, setXpData] = useState(null);
   const [xpHistory, setXpHistory] = useState([]);
   const [leaderboard, setLeaderboard] = useState([]);
+  const [userMedals, setUserMedals] = useState([]);
+  const [nextMedal, setNextMedal] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedPeriod, setSelectedPeriod] = useState('all');
 
@@ -24,10 +26,14 @@ const XPPage = () => {
       const userXP = XPService.getUserXP(user.uid);
       const history = userXP.xpHistory || [];
       const leaderboardData = XPService.getLeaderboard(10);
+      const medals = XPService.getUserMedals(user.uid);
+      const nextMedalInfo = XPService.getNextMedal(user.uid);
       
       setXpData(userXP);
       setXpHistory(history);
       setLeaderboard(leaderboardData);
+      setUserMedals(medals);
+      setNextMedal(nextMedalInfo);
       setLoading(false);
     } catch (error) {
       console.error('Error loading XP data:', error);
@@ -158,6 +164,186 @@ const XPPage = () => {
           marginBottom: '2rem'
         }}>
           <XPDashboard compact={false} />
+        </div>
+
+        {/* Medals Section */}
+        <div style={{
+          background: 'rgba(255, 255, 255, 0.9)',
+          borderRadius: '20px',
+          padding: '2rem',
+          boxShadow: '0 10px 40px rgba(0, 0, 0, 0.1)',
+          backdropFilter: 'blur(10px)',
+          marginBottom: '2rem'
+        }}>
+          <h3 style={{
+            margin: '0 0 1.5rem 0',
+            color: '#003049',
+            fontSize: '1.3rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem'
+          }}>
+            🏅 Achievement Medals
+          </h3>
+          
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+            gap: '1rem',
+            marginBottom: '1.5rem'
+          }}>
+            {/* Earned Medals */}
+            {userMedals.map((medal, index) => (
+              <div key={index} style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '1rem',
+                padding: '1rem',
+                background: `linear-gradient(135deg, ${medal.color}11 0%, ${medal.color}05 100%)`,
+                borderRadius: '12px',
+                border: `2px solid ${medal.color}33`,
+                position: 'relative'
+              }}>
+                <div style={{
+                  fontSize: '2rem',
+                  background: `linear-gradient(135deg, ${medal.color} 0%, ${medal.color}CC 100%)`,
+                  borderRadius: '50%',
+                  width: '60px',
+                  height: '60px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'white',
+                  fontWeight: 'bold'
+                }}>
+                  {medal.icon}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{
+                    fontSize: '1.1rem',
+                    fontWeight: 'bold',
+                    color: medal.color,
+                    marginBottom: '0.25rem'
+                  }}>
+                    {medal.title}
+                  </div>
+                  <div style={{
+                    fontSize: '0.9rem',
+                    color: '#666',
+                    marginBottom: '0.25rem'
+                  }}>
+                    {medal.description}
+                  </div>
+                  <div style={{
+                    fontSize: '0.8rem',
+                    color: '#999'
+                  }}>
+                    Earned at Level {medal.level}
+                    {medal.earnedAt && (
+                      <span> • {new Date(medal.earnedAt).toLocaleDateString()}</span>
+                    )}
+                  </div>
+                </div>
+                <div style={{
+                  position: 'absolute',
+                  top: '0.5rem',
+                  right: '0.5rem',
+                  background: '#22C55E',
+                  color: 'white',
+                  borderRadius: '50%',
+                  width: '20px',
+                  height: '20px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '0.8rem'
+                }}>
+                  ✓
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Next Medal Progress */}
+          {nextMedal && (
+            <div style={{
+              padding: '1rem',
+              background: 'rgba(102, 155, 188, 0.1)',
+              borderRadius: '12px',
+              border: '2px dashed #669BBC'
+            }}>
+              <h4 style={{
+                margin: '0 0 1rem 0',
+                color: '#003049',
+                fontSize: '1.1rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem'
+              }}>
+                🎯 Next Medal Target
+              </h4>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '1rem'
+              }}>
+                <div style={{
+                  fontSize: '2rem',
+                  background: `linear-gradient(135deg, ${nextMedal.color} 0%, ${nextMedal.color}CC 100%)`,
+                  borderRadius: '50%',
+                  width: '60px',
+                  height: '60px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: 'white',
+                  fontWeight: 'bold',
+                  opacity: 0.7
+                }}>
+                  {nextMedal.icon}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{
+                    fontSize: '1.1rem',
+                    fontWeight: 'bold',
+                    color: nextMedal.color,
+                    marginBottom: '0.25rem'
+                  }}>
+                    {nextMedal.title}
+                  </div>
+                  <div style={{
+                    fontSize: '0.9rem',
+                    color: '#666',
+                    marginBottom: '0.5rem'
+                  }}>
+                    {nextMedal.description}
+                  </div>
+                  <div style={{
+                    fontSize: '0.9rem',
+                    color: '#669BBC',
+                    marginBottom: '0.5rem'
+                  }}>
+                    Reach Level {nextMedal.level} • {nextMedal.levelsRemaining} levels to go
+                  </div>
+                  <div style={{
+                    width: '100%',
+                    height: '8px',
+                    backgroundColor: 'rgba(102, 155, 188, 0.2)',
+                    borderRadius: '4px',
+                    overflow: 'hidden'
+                  }}>
+                    <div style={{
+                      width: `${(nextMedal.progress * 100)}%`,
+                      height: '100%',
+                      backgroundColor: nextMedal.color,
+                      borderRadius: '4px',
+                      transition: 'width 0.3s ease'
+                    }} />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Stats and Leaderboard */}

@@ -27,6 +27,8 @@ const LevelUpNotification = ({ isVisible, onClose, levelData }) => {
   if (!isVisible || !levelData) return null;
 
   const levelInfo = XPService.getLevelInfo(levelData.newLevel);
+  const isMedalLevel = XPService.isMedalMilestone(levelData.newLevel);
+  const medalInfo = isMedalLevel ? XPService.getMedalInfo(levelData.newLevel) : null;
 
   return (
     <div style={{
@@ -152,6 +154,41 @@ const LevelUpNotification = ({ isVisible, onClose, levelData }) => {
             {levelInfo.title}
           </div>
         </div>
+
+        {/* Medal Achievement */}
+        {isMedalLevel && medalInfo && (
+          <div style={{
+            marginBottom: '1.5rem',
+            padding: '1rem',
+            background: `linear-gradient(135deg, ${medalInfo.color}33 0%, ${medalInfo.color}11 100%)`,
+            borderRadius: '16px',
+            border: `2px solid ${medalInfo.color}`,
+            transform: animationPhase >= 2 ? 'scale(1)' : 'scale(0.9)',
+            opacity: animationPhase >= 2 ? 1 : 0,
+            transition: 'all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) 0.9s'
+          }}>
+            <div style={{
+              fontSize: '2rem',
+              marginBottom: '0.5rem'
+            }}>
+              {medalInfo.icon}
+            </div>
+            <div style={{
+              fontSize: '1.2rem',
+              fontWeight: 'bold',
+              marginBottom: '0.5rem',
+              color: medalInfo.color
+            }}>
+              {medalInfo.title}
+            </div>
+            <div style={{
+              fontSize: '0.9rem',
+              opacity: 0.9
+            }}>
+              {medalInfo.description}
+            </div>
+          </div>
+        )}
 
         {/* XP Info */}
         <div style={{
