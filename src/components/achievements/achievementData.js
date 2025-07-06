@@ -6,7 +6,7 @@ export const ACHIEVEMENTS = {
     title: 'First Steps',
     description: 'Completed your first test',
     requirement: 'Complete 1 test',
-    type: 'test_taking',
+    type: 'basic',
     rarity: 'bronze',
     points: 10,
     svg: `

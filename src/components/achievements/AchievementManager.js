@@ -124,13 +124,7 @@ const AchievementManager = ({ compact = false, maxDisplay = 4 }) => {
     return filteredAchievements;
   };
 
-  const handleCategoryChange = (e) => {
-    setSelectedCategory(e.target.value);
-  };
-
-  const filteredAchievements = selectedCategory === 'all' 
-    ? getDisplayedAchievements() 
-    : getDisplayedAchievements().filter(a => a.category === selectedCategory);
+  const filteredAchievements = getDisplayedAchievements();
 
   const earnedCount = userAchievements.length;
   const totalCount = Object.keys(ACHIEVEMENTS).length;
