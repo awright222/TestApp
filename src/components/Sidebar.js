@@ -39,7 +39,7 @@ function Sidebar({
         { path: '/analytics', icon: '📊', label: 'Analytics' },
         { path: '/achievements', icon: '🏆', label: 'Achievements' },
         { path: '/xp', icon: '⚡', label: 'XP & Levels' },
-        { path: '/saved-tests', icon: '📈', label: 'Practice Progress' }
+        { path: '/saved-tests', icon: '�', label: 'Saved Tests' }
       ];
     } else if (userProfile.accountType === 'student') {
       return [
@@ -47,7 +47,7 @@ function Sidebar({
         { path: '/my-classes', icon: '🎓', label: 'My Classes' },
         { path: '/achievements', icon: '🏆', label: 'Achievements' },
         { path: '/xp', icon: '⚡', label: 'XP & Levels' },
-        { path: '/my-progress', icon: '📈', label: 'My Progress' }
+        { path: '/my-progress', icon: '�', label: 'Saved Tests' }
       ];
     }
 

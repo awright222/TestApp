@@ -365,7 +365,7 @@ export default function SavedTests({ onLoadTest, searchTerm, onClearSearch }) {
     <div className="saved-tests-page">
       <div className="saved-tests-header">
         <div className="header-content">
-          <h2>{userProfile?.accountType === 'teacher' ? 'Practice Progress' : 'My Progress'}</h2>
+          <h2>{userProfile?.accountType === 'teacher' ? 'Saved Tests' : 'My Saved Tests'}</h2>
           <p style={{ color: '#669BBC', margin: 0, fontSize: '0.9rem' }}>
             {userProfile?.accountType === 'teacher' 
               ? 'Track your practice test attempts and progress'

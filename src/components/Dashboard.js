@@ -96,7 +96,7 @@ function Dashboard({ searchTerm, onClearSearch }) {
             icon: '✅',
             trend: 'neutral',
             color: '#10b981',
-            actionText: 'View Progress',
+            actionText: 'View Saved Tests',
             actionPath: '/saved-tests'
           },
           {
@@ -242,10 +242,10 @@ function Dashboard({ searchTerm, onClearSearch }) {
                 </div>
               </div>
               <div className="quick-action-card" onClick={() => navigate('/saved-tests')}>
-                <div className="quick-action-icon">📈</div>
+                <div className="quick-action-icon">�</div>
                 <div className="quick-action-content">
-                  <h3>View Progress</h3>
-                  <p>Track your learning progress</p>
+                  <h3>Saved Tests</h3>
+                  <p>Continue your practice sessions</p>
                 </div>
               </div>
               <div className="quick-action-card" onClick={() => navigate('/test-library?tab=case-studies')}>
