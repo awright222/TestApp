@@ -486,13 +486,10 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
       
       setShowSaveModal(false);
       
-      alert(
-        'Test saved successfully!\n\n' +
-        'You can find it in the "Saved Tests" section in the sidebar.\n' +
-        'Your progress is synced across devices when logged in.'
-      );
+      // Removed annoying save alert - save is successful silently
     } catch (error) {
       console.error('Error saving test:', error);
+      alert('Failed to save test. Please try again.');
       throw error;
     }
   };
@@ -698,9 +695,22 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
       onTestComplete(results);
     }
 
-    // Show results summary
-    const modeText = isAssessmentMode ? 'Assessment' : 'Practice Test';
-    alert(`${modeText} Completed!\n\nScore: ${score}%\nCorrect Answers: ${correctAnswers}/${totalQuestions}\nQuestions Answered: ${answeredCount()}/${totalQuestions}\nTime Spent: ${Math.floor(timeSpent / 60)}m ${timeSpent % 60}s`);
+    // Navigate back to dashboard or test library after completion
+    setTimeout(() => {
+      if (selectedTest?.isSharedTest) {
+        // For shared tests, go back to shared tests page
+        window.location.href = '/shared-tests';
+      } else if (selectedTest?.customTestId) {
+        // For custom tests, go back to my tests
+        window.location.href = '/my-tests';
+      } else if (selectedTest?.savedProgress) {
+        // For saved tests, go back to saved tests
+        window.location.href = '/saved-tests';
+      } else {
+        // For regular practice tests, go back to test library
+        window.location.href = '/test-library';
+      }
+    }, 4000); // Give time to see XP notifications
   };
 
   // Navigation functions
