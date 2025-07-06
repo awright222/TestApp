@@ -4,6 +4,8 @@ import AchievementBadge from './AchievementBadge';
 import { ACHIEVEMENTS, ACHIEVEMENT_CATEGORIES } from './achievementData';
 import { SavedTestsService } from '../../SavedTestsService';
 import { CreatedTestsService } from '../../services/CreatedTestsService';
+import XPService from '../../services/XPService';
+import AchievementService from '../../services/AchievementService';
 
 const AchievementManager = ({ compact = false, maxDisplay = 4 }) => {
   const { user } = useAuth();
@@ -18,6 +20,19 @@ const AchievementManager = ({ compact = false, maxDisplay = 4 }) => {
     }
   }, [user]);
 
+  // Add a method to manually refresh achievements (for testing)
+  const refreshAchievements = () => {
+    checkAchievements();
+  };
+
+  // Expose refresh function globally for debugging
+  useEffect(() => {
+    window.refreshAchievements = refreshAchievements;
+    return () => {
+      delete window.refreshAchievements;
+    };
+  }, []);
+
   const checkAchievements = async () => {
     try {
       const earnedAchievements = [];
@@ -27,6 +42,21 @@ const AchievementManager = ({ compact = false, maxDisplay = 4 }) => {
       const userSavedTests = savedTests.filter(test => test.userId === user.uid);
       const createdTests = await CreatedTestsService.getCreatedTests();
       const userCreatedTests = createdTests.filter(test => test.createdBy === user.uid);
+
+      // Get user's XP data
+      const xpData = XPService.getUserXP(user.uid);
+      
+      // Check level milestone achievements
+      const levelAchievements = AchievementService.checkLevelAchievements(xpData.level);
+      levelAchievements.forEach(achievement => {
+        earnedAchievements.push(achievement.id.toUpperCase());
+      });
+      
+      // Check XP milestone achievements
+      const xpAchievements = AchievementService.checkXPAchievements(xpData.totalXP);
+      xpAchievements.forEach(achievement => {
+        earnedAchievements.push(achievement.id.toUpperCase());
+      });
 
       // Check FIRST_TEST achievement
       if (userSavedTests.length > 0) {

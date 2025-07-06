@@ -27,6 +27,11 @@ const XPDashboard = ({ compact = false }) => {
       const medals = XPService.getUserMedals(user.uid);
       const nextMedalInfo = XPService.getNextMedal(user.uid);
       
+      // Debug logging
+      console.log('XP Dashboard - User XP:', userXP);
+      console.log('XP Dashboard - User medals:', medals);
+      console.log('XP Dashboard - Next medal:', nextMedalInfo);
+      
       setXpData(userXP);
       setRecentGains(recent);
       setUserMedals(medals);

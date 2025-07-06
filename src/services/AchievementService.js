@@ -195,6 +195,66 @@ export class AchievementService {
     
     return uniqueAchievements;
   }
+
+  // Check level milestone achievements
+  static checkLevelAchievements(userLevel) {
+    const newAchievements = [];
+    
+    // Level milestone achievements
+    if (userLevel >= 10) {
+      newAchievements.push(ACHIEVEMENTS.LEVEL_BRONZE);
+    }
+    
+    if (userLevel >= 25) {
+      newAchievements.push(ACHIEVEMENTS.LEVEL_SILVER);
+    }
+    
+    if (userLevel >= 50) {
+      newAchievements.push(ACHIEVEMENTS.LEVEL_GOLD);
+    }
+    
+    if (userLevel >= 75) {
+      newAchievements.push(ACHIEVEMENTS.LEVEL_PLATINUM);
+    }
+    
+    if (userLevel >= 100) {
+      newAchievements.push(ACHIEVEMENTS.LEVEL_DIAMOND);
+    }
+    
+    return newAchievements;
+  }
+
+  // Check XP milestone achievements
+  static checkXPAchievements(totalXP) {
+    const newAchievements = [];
+    
+    // XP milestone achievements
+    if (totalXP >= 1000) {
+      newAchievements.push(ACHIEVEMENTS.XP_COLLECTOR);
+    }
+    
+    if (totalXP >= 10000) {
+      newAchievements.push(ACHIEVEMENTS.XP_HOARDER);
+    }
+    
+    if (totalXP >= 100000) {
+      newAchievements.push(ACHIEVEMENTS.XP_MASTER);
+    }
+    
+    if (totalXP >= 1000000) {
+      newAchievements.push(ACHIEVEMENTS.XP_LEGEND);
+    }
+    
+    return newAchievements;
+  }
+
+  // Combined check for level and XP achievements
+  static checkProgressAchievements(userLevel, totalXP) {
+    const levelAchievements = this.checkLevelAchievements(userLevel);
+    const xpAchievements = this.checkXPAchievements(totalXP);
+    
+    return [...levelAchievements, ...xpAchievements];
+  }
 }
 
 export default AchievementService;

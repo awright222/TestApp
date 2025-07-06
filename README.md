@@ -43,7 +43,7 @@ A comprehensive React-based test creation and management platform designed for m
 - **📱 Mobile Optimization**: Full functionality on tablets and smartphones
 
 ### 🎮 **Gamification & Motivation**
-- **🏆 Achievement System**: 14+ unique badges across 6 categories
+- **🏆 Achievement System**: 23+ unique badges across 7 categories
 - **⚡ XP & Levels**: 100-level progression with exponential scaling
 - **🏅 Medal System**: Special medals at levels 1, 10, 25, 50, 75, and 100
 - **🔥 Login Streaks**: Daily engagement tracking with bonuses
@@ -422,9 +422,9 @@ We welcome contributions! Please read our contributing guidelines before submitt
 ## 🎯 **Quick Reference: Gamification Features**
 
 ### **🏆 Achievement Quick Stats**
-- **Total Achievements**: 14+ unique badges
-- **Categories**: 6 distinct achievement types
-- **Rarity Levels**: Bronze, Silver, Gold, Platinum
+- **Total Achievements**: 23+ unique badges
+- **Categories**: 7 distinct achievement types (including Milestones)
+- **Rarity Levels**: Bronze, Silver, Gold, Platinum, Diamond
 - **Navigation**: Sidebar → "🏆 Achievements"
 
 ### **⚡ XP System Quick Stats**

@@ -922,6 +922,234 @@ export const ACHIEVEMENTS = {
         </defs>
       </svg>
     `
+  },
+
+  // Level Milestone Achievements
+  LEVEL_BRONZE: {
+    id: 'level_bronze',
+    title: 'Bronze Learner',
+    description: 'Reached Level 10',
+    requirement: 'Reach Level 10',
+    type: 'milestone',
+    rarity: 'bronze',
+    points: 50,
+    svg: `
+      <svg width="100%" height="100%" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="100" cy="100" r="90" fill="url(#bronzeGradient)" stroke="#8B5A2B" stroke-width="6"/>
+        <circle cx="100" cy="100" r="70" fill="#3C2F2F" stroke="#A67B5B" stroke-width="4"/>
+        <text x="100" y="90" font-family="Arial" font-size="24" fill="#FFD700" text-anchor="middle" font-weight="bold">10</text>
+        <text x="100" y="125" font-family="Arial" font-size="16" fill="#FFD700" text-anchor="middle">BRONZE</text>
+        <path d="M70 140L100 155L130 140" stroke="#FFD700" stroke-width="3" fill="none"/>
+        <defs>
+          <linearGradient id="bronzeGradient" x1="100" y1="10" x2="100" y2="190" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#D4A017"/>
+            <stop offset="1" stop-color="#8B5A2B"/>
+          </linearGradient>
+        </defs>
+      </svg>
+    `
+  },
+
+  LEVEL_SILVER: {
+    id: 'level_silver',
+    title: 'Silver Scholar',
+    description: 'Reached Level 25',
+    requirement: 'Reach Level 25',
+    type: 'milestone',
+    rarity: 'silver',
+    points: 100,
+    svg: `
+      <svg width="100%" height="100%" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="100" cy="100" r="90" fill="url(#silverGradient)" stroke="#A8A8A8" stroke-width="6"/>
+        <circle cx="100" cy="100" r="70" fill="#2F2F2F" stroke="#C0C0C0" stroke-width="4"/>
+        <text x="100" y="90" font-family="Arial" font-size="24" fill="#E0E0E0" text-anchor="middle" font-weight="bold">25</text>
+        <text x="100" y="125" font-family="Arial" font-size="16" fill="#E0E0E0" text-anchor="middle">SILVER</text>
+        <path d="M70 140L100 155L130 140" stroke="#E0E0E0" stroke-width="3" fill="none"/>
+        <defs>
+          <linearGradient id="silverGradient" x1="100" y1="10" x2="100" y2="190" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#F5F5F5"/>
+            <stop offset="1" stop-color="#A8A8A8"/>
+          </linearGradient>
+        </defs>
+      </svg>
+    `
+  },
+
+  LEVEL_GOLD: {
+    id: 'level_gold',
+    title: 'Gold Master',
+    description: 'Reached Level 50',
+    requirement: 'Reach Level 50',
+    type: 'milestone',
+    rarity: 'gold',
+    points: 200,
+    svg: `
+      <svg width="100%" height="100%" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="100" cy="100" r="90" fill="url(#goldGradient)" stroke="#FFD700" stroke-width="6"/>
+        <circle cx="100" cy="100" r="70" fill="#2F2F2F" stroke="#FFA500" stroke-width="4"/>
+        <text x="100" y="90" font-family="Arial" font-size="24" fill="#FFD700" text-anchor="middle" font-weight="bold">50</text>
+        <text x="100" y="125" font-family="Arial" font-size="16" fill="#FFD700" text-anchor="middle">GOLD</text>
+        <path d="M70 140L100 155L130 140" stroke="#FFD700" stroke-width="3" fill="none"/>
+        <defs>
+          <linearGradient id="goldGradient" x1="100" y1="10" x2="100" y2="190" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#FFD700"/>
+            <stop offset="1" stop-color="#B8860B"/>
+          </linearGradient>
+        </defs>
+      </svg>
+    `
+  },
+
+  LEVEL_PLATINUM: {
+    id: 'level_platinum',
+    title: 'Platinum Elite',
+    description: 'Reached Level 75',
+    requirement: 'Reach Level 75',
+    type: 'milestone',
+    rarity: 'platinum',
+    points: 300,
+    svg: `
+      <svg width="100%" height="100%" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="100" cy="100" r="90" fill="url(#platinumGradient)" stroke="#E5E4E2" stroke-width="6"/>
+        <circle cx="100" cy="100" r="70" fill="#2F2F2F" stroke="#F8F8FF" stroke-width="4"/>
+        <text x="100" y="90" font-family="Arial" font-size="24" fill="#E5E4E2" text-anchor="middle" font-weight="bold">75</text>
+        <text x="100" y="125" font-family="Arial" font-size="12" fill="#E5E4E2" text-anchor="middle">PLATINUM</text>
+        <path d="M70 140L100 155L130 140" stroke="#E5E4E2" stroke-width="3" fill="none"/>
+        <defs>
+          <linearGradient id="platinumGradient" x1="100" y1="10" x2="100" y2="190" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#F8F8FF"/>
+            <stop offset="1" stop-color="#A0A0A0"/>
+          </linearGradient>
+        </defs>
+      </svg>
+    `
+  },
+
+  LEVEL_DIAMOND: {
+    id: 'level_diamond',
+    title: 'Diamond Legend',
+    description: 'Reached Level 100',
+    requirement: 'Reach Level 100',
+    type: 'milestone',
+    rarity: 'diamond',
+    points: 500,
+    svg: `
+      <svg width="100%" height="100%" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="100" cy="100" r="90" fill="url(#diamondGradient)" stroke="#B9F2FF" stroke-width="6"/>
+        <circle cx="100" cy="100" r="70" fill="#001122" stroke="#87CEEB" stroke-width="4"/>
+        <text x="100" y="90" font-family="Arial" font-size="20" fill="#B9F2FF" text-anchor="middle" font-weight="bold">100</text>
+        <text x="100" y="125" font-family="Arial" font-size="12" fill="#B9F2FF" text-anchor="middle">DIAMOND</text>
+        <path d="M70 140L100 155L130 140" stroke="#B9F2FF" stroke-width="3" fill="none"/>
+        <polygon points="100,50 110,70 130,70 115,85 120,105 100,95 80,105 85,85 70,70 90,70" fill="#B9F2FF" opacity="0.8"/>
+        <defs>
+          <linearGradient id="diamondGradient" x1="100" y1="10" x2="100" y2="190" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#E6F3FF"/>
+            <stop offset="1" stop-color="#4682B4"/>
+          </linearGradient>
+        </defs>
+      </svg>
+    `
+  },
+
+  // XP Milestone Achievements
+  XP_COLLECTOR: {
+    id: 'xp_collector',
+    title: 'XP Collector',
+    description: 'Earned 1,000 XP',
+    requirement: 'Earn 1,000 XP',
+    type: 'milestone',
+    rarity: 'bronze',
+    points: 25,
+    svg: `
+      <svg width="100%" height="100%" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="100" cy="100" r="90" fill="url(#bronzeGradient)" stroke="#8B5A2B" stroke-width="6"/>
+        <circle cx="100" cy="100" r="70" fill="#3C2F2F" stroke="#A67B5B" stroke-width="4"/>
+        <text x="100" y="85" font-family="Arial" font-size="18" fill="#FFD700" text-anchor="middle" font-weight="bold">1K</text>
+        <text x="100" y="110" font-family="Arial" font-size="16" fill="#FFD700" text-anchor="middle">XP</text>
+        <path d="M75 130L100 145L125 130" stroke="#FFD700" stroke-width="3" fill="none"/>
+        <defs>
+          <linearGradient id="bronzeGradient" x1="100" y1="10" x2="100" y2="190" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#D4A017"/>
+            <stop offset="1" stop-color="#8B5A2B"/>
+          </linearGradient>
+        </defs>
+      </svg>
+    `
+  },
+
+  XP_HOARDER: {
+    id: 'xp_hoarder',
+    title: 'XP Hoarder',
+    description: 'Earned 10,000 XP',
+    requirement: 'Earn 10,000 XP',
+    type: 'milestone',
+    rarity: 'silver',
+    points: 75,
+    svg: `
+      <svg width="100%" height="100%" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="100" cy="100" r="90" fill="url(#silverGradient)" stroke="#A8A8A8" stroke-width="6"/>
+        <circle cx="100" cy="100" r="70" fill="#2F2F2F" stroke="#C0C0C0" stroke-width="4"/>
+        <text x="100" y="85" font-family="Arial" font-size="18" fill="#E0E0E0" text-anchor="middle" font-weight="bold">10K</text>
+        <text x="100" y="110" font-family="Arial" font-size="16" fill="#E0E0E0" text-anchor="middle">XP</text>
+        <path d="M75 130L100 145L125 130" stroke="#E0E0E0" stroke-width="3" fill="none"/>
+        <defs>
+          <linearGradient id="silverGradient" x1="100" y1="10" x2="100" y2="190" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#F5F5F5"/>
+            <stop offset="1" stop-color="#A8A8A8"/>
+          </linearGradient>
+        </defs>
+      </svg>
+    `
+  },
+
+  XP_MASTER: {
+    id: 'xp_master',
+    title: 'XP Master',
+    description: 'Earned 100,000 XP',
+    requirement: 'Earn 100,000 XP',
+    type: 'milestone',
+    rarity: 'gold',
+    points: 150,
+    svg: `
+      <svg width="100%" height="100%" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="100" cy="100" r="90" fill="url(#goldGradient)" stroke="#FFD700" stroke-width="6"/>
+        <circle cx="100" cy="100" r="70" fill="#2F2F2F" stroke="#FFA500" stroke-width="4"/>
+        <text x="100" y="85" font-family="Arial" font-size="16" fill="#FFD700" text-anchor="middle" font-weight="bold">100K</text>
+        <text x="100" y="110" font-family="Arial" font-size="16" fill="#FFD700" text-anchor="middle">XP</text>
+        <path d="M75 130L100 145L125 130" stroke="#FFD700" stroke-width="3" fill="none"/>
+        <defs>
+          <linearGradient id="goldGradient" x1="100" y1="10" x2="100" y2="190" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#FFD700"/>
+            <stop offset="1" stop-color="#B8860B"/>
+          </linearGradient>
+        </defs>
+      </svg>
+    `
+  },
+
+  XP_LEGEND: {
+    id: 'xp_legend',
+    title: 'XP Legend',
+    description: 'Earned 1,000,000 XP',
+    requirement: 'Earn 1,000,000 XP',
+    type: 'milestone',
+    rarity: 'platinum',
+    points: 500,
+    svg: `
+      <svg width="100%" height="100%" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="100" cy="100" r="90" fill="url(#platinumGradient)" stroke="#E5E4E2" stroke-width="6"/>
+        <circle cx="100" cy="100" r="70" fill="#2F2F2F" stroke="#F8F8FF" stroke-width="4"/>
+        <text x="100" y="85" font-family="Arial" font-size="16" fill="#E5E4E2" text-anchor="middle" font-weight="bold">1M</text>
+        <text x="100" y="110" font-family="Arial" font-size="16" fill="#E5E4E2" text-anchor="middle">XP</text>
+        <path d="M75 130L100 145L125 130" stroke="#E5E4E2" stroke-width="3" fill="none"/>
+        <defs>
+          <linearGradient id="platinumGradient" x1="100" y1="10" x2="100" y2="190" gradientUnits="userSpaceOnUse">
+            <stop stop-color="#F8F8FF"/>
+            <stop offset="1" stop-color="#A0A0A0"/>
+          </linearGradient>
+        </defs>
+      </svg>
+    `
   }
 };
 
@@ -955,6 +1183,11 @@ export const ACHIEVEMENT_CATEGORIES = {
     name: 'Exploration',
     icon: '🧭',
     color: '#32CD32'
+  },
+  milestone: {
+    name: 'Milestones',
+    icon: '🎯',
+    color: '#8A2BE2'
   }
 };
 
@@ -963,5 +1196,6 @@ export const RARITY_COLORS = {
   silver: '#C0C0C0',
   gold: '#FFD700',
   platinum: '#E5E4E2',
+  diamond: '#B9F2FF',
   green: '#32CD32'
 };

@@ -1,4 +1,6 @@
 // XP Point Values
+import AchievementService from './AchievementService';
+
 export const XP_VALUES = {
   // Test Activities
   COMPLETE_TEST: 5,
@@ -284,6 +286,11 @@ export class XPService {
     return MEDAL_MILESTONES[level] || null;
   }
   
+  // Check if level is a medal milestone
+  static isMedalMilestone(level) {
+    return MEDAL_MILESTONES.hasOwnProperty(level);
+  }
+  
   // Get all medals earned by user
   static getUserMedals(userId) {
     const xpData = this.getUserXP(userId);
@@ -368,13 +375,22 @@ export class XPService {
     
     this.saveUserXP(userId, xpData);
     
+    // Check for new achievements based on level and XP
+    let newAchievements = [];
+    try {
+      newAchievements = AchievementService.checkProgressAchievements(xpData.level, xpData.totalXP);
+    } catch (error) {
+      console.warn('Error checking progress achievements:', error);
+    }
+    
     // Return level up info
     return {
       xpData,
       leveledUp: xpData.level > oldLevel,
       oldLevel,
       newLevel: xpData.level,
-      pointsGained: points
+      pointsGained: points,
+      newAchievements
     };
   }
   
