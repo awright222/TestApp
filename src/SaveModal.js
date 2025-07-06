@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { SavedTestsService } from './SavedTestsService';
+import { AchievementService } from './services/AchievementService';
+import { useAuth } from './firebase/AuthContext';
+import { CreatedTestsService } from './services/CreatedTestsService';
+import AchievementNotification from './components/achievements/AchievementNotification';
 import './SaveModal.css';
 
 export default function SaveModal({ 
@@ -17,6 +21,10 @@ export default function SaveModal({
   const [isSaving, setIsSaving] = useState(false);
   const [showOverwriteConfirm, setShowOverwriteConfirm] = useState(false);
   const [allSavedTests, setAllSavedTests] = useState([]);
+  const [newAchievements, setNewAchievements] = useState([]);
+  const [showAchievementNotification, setShowAchievementNotification] = useState(false);
+  const [currentAchievementIndex, setCurrentAchievementIndex] = useState(0);
+  const { user } = useAuth();
 
   // Auto-populate title when modal opens with existing saved test
   useEffect(() => {
@@ -91,6 +99,34 @@ export default function SaveModal({
 
     try {
       await onSave(saveData);
+      
+      // Check for achievements if test is completed
+      const isCompleted = saveData.progress.completedQuestions === saveData.progress.totalQuestions;
+      
+      if (isCompleted && user) {
+        try {
+          // Get user's saved tests and created tests for achievement checking
+          const userSavedTests = allSavedTests.filter(test => test.userId === user.uid);
+          const userCreatedTests = await CreatedTestsService.getCreatedTests();
+          const filteredCreatedTests = userCreatedTests.filter(test => test.createdBy === user.uid);
+          
+          // Check for new achievements
+          const achievementsEarned = await AchievementService.checkAllAchievements(
+            saveData, 
+            userSavedTests, 
+            filteredCreatedTests
+          );
+          
+          if (achievementsEarned.length > 0) {
+            setNewAchievements(achievementsEarned);
+            setCurrentAchievementIndex(0);
+            setShowAchievementNotification(true);
+          }
+        } catch (error) {
+          console.error('Error checking achievements:', error);
+        }
+      }
+      
       setTitle('');
       setShowOverwriteConfirm(false);
       onClose();
@@ -114,6 +150,18 @@ export default function SaveModal({
   const handleKeyPress = (e) => {
     if (e.key === 'Enter') {
       handleSave();
+    }
+  };
+
+  const handleAchievementNotificationClose = () => {
+    if (currentAchievementIndex < newAchievements.length - 1) {
+      // Show next achievement
+      setCurrentAchievementIndex(currentAchievementIndex + 1);
+    } else {
+      // All achievements shown
+      setShowAchievementNotification(false);
+      setNewAchievements([]);
+      setCurrentAchievementIndex(0);
     }
   };
 
@@ -221,6 +269,15 @@ export default function SaveModal({
           </button>
         </div>
       </div>
+      
+      {/* Achievement Notification */}
+      {showAchievementNotification && newAchievements.length > 0 && (
+        <AchievementNotification
+          achievement={newAchievements[currentAchievementIndex]}
+          onClose={handleAchievementNotificationClose}
+          duration={4000}
+        />
+      )}
     </div>
   );
 }

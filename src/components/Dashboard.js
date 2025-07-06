@@ -5,6 +5,7 @@ import { CreatedTestsService } from '../services/CreatedTestsService';
 import { PublishedTestsService } from '../services/PublishedTestsService';
 import { SavedTestsService } from '../SavedTestsService';
 import SearchResults from './SearchResults';
+import AchievementDashboard from './achievements/AchievementDashboard';
 import './Dashboard.css';
 
 function Dashboard({ searchTerm, onClearSearch }) {
@@ -181,6 +182,9 @@ function Dashboard({ searchTerm, onClearSearch }) {
           </div>
         ))}
       </div>
+
+      {/* Achievement Dashboard */}
+      <AchievementDashboard />
 
       {/* Quick Actions */}
       <div className="quick-actions">

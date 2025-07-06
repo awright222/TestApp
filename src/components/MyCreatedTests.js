@@ -1,13 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { CreatedTestsService } from '../services/CreatedTestsService';
+import { AchievementService } from '../services/AchievementService';
+import { useAuth } from '../firebase/AuthContext';
 import ShareTest from './ShareTest';
 import AssignTest from './AssignTest';
+import AchievementNotification from './achievements/AchievementNotification';
 import './MyCreatedTests.css';
 
 export default function MyCreatedTests() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuth();
   const [createdTests, setCreatedTests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [lastRefresh, setLastRefresh] = useState(Date.now());
@@ -15,10 +19,14 @@ export default function MyCreatedTests() {
   const [assignModalOpen, setAssignModalOpen] = useState(false);
   const [exportModalOpen, setExportModalOpen] = useState(false);
   const [selectedTest, setSelectedTest] = useState(null);
+  const [newAchievements, setNewAchievements] = useState([]);
+  const [showAchievementNotification, setShowAchievementNotification] = useState(false);
+  const [currentAchievementIndex, setCurrentAchievementIndex] = useState(0);
 
   useEffect(() => {
     console.log('MyCreatedTests component mounted');
     loadCreatedTests();
+    loadAchievements();
   }, []);
 
   // Reload tests when navigating to this page
@@ -70,12 +78,40 @@ export default function MyCreatedTests() {
       console.log('Loading created tests...', new Date().toISOString());
       const tests = await CreatedTestsService.getCreatedTests();
       console.log('Loaded tests:', tests);
+      
+      // Check for new achievements if user just created their first test
+      if (user && tests.length === 1 && createdTests.length === 0) {
+        try {
+          const userCreatedTests = tests.filter(test => test.createdBy === user.uid);
+          const achievementsEarned = await AchievementService.checkCreationAchievements(userCreatedTests);
+          
+          if (achievementsEarned.length > 0) {
+            setNewAchievements(achievementsEarned);
+            setCurrentAchievementIndex(0);
+            setShowAchievementNotification(true);
+          }
+        } catch (error) {
+          console.error('Error checking creation achievements:', error);
+        }
+      }
+      
       setCreatedTests(tests);
       setLastRefresh(Date.now());
     } catch (error) {
       console.error('Error loading created tests:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadAchievements = async () => {
+    if (!user) return;
+
+    try {
+      const userAchievements = await AchievementService.getUserAchievements(user.uid);
+      setNewAchievements(userAchievements);
+    } catch (error) {
+      console.error('Error loading achievements:', error);
     }
   };
 
@@ -358,6 +394,50 @@ export default function MyCreatedTests() {
       month: 'short',
       day: 'numeric'
     });
+  };
+
+  const handleAchievementNotificationClose = () => {
+    if (currentAchievementIndex < newAchievements.length - 1) {
+      // Show next achievement
+      setCurrentAchievementIndex(currentAchievementIndex + 1);
+    } else {
+      // All achievements shown
+      setShowAchievementNotification(false);
+      setNewAchievements([]);
+      setCurrentAchievementIndex(0);
+    }
+  };
+
+  const checkAchievement = (test) => {
+    // Check for specific achievements based on test properties
+    if (test.questions.length >= 10 && test.source === 'builder') {
+      return 'builder_10_questions';
+    }
+    if (test.questions.length >= 5 && test.source === 'google-sheets') {
+      return 'gsheets_5_questions';
+    }
+    if (test.questions.length > 0 && test.source === 'import') {
+      return 'import_started';
+    }
+    return null;
+  };
+
+  const handleTestSave = async (test) => {
+    // Existing save logic...
+    await CreatedTestsService.createTest(test);
+    await loadCreatedTests();
+
+    // Check and unlock achievements
+    const achievementId = checkAchievement(test);
+    if (achievementId) {
+      try {
+        await AchievementService.unlockAchievement(user.uid, achievementId);
+        setNewAchievements(prev => [...prev, achievementId]);
+        setShowAchievementNotification(true);
+      } catch (error) {
+        console.error('Error unlocking achievement:', error);
+      }
+    }
   };
 
   if (loading) {
@@ -1153,6 +1233,15 @@ export default function MyCreatedTests() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Achievement Notification */}
+      {showAchievementNotification && newAchievements.length > 0 && (
+        <AchievementNotification
+          achievement={newAchievements[currentAchievementIndex]}
+          onClose={handleAchievementNotificationClose}
+          duration={4000}
+        />
       )}
     </div>
   );

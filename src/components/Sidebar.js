@@ -37,13 +37,15 @@ function Sidebar({
         { path: '/class-management', icon: '🎓', label: 'Classes' },
         { path: '/student-directory', icon: '👥', label: 'Students' },
         { path: '/analytics', icon: '📊', label: 'Analytics' },
+        { path: '/achievements', icon: '🏆', label: 'Achievements' },
         { path: '/saved-tests', icon: '📈', label: 'Practice Progress' }
       ];
     } else if (userProfile.accountType === 'student') {
       return [
         ...baseItems,
         { path: '/my-classes', icon: '🎓', label: 'My Classes' },
-        { path: '/my-progress', icon: '�', label: 'My Progress' }
+        { path: '/achievements', icon: '🏆', label: 'Achievements' },
+        { path: '/my-progress', icon: '📈', label: 'My Progress' }
       ];
     }
 

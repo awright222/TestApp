@@ -13,7 +13,7 @@ import MyCreatedTests from './components/MyCreatedTests';
 import CreateTest from './components/CreateTest';
 import TestAnalytics from './components/TestAnalytics';
 import Analytics from './components/Analytics';
-// import TakeTest from './components/TakeTest';
+import AchievementsPage from './components/AchievementsPage';
 import PracticeTestContainer from './components/PracticeTestContainer';
 import SharedTestAccess from './components/SharedTestAccess';
 import CrossDeviceDebug from './components/CrossDeviceDebug';
@@ -144,6 +144,7 @@ function App() {
             } 
           />
           <Route path="/analytics" element={<Analytics />} />
+          <Route path="/achievements" element={<AchievementsPage />} />
           <Route path="/test-analytics/:testId" element={<TestAnalytics />} />
           <Route path="/create-test" element={<CreateTest />} />
           <Route path="/create-test/:testId" element={<CreateTest />} />
