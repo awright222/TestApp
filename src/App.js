@@ -14,6 +14,7 @@ import CreateTest from './components/CreateTest';
 import TestAnalytics from './components/TestAnalytics';
 import Analytics from './components/Analytics';
 import AchievementsPage from './components/AchievementsPage';
+import XPPage from './components/XPPage';
 import PracticeTestContainer from './components/PracticeTestContainer';
 import SharedTestAccess from './components/SharedTestAccess';
 import CrossDeviceDebug from './components/CrossDeviceDebug';
@@ -145,6 +146,7 @@ function App() {
           />
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/achievements" element={<AchievementsPage />} />
+          <Route path="/xp" element={<XPPage />} />
           <Route path="/test-analytics/:testId" element={<TestAnalytics />} />
           <Route path="/create-test" element={<CreateTest />} />
           <Route path="/create-test/:testId" element={<CreateTest />} />

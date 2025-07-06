@@ -3,9 +3,14 @@ import Papa from 'papaparse';
 import { SavedTestsService } from '../SavedTestsService';
 import SaveModal from '../SaveModal';
 import SearchResults from './SearchResults';
+import XPService from '../services/XPService';
+import XPNotification from './xp/XPNotification';
+import LevelUpNotification from './xp/LevelUpNotification';
+import { useAuth } from '../firebase/AuthContext';
 import './PracticeTest.css';
 
 function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSearch, onTestComplete }) {
+  const { user } = useAuth();
   const [questions, setQuestions] = useState([]);
   const [originalQuestions, setOriginalQuestions] = useState([]);
   const [current, setCurrent] = useState(0);
@@ -19,6 +24,12 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
   const [loading, setLoading] = useState(true);
   const [testCompleted, setTestCompleted] = useState(false);
   const [showFinishConfirmation, setShowFinishConfirmation] = useState(false);
+  
+  // XP and gamification states
+  const [xpNotification, setXpNotification] = useState(null);
+  const [showXpNotification, setShowXpNotification] = useState(false);
+  const [levelUpData, setLevelUpData] = useState(null);
+  const [showLevelUpNotification, setShowLevelUpNotification] = useState(false);
   
   // Mark for Review feature states
   const [markedQuestions, setMarkedQuestions] = useState([]);
@@ -654,6 +665,32 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
       setQuestionScore(finalScore);
       setQuestionSubmitted(new Array(questions.length).fill(true));
       setShowExplanation(true);
+    }
+
+    // Award XP for test completion
+    if (user) {
+      const testData = {
+        id: selectedTest.id || Date.now().toString(),
+        score: correctAnswers,
+        totalQuestions,
+        completionTime: timeSpent * 1000, // Convert to milliseconds
+        title: selectedTest.title || 'Test'
+      };
+      
+      const xpResult = XPService.awardTestCompletionXP(user.uid, testData);
+      
+      // Show XP notification
+      setXpNotification(xpResult);
+      setShowXpNotification(true);
+      
+      // Show level up notification if leveled up
+      if (xpResult.leveledUp) {
+        setLevelUpData(xpResult);
+        // Delay level up notification to show after XP notification
+        setTimeout(() => {
+          setShowLevelUpNotification(true);
+        }, 3000);
+      }
     }
 
     // Call completion callback for shared tests
@@ -2040,6 +2077,20 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
           currentPage="practice"
         />
       )}
+
+      {/* XP Notification */}
+      <XPNotification
+        xpGain={xpNotification}
+        isVisible={showXpNotification}
+        onClose={() => setShowXpNotification(false)}
+      />
+
+      {/* Level Up Notification */}
+      <LevelUpNotification
+        isVisible={showLevelUpNotification}
+        onClose={() => setShowLevelUpNotification(false)}
+        levelData={levelUpData}
+      />
 
     </div>
   );

@@ -2,10 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { CreatedTestsService } from '../services/CreatedTestsService';
 import { AchievementService } from '../services/AchievementService';
+import XPService from '../services/XPService';
 import { useAuth } from '../firebase/AuthContext';
 import ShareTest from './ShareTest';
 import AssignTest from './AssignTest';
 import AchievementNotification from './achievements/AchievementNotification';
+import XPNotification from './xp/XPNotification';
+import LevelUpNotification from './xp/LevelUpNotification';
 import './MyCreatedTests.css';
 
 export default function MyCreatedTests() {
@@ -22,6 +25,12 @@ export default function MyCreatedTests() {
   const [newAchievements, setNewAchievements] = useState([]);
   const [showAchievementNotification, setShowAchievementNotification] = useState(false);
   const [currentAchievementIndex, setCurrentAchievementIndex] = useState(0);
+
+  // XP states
+  const [xpNotification, setXpNotification] = useState(null);
+  const [showXpNotification, setShowXpNotification] = useState(false);
+  const [levelUpData, setLevelUpData] = useState(null);
+  const [showLevelUpNotification, setShowLevelUpNotification] = useState(false);
 
   useEffect(() => {
     console.log('MyCreatedTests component mounted');
@@ -375,6 +384,24 @@ export default function MyCreatedTests() {
         
         await CreatedTestsService.createTest(newTest);
         
+        // Award XP for test creation
+        if (user) {
+          const xpResult = XPService.awardTestCreationXP(user.uid, newTest);
+          
+          // Show XP notification
+          setXpNotification(xpResult);
+          setShowXpNotification(true);
+          
+          // Show level up notification if leveled up
+          if (xpResult.leveledUp) {
+            setLevelUpData(xpResult);
+            // Delay level up notification to show after XP notification
+            setTimeout(() => {
+              setShowLevelUpNotification(true);
+            }, 3000);
+          }
+        }
+        
         // Refresh the list
         await new Promise(resolve => setTimeout(resolve, 100));
         await loadCreatedTests();
@@ -426,6 +453,24 @@ export default function MyCreatedTests() {
     // Existing save logic...
     await CreatedTestsService.createTest(test);
     await loadCreatedTests();
+
+    // Award XP for test creation
+    if (user) {
+      const xpResult = XPService.awardTestCreationXP(user.uid, test);
+      
+      // Show XP notification
+      setXpNotification(xpResult);
+      setShowXpNotification(true);
+      
+      // Show level up notification if leveled up
+      if (xpResult.leveledUp) {
+        setLevelUpData(xpResult);
+        // Delay level up notification to show after XP notification
+        setTimeout(() => {
+          setShowLevelUpNotification(true);
+        }, 3000);
+      }
+    }
 
     // Check and unlock achievements
     const achievementId = checkAchievement(test);
@@ -1243,6 +1288,20 @@ export default function MyCreatedTests() {
           duration={4000}
         />
       )}
+
+      {/* XP Notification */}
+      <XPNotification
+        xpGain={xpNotification}
+        isVisible={showXpNotification}
+        onClose={() => setShowXpNotification(false)}
+      />
+
+      {/* Level Up Notification */}
+      <LevelUpNotification
+        isVisible={showLevelUpNotification}
+        onClose={() => setShowLevelUpNotification(false)}
+        levelData={levelUpData}
+      />
     </div>
   );
 }
