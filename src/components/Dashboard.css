@@ -4,6 +4,7 @@
   margin: 0 auto;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   min-height: 100vh;
+  width: 100%;
 }
 
 .dashboard-header {
@@ -137,6 +138,7 @@
 /* Quick Actions */
 .quick-actions {
   margin-bottom: 2rem;
+  width: 100%;
 }
 
 .quick-actions h2 {
@@ -149,8 +151,9 @@
 
 .quick-actions-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 1rem;
+  width: 100%;
 }
 
 .quick-action-card {
@@ -306,6 +309,10 @@
     font-size: 1.75rem;
   }
   
+  .quick-actions-grid {
+    grid-template-columns: 1fr;
+  }
+  
   .quick-action-card {
     flex-direction: column;
     text-align: center;
@@ -314,5 +321,18 @@
   
   .quick-action-icon {
     font-size: 2.5rem;
+  }
+}
+
+/* Additional media query for better grid behavior */
+@media (min-width: 481px) and (max-width: 768px) {
+  .quick-actions-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 769px) {
+  .quick-actions-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   }
 }

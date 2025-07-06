@@ -140,7 +140,7 @@ function Dashboard({ searchTerm, onClearSearch }) {
   }, [user, userProfile]);
 
   return (
-    <div className="dashboard">
+    <div className="dashboard-container">
       <div className="dashboard-header">
         <h1>Welcome back, {user?.displayName || 'there'}!</h1>
         <p>Here's your overview for today</p>
