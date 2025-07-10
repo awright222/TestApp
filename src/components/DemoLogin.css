@@ -1,0 +1,248 @@
+.demo-login-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(5px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.demo-login-modal {
+  background: white;
+  border-radius: 20px;
+  max-width: 1000px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  position: relative;
+}
+
+.demo-login-header {
+  text-align: center;
+  padding: 2rem 2rem 1rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 20px 20px 0 0;
+  position: relative;
+}
+
+.demo-login-header h2 {
+  margin: 0 0 0.5rem 0;
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+.demo-login-header p {
+  margin: 0;
+  opacity: 0.9;
+  font-size: 1.1rem;
+}
+
+.demo-close-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.demo-close-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.1);
+}
+
+.demo-notice {
+  margin: 1.5rem;
+  padding: 1rem;
+  background: linear-gradient(135deg, #FFF3CD, #F8E8A6);
+  border-radius: 12px;
+  border: 2px solid #F0AD4E;
+}
+
+.demo-notice-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.demo-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.demo-notice strong {
+  color: #8A6914;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.demo-notice ul {
+  margin: 0;
+  padding-left: 1rem;
+  color: #6C5214;
+}
+
+.demo-notice li {
+  margin: 0.25rem 0;
+}
+
+.demo-accounts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  padding: 1.5rem;
+}
+
+.demo-account-card {
+  background: white;
+  border: 3px solid #e0e0e0;
+  border-radius: 16px;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.demo-account-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+}
+
+.demo-account-card.selected {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+}
+
+.demo-account-header h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.4rem;
+  font-weight: bold;
+}
+
+.demo-account-description {
+  margin: 0 0 1rem 0;
+  color: #666;
+  font-size: 1rem;
+}
+
+.demo-account-features h4 {
+  margin: 0 0 0.75rem 0;
+  color: #333;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.demo-account-features ul {
+  margin: 0 0 1.5rem 0;
+  padding: 0;
+  list-style: none;
+}
+
+.demo-account-features li {
+  margin: 0.5rem 0;
+  color: #555;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.demo-account-features li::before {
+  content: '✓';
+  color: #28A745;
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.demo-login-btn {
+  width: 100%;
+  padding: 1rem;
+  border: none;
+  border-radius: 10px;
+  color: white;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.demo-login-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.demo-login-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.demo-footer {
+  text-align: center;
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-radius: 0 0 20px 20px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.demo-footer p {
+  margin: 0;
+  color: #666;
+}
+
+.demo-signup-link {
+  background: none;
+  border: none;
+  color: #4A90E2;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+  margin-left: 0.5rem;
+}
+
+.demo-signup-link:hover {
+  color: #357ABD;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .demo-login-modal {
+    margin: 1rem;
+    max-height: 95vh;
+  }
+  
+  .demo-accounts-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    padding: 1rem;
+  }
+  
+  .demo-login-header {
+    padding: 1.5rem 1rem 1rem;
+  }
+  
+  .demo-login-header h2 {
+    font-size: 1.5rem;
+  }
+  
+  .demo-notice {
+    margin: 1rem;
+  }
+  
+  .demo-notice-content {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}

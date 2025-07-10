@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { useAuth } from '../firebase/AuthContext';
+import DemoLogin from './DemoLogin';
 
 export default function AuthModal({ isOpen, onClose }) {
   const [isLogin, setIsLogin] = useState(true);
+  const [showDemoLogin, setShowDemoLogin] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
@@ -60,9 +62,22 @@ export default function AuthModal({ isOpen, onClose }) {
     setPassword('');
     setDisplayName('');
     setSelectedRole('');
+    setShowDemoLogin(false);
     setError('');
     onClose();
   };
+
+  // Show demo login component if selected
+  if (showDemoLogin) {
+    return (
+      <div className="modal-overlay" onClick={handleClose}>
+        <div className="modal-content" onClick={e => e.stopPropagation()}>
+          <button className="modal-close" onClick={handleClose}>&times;</button>
+          <DemoLogin onClose={handleClose} />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="modal-overlay" onClick={handleClose}>
@@ -278,6 +293,28 @@ export default function AuthModal({ isOpen, onClose }) {
             }}
           >
             {loading ? 'Please wait...' : 'Continue with Google'}
+          </button>
+
+          {/* Demo Login Button */}
+          <button
+            type="button"
+            onClick={() => setShowDemoLogin(true)}
+            style={{
+              width: '100%',
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              color: 'white',
+              border: 'none',
+              padding: '0.75rem',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              fontWeight: 'bold',
+              marginBottom: '1rem',
+              transition: 'transform 0.2s ease'
+            }}
+            onMouseOver={(e) => e.target.style.transform = 'scale(1.02)'}
+            onMouseOut={(e) => e.target.style.transform = 'scale(1)'}
+          >
+            🚀 Try Demo (No Account Needed)
           </button>
         </form>
 

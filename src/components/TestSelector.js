@@ -3,18 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import './TestSelector.css';
 
 const AVAILABLE_TESTS = [
-  {
-    id: 'mb800',
-    title: 'MB-800: Microsoft Dynamics 365 Business Central Functional Consultant',
-    description: 'Complete certification preparation with practice questions and case studies',
-    questionCount: '65+ Questions',
-    caseStudyCount: '8 Case Studies',
-    difficulty: 'Intermediate',
-    csvUrl: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTDO68GqAelFKS2G6SwiUWdPs2tw5Gt62D5xLiB_9zyLyBPLSZm5gTthaQz9yCpmDKuymWMc83PV5a2/pub?gid=0&single=true&output=csv',
-    color: '#003049',
-    icon: '💼',
-    hasCaseStudies: true
-  },
+  // Microsoft 365 tests removed - only available in personal accounts
   // Add more tests here in the future
 ];
 

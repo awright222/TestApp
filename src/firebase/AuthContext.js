@@ -73,6 +73,18 @@ export const AuthProvider = ({ children }) => {
           };
           await FirebaseTestsService.saveUserProfile(user.uid, newProfile);
           setUserProfile(newProfile);
+          
+          // Initialize new Google user with seed test
+          try {
+            const SeedTestService = (await import('../services/SeedTestService')).default;
+            await SeedTestService.initializeUserWithSeedTests(
+              user.uid, 
+              'teacher', // Default to teacher for Google users
+              false // isDemo = false
+            );
+          } catch (error) {
+            console.warn('Failed to add seed test to new Google user:', error);
+          }
         } else if (!profile.accountType) {
           // Existing user without role - default to teacher to maintain functionality
           const updatedProfile = {
@@ -189,6 +201,18 @@ export const AuthProvider = ({ children }) => {
       
       await FirebaseTestsService.saveUserProfile(result.user.uid, newProfile);
       
+      // Initialize new user with seed test
+      try {
+        const SeedTestService = (await import('../services/SeedTestService')).default;
+        await SeedTestService.initializeUserWithSeedTests(
+          result.user.uid, 
+          accountType || 'teacher', // Default to teacher if no account type
+          false // isDemo = false for real users
+        );
+      } catch (error) {
+        console.warn('Failed to add seed test to new user:', error);
+      }
+      
       // Migrate localStorage tests to Firebase after successful registration
       setTimeout(() => {
         SavedTestsService.migrateToFirebase().catch(error => {
@@ -219,10 +243,66 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Demo login functionality
+  const demoLogin = async (demoProfile) => {
+    try {
+      // Set demo user state
+      setUser({
+        uid: demoProfile.uid,
+        email: demoProfile.email,
+        displayName: demoProfile.displayName,
+        photoURL: null,
+        isDemo: true
+      });
+      
+      setUserProfile(demoProfile);
+      
+      // Initialize demo user with seed tests
+      const SeedTestService = (await import('../services/SeedTestService')).default;
+      await SeedTestService.initializeUserWithSeedTests(
+        demoProfile.uid, 
+        demoProfile.accountType, 
+        true // isDemo = true
+      );
+      
+      // Initialize demo XP data
+      const XPService = (await import('../services/XPService')).default;
+      XPService.addXP(demoProfile.uid, 0, 'Demo Account Created'); // Initialize with 0 XP
+      
+      console.log('✅ Demo login successful:', demoProfile.displayName);
+      return { success: true, user: demoProfile };
+      
+    } catch (error) {
+      console.error('Demo login error:', error);
+      return { success: false, error: error.message };
+    }
+  };
+
+  const demoLogout = async () => {
+    if (user?.isDemo) {
+      // Clean up demo data
+      try {
+        const SeedTestService = (await import('../services/SeedTestService')).default;
+        SeedTestService.cleanupDemoData(user.uid);
+      } catch (error) {
+        console.warn('Error cleaning up demo data:', error);
+      }
+    }
+    
+    setUser(null);
+    setUserProfile(null);
+  };
+
+  // Enhanced logout to handle demo cleanup
   const logout = async () => {
     try {
-      await signOut(auth);
-      return { success: true };
+      if (user?.isDemo) {
+        await demoLogout();
+        return { success: true };
+      } else {
+        await signOut(auth);
+        return { success: true };
+      }
     } catch (error) {
       return { success: false, error: error.message };
     }
@@ -457,6 +537,8 @@ export const AuthProvider = ({ children }) => {
     register,
     loginWithGoogle,
     logout,
+    demoLogin,
+    demoLogout,
     updateUserProfile,
     refreshUserProfile,
     setUserRole,

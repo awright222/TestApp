@@ -55,25 +55,11 @@ function TestLibrary({ searchTerm, onClearSearch }) {
     setLoading(true);
     
     try {
-      // Load original practice tests (from TestSelector)
-      const originalPracticeTests = [
-        {
-          id: 'mb800-practice',
-          title: 'MB-800: Microsoft Dynamics 365 Business Central Functional Consultant',
-          description: 'Complete certification preparation with practice questions',
-          questionCount: '65+ Questions',
-          difficulty: 'Intermediate',
-          topics: ['Microsoft Dynamics 365', 'Business Central', 'Functional Consultant'],
-          type: 'practice',
-          source: 'Certification Prep',
-          csvUrl: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTDO68GqAelFKS2G6SwiUWdPs2tw5Gt62D5xLiB_9zyLyBPLSZm5gTthaQz9yCpmDKuymWMc83PV5a2/pub?gid=0&single=true&output=csv',
-          color: '#003049',
-          icon: '💼'
-        }
-      ];
+      // Load original practice tests - empty array to remove MS365 tests from all profiles
+      const originalPracticeTests = [];
 
-      // Load case studies from Google Sheets
-      const caseStudiesData = await loadCaseStudies();
+      // Load case studies - disabled to remove from all profiles
+      const caseStudiesData = [];
 
       // Load shared/published tests
       const sharedTestsData = await loadSharedTests();
@@ -116,7 +102,7 @@ function TestLibrary({ searchTerm, onClearSearch }) {
       const publishedTests = await PublishedTestsService.getPublishedTests();
       return publishedTests.map(test => ({
         ...test,
-        type: 'shared',
+        type: test.type || 'shared', // Preserve original type, default to 'shared'
         source: 'Community',
         topics: test.tags || []
       }));
