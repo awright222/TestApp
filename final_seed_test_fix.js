@@ -61,11 +61,11 @@
                 },
                 {
                     "id": "welcome-q4",
-                    "question_text": "🎯 Try our drag and drop demo!",
+                    "question_text": "🎯 Drag learning tools to their primary purposes:",
                     "question_type": "drag and drop",
-                    "choices": "This is a demonstration of drag and drop functionality",
-                    "correct_answer": "Demo completed",
-                    "explanation": "Great job trying out the drag and drop feature! This shows how interactive elements can make learning more engaging."
+                    "choices": "Items: Flashcards, Quizzes, Essays, Projects, Discussions\nZones: Memory Practice, Knowledge Testing, Deep Thinking, Application, Collaboration",
+                    "correct_answer": "Flashcards -> Memory Practice, Quizzes -> Knowledge Testing, Essays -> Deep Thinking, Projects -> Application, Discussions -> Collaboration",
+                    "explanation": "Each tool serves a different purpose: Flashcards for memory, Quizzes for testing knowledge, Essays for deep thinking, Projects for application, and Discussions for collaboration!"
                 },
                 {
                     "id": "welcome-q5",

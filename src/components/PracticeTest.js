@@ -554,9 +554,23 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
         points = 1;
       }
     } else if (q.question_type?.toLowerCase() === 'drag and drop') {
-      // For demo drag and drop, give points if they interacted
+      // For drag and drop, check correct matches
+      const correctMatches = {
+        'Flashcards': 'Memory Practice',
+        'Quizzes': 'Knowledge Testing', 
+        'Essays': 'Deep Thinking',
+        'Projects': 'Application',
+        'Discussions': 'Collaboration'
+      };
+      
+      points = 0;
       if (userAnswers[current]) {
-        points = 1;
+        Object.entries(correctMatches).forEach(([item, correctZone]) => {
+          // Check if item is in correct zone
+          if (userAnswers[current][correctZone] && userAnswers[current][correctZone].includes(item)) {
+            points++;
+          }
+        });
       }
     }
     setShowExplanation(true);
@@ -660,9 +674,23 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
             points = 1;
           }
         } else if (q.question_type?.toLowerCase() === 'drag and drop') {
-          // For demo drag and drop, give points if they interacted
+          // For drag and drop, check correct matches
+          const correctMatches = {
+            'Flashcards': 'Memory Practice',
+            'Quizzes': 'Knowledge Testing', 
+            'Essays': 'Deep Thinking',
+            'Projects': 'Application',
+            'Discussions': 'Collaboration'
+          };
+          
+          points = 0;
           if (userAnswer) {
-            points = 1;
+            Object.entries(correctMatches).forEach(([item, correctZone]) => {
+              // Check if item is in correct zone
+              if (userAnswer[correctZone] && userAnswer[correctZone].includes(item)) {
+                points++;
+              }
+            });
           }
         }
         
@@ -1804,52 +1832,335 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
 
       {/* Drag and Drop Questions */}
       {q.question_type?.toLowerCase() === 'drag and drop' && (
-        <div className="drag-drop-container">
-          <div style={{ 
-            padding: '20px', 
-            border: '2px dashed #ddd', 
-            borderRadius: '8px',
-            textAlign: 'center',
-            marginBottom: '1rem',
-            backgroundColor: '#f8f9fa'
-          }}>
-            <div style={{ fontSize: '48px', marginBottom: '10px' }}>🎯</div>
-            <h3>Drag and Drop Question</h3>
-            <p>This is a demonstration of drag and drop functionality.</p>
-            <p>In a full implementation, you would drag items between zones.</p>
-            <button
-              onClick={() => {
-                const newAnswers = [...userAnswers];
-                newAnswers[current] = 'Demo interaction completed';
-                setUserAnswers(newAnswers);
-              }}
-              disabled={questionSubmitted[current]}
-              style={{
-                padding: '10px 20px',
-                backgroundColor: '#007bff',
-                color: 'white',
-                border: 'none',
-                borderRadius: '5px',
-                cursor: 'pointer',
-                fontSize: '16px'
-              }}
-            >
-              {userAnswers[current] ? '✅ Completed' : 'Click to Demo'}
-            </button>
-          </div>
-          {questionSubmitted[current] && (
-            <div className="drag-drop-feedback">
-              <div style={{ 
-                padding: '10px', 
-                borderRadius: '8px',
-                backgroundColor: '#d4edda',
-                color: '#155724',
-                marginBottom: '1rem'
+        <div className="drag-drop-container" style={{ marginBottom: '20px' }}>
+          <div style={{ marginBottom: '25px' }}>
+            <h4 style={{ 
+              color: '#2c3e50', 
+              fontSize: '18px', 
+              marginBottom: '15px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}>
+              📦 Drag these items to the correct categories:
+            </h4>
+            <div style={{ 
+              display: 'flex', 
+              flexWrap: 'wrap', 
+              gap: '12px',
+              padding: '20px',
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              borderRadius: '16px',
+              minHeight: '80px',
+              border: '3px dashed rgba(255,255,255,0.3)',
+              boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
+              position: 'relative',
+              overflow: 'hidden'
+            }}>
+              {/* Animated background pattern */}
+              <div style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundImage: 'radial-gradient(circle at 20% 50%, rgba(255,255,255,0.1) 1px, transparent 1px), radial-gradient(circle at 80% 50%, rgba(255,255,255,0.1) 1px, transparent 1px)',
+                backgroundSize: '30px 30px',
+                animation: 'float 6s ease-in-out infinite'
+              }}></div>
+              
+              <div style={{
+                position: 'absolute',
+                top: '10px',
+                right: '15px',
+                color: 'rgba(255,255,255,0.7)',
+                fontSize: '14px',
+                fontWeight: '500'
               }}>
-                🎯 Great job exploring drag and drop!
+                Items to drag
+              </div>
+              
+              {/* Draggable Items */}
+              {['Flashcards', 'Quizzes', 'Essays', 'Projects', 'Discussions'].map((item, index) => (
+                <div
+                  key={index}
+                  draggable={!questionSubmitted[current]}
+                  onDragStart={(e) => {
+                    e.dataTransfer.setData('text/plain', item);
+                    e.target.style.transform = 'scale(1.1)';
+                    e.target.style.opacity = '0.8';
+                  }}
+                  onDragEnd={(e) => {
+                    e.target.style.transform = 'scale(1)';
+                    e.target.style.opacity = '1';
+                  }}
+                  style={{
+                    padding: '12px 18px',
+                    background: 'linear-gradient(135deg, #ff6b6b, #ee5a52)',
+                    color: 'white',
+                    borderRadius: '25px',
+                    cursor: questionSubmitted[current] ? 'default' : 'grab',
+                    userSelect: 'none',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    opacity: questionSubmitted[current] ? 0.6 : 1,
+                    transform: 'translateY(0)',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    boxShadow: '0 4px 12px rgba(255,107,107,0.3), 0 2px 4px rgba(0,0,0,0.1)',
+                    border: '2px solid rgba(255,255,255,0.2)',
+                    position: 'relative',
+                    zIndex: 1,
+                    ...(questionSubmitted[current] ? {} : {
+                      ':hover': {
+                        transform: 'translateY(-2px)',
+                        boxShadow: '0 6px 20px rgba(255,107,107,0.4), 0 4px 8px rgba(0,0,0,0.15)'
+                      }
+                    })
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!questionSubmitted[current]) {
+                      e.target.style.transform = 'translateY(-2px)';
+                      e.target.style.boxShadow = '0 6px 20px rgba(255,107,107,0.4), 0 4px 8px rgba(0,0,0,0.15)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!questionSubmitted[current]) {
+                      e.target.style.transform = 'translateY(0)';
+                      e.target.style.boxShadow = '0 4px 12px rgba(255,107,107,0.3), 0 2px 4px rgba(0,0,0,0.1)';
+                    }
+                  }}
+                >
+                  <span style={{ marginRight: '6px' }}>✨</span>
+                  {item}
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', 
+            gap: '20px',
+            marginBottom: '20px'
+          }}>
+            {/* Drop Zones */}
+            {[
+              { name: 'Memory Practice', icon: '🧠', color: '#4ecdc4' },
+              { name: 'Knowledge Testing', icon: '🎯', color: '#45b7d1' },
+              { name: 'Deep Thinking', icon: '💭', color: '#96ceb4' },
+              { name: 'Application', icon: '🔧', color: '#feca57' },
+              { name: 'Collaboration', icon: '👥', color: '#ff9ff3' }
+            ].map((zone, index) => {
+              const zoneItems = (userAnswers[current] && userAnswers[current][zone.name]) || [];
+              
+              return (
+                <div
+                  key={index}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    if (!questionSubmitted[current]) {
+                      e.target.style.transform = 'scale(1.02)';
+                      e.target.style.borderColor = zone.color;
+                      e.target.style.backgroundColor = `${zone.color}15`;
+                    }
+                  }}
+                  onDragLeave={(e) => {
+                    if (!questionSubmitted[current]) {
+                      e.target.style.transform = 'scale(1)';
+                      e.target.style.borderColor = zoneItems.length > 0 ? zone.color : '#e0e6ed';
+                      e.target.style.backgroundColor = zoneItems.length > 0 ? `${zone.color}10` : '#fafbfc';
+                    }
+                  }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    if (questionSubmitted[current]) return;
+                    
+                    const item = e.dataTransfer.getData('text/plain');
+                    const newAnswers = [...userAnswers];
+                    if (!newAnswers[current]) newAnswers[current] = {};
+                    
+                    // Remove item from other zones
+                    Object.keys(newAnswers[current]).forEach(key => {
+                      if (Array.isArray(newAnswers[current][key])) {
+                        newAnswers[current][key] = newAnswers[current][key].filter(i => i !== item);
+                      }
+                    });
+                    
+                    // Add item to current zone
+                    if (!newAnswers[current][zone.name]) newAnswers[current][zone.name] = [];
+                    if (!newAnswers[current][zone.name].includes(item)) {
+                      newAnswers[current][zone.name].push(item);
+                    }
+                    
+                    setUserAnswers(newAnswers);
+                    
+                    // Reset styles
+                    e.target.style.transform = 'scale(1)';
+                    e.target.style.borderColor = zone.color;
+                    e.target.style.backgroundColor = `${zone.color}10`;
+                  }}
+                  style={{
+                    border: `3px dashed ${zoneItems.length > 0 ? zone.color : '#e0e6ed'}`,
+                    borderRadius: '16px',
+                    padding: '20px',
+                    minHeight: '120px',
+                    backgroundColor: zoneItems.length > 0 ? `${zone.color}10` : '#fafbfc',
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    boxShadow: zoneItems.length > 0 ? 
+                      `0 4px 15px ${zone.color}25, 0 2px 4px rgba(0,0,0,0.05)` : 
+                      '0 2px 8px rgba(0,0,0,0.05)'
+                  }}
+                >
+                  {/* Zone header */}
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    marginBottom: '15px',
+                    paddingBottom: '10px',
+                    borderBottom: `2px solid ${zoneItems.length > 0 ? zone.color : '#e0e6ed'}`,
+                  }}>
+                    <span style={{ 
+                      fontSize: '24px', 
+                      marginRight: '10px',
+                      filter: zoneItems.length > 0 ? 'none' : 'grayscale(0.5)'
+                    }}>
+                      {zone.icon}
+                    </span>
+                    <h5 style={{ 
+                      margin: 0, 
+                      color: zoneItems.length > 0 ? zone.color : '#6c757d',
+                      fontSize: '16px',
+                      fontWeight: '700',
+                      letterSpacing: '0.5px'
+                    }}>
+                      {zone.name}
+                    </h5>
+                  </div>
+                  
+                  {/* Items container */}
+                  <div style={{ 
+                    display: 'flex', 
+                    flexWrap: 'wrap', 
+                    gap: '8px',
+                    minHeight: '40px',
+                    alignItems: 'flex-start'
+                  }}>
+                    {zoneItems.length === 0 ? (
+                      <div style={{
+                        color: '#adb5bd',
+                        fontSize: '14px',
+                        fontStyle: 'italic',
+                        textAlign: 'center',
+                        width: '100%',
+                        padding: '20px 0',
+                        opacity: 0.7
+                      }}>
+                        Drop items here...
+                      </div>
+                    ) : (
+                      zoneItems.map((item, idx) => (
+                        <div
+                          key={idx}
+                          style={{
+                            padding: '8px 14px',
+                            background: `linear-gradient(135deg, ${zone.color}, ${zone.color}dd)`,
+                            color: 'white',
+                            borderRadius: '20px',
+                            fontSize: '13px',
+                            fontWeight: '600',
+                            boxShadow: `0 2px 8px ${zone.color}40`,
+                            transform: 'scale(1)',
+                            animation: `popIn 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55) ${idx * 0.1}s both`,
+                            border: '2px solid rgba(255,255,255,0.3)',
+                            position: 'relative'
+                          }}
+                        >
+                          <span style={{ marginRight: '4px' }}>✓</span>
+                          {item}
+                        </div>
+                      ))
+                    )}
+                  </div>
+                  
+                  {/* Decorative corner accent */}
+                  <div style={{
+                    position: 'absolute',
+                    top: '12px',
+                    right: '12px',
+                    width: '6px',
+                    height: '6px',
+                    borderRadius: '50%',
+                    backgroundColor: zoneItems.length > 0 ? zone.color : '#e0e6ed',
+                    opacity: 0.6
+                  }}></div>
+                </div>
+              );
+            })}
+          </div>
+          
+          {questionSubmitted[current] && (
+            <div className="drag-drop-feedback" style={{ marginTop: '20px' }}>
+              <div style={{ 
+                padding: '20px', 
+                borderRadius: '16px',
+                background: questionScore[current] > 3 ? 
+                  'linear-gradient(135deg, #00b894, #00a085)' : 
+                  questionScore[current] > 1 ?
+                  'linear-gradient(135deg, #fdcb6e, #e17055)' :
+                  'linear-gradient(135deg, #fd79a8, #e84393)',
+                color: 'white',
+                boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
+                textAlign: 'center',
+                position: 'relative',
+                overflow: 'hidden'
+              }}>
+                <div style={{
+                  position: 'absolute',
+                  top: '-50%',
+                  left: '-50%',
+                  width: '200%',
+                  height: '200%',
+                  background: 'radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px)',
+                  backgroundSize: '20px 20px',
+                  animation: 'sparkle 4s linear infinite'
+                }}></div>
+                
+                <div style={{ position: 'relative', zIndex: 1 }}>
+                  <div style={{ fontSize: '24px', marginBottom: '8px' }}>
+                    {questionScore[current] === 5 ? '🎉' : 
+                     questionScore[current] > 3 ? '🎯' : 
+                     questionScore[current] > 1 ? '👍' : '💪'}
+                  </div>
+                  <div style={{ fontSize: '18px', fontWeight: '700', marginBottom: '5px' }}>
+                    {questionScore[current] === 5 ? 'Perfect Match!' : 
+                     questionScore[current] > 3 ? 'Great Job!' : 
+                     questionScore[current] > 1 ? 'Good Effort!' : 'Keep Trying!'}
+                  </div>
+                  <div style={{ fontSize: '14px', opacity: 0.9 }}>
+                    You got {questionScore[current]} out of 5 matches correct!
+                  </div>
+                </div>
               </div>
             </div>
           )}
+          
+          {/* Add CSS animations */}
+          <style jsx>{`
+            @keyframes float {
+              0%, 100% { transform: translateY(0px); }
+              50% { transform: translateY(-10px); }
+            }
+            @keyframes popIn {
+              0% { transform: scale(0) rotate(45deg); opacity: 0; }
+              100% { transform: scale(1) rotate(0deg); opacity: 1; }
+            }
+            @keyframes sparkle {
+              0% { transform: rotate(0deg); }
+              100% { transform: rotate(360deg); }
+            }
+          `}</style>
         </div>
       )}
 
