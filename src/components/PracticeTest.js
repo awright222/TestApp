@@ -539,6 +539,25 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
       points = Object.entries(correctHotspotAnswers).filter(
         ([label, correct]) => userAnswers[current][label] === correct
       ).length;
+    } else if (q.question_type?.toLowerCase() === 'short answer') {
+      // Simple keyword matching for short answers
+      const userAnswer = (userAnswers[current] || '').toLowerCase().trim();
+      const acceptableAnswers = q.choices ? q.choices.toLowerCase().split(',').map(a => a.trim()) : [q.correct_answer.toLowerCase().trim()];
+      
+      if (acceptableAnswers.some(answer => userAnswer.includes(answer) || answer.includes(userAnswer))) {
+        points = 1;
+      }
+    } else if (q.question_type?.toLowerCase() === 'essay') {
+      // For essays, give points if they wrote something substantial
+      const userAnswer = (userAnswers[current] || '').trim();
+      if (userAnswer.length > 20) { // At least 20 characters
+        points = 1;
+      }
+    } else if (q.question_type?.toLowerCase() === 'drag and drop') {
+      // For demo drag and drop, give points if they interacted
+      if (userAnswers[current]) {
+        points = 1;
+      }
     }
     setShowExplanation(true);
     setQuestionSubmitted(prev => {
@@ -625,6 +644,25 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
             points = Object.entries(correctAnswers).filter(
               ([label, correct]) => userAnswer[label] === correct
             ).length;
+          }
+        } else if (q.question_type?.toLowerCase() === 'short answer') {
+          // Simple keyword matching for short answers
+          const userAns = (userAnswer || '').toLowerCase().trim();
+          const acceptableAnswers = q.choices ? q.choices.toLowerCase().split(',').map(a => a.trim()) : [q.correct_answer.toLowerCase().trim()];
+          
+          if (acceptableAnswers.some(answer => userAns.includes(answer) || answer.includes(userAns))) {
+            points = 1;
+          }
+        } else if (q.question_type?.toLowerCase() === 'essay') {
+          // For essays, give points if they wrote something substantial
+          const userAns = (userAnswer || '').trim();
+          if (userAns.length > 20) { // At least 20 characters
+            points = 1;
+          }
+        } else if (q.question_type?.toLowerCase() === 'drag and drop') {
+          // For demo drag and drop, give points if they interacted
+          if (userAnswer) {
+            points = 1;
           }
         }
         
@@ -1681,6 +1719,137 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* Short Answer Questions */}
+      {q.question_type?.toLowerCase() === 'short answer' && (
+        <div className="short-answer-container">
+          <input
+            type="text"
+            value={userAnswers[current] || ''}
+            onChange={(e) => {
+              const newAnswers = [...userAnswers];
+              newAnswers[current] = e.target.value;
+              setUserAnswers(newAnswers);
+            }}
+            placeholder="Type your answer here..."
+            disabled={questionSubmitted[current]}
+            className="short-answer-input"
+            style={{
+              width: '100%',
+              padding: '12px',
+              border: '2px solid #ddd',
+              borderRadius: '8px',
+              fontSize: '16px',
+              marginBottom: '1rem'
+            }}
+          />
+          {questionSubmitted[current] && (
+            <div className="short-answer-feedback">
+              <div style={{ 
+                padding: '10px', 
+                borderRadius: '8px',
+                backgroundColor: questionScore[current] > 0 ? '#d4edda' : '#f8d7da',
+                color: questionScore[current] > 0 ? '#155724' : '#721c24',
+                marginBottom: '1rem'
+              }}>
+                {questionScore[current] > 0 ? '✅ Correct!' : '❌ Check your answer'}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Essay Questions */}
+      {q.question_type?.toLowerCase() === 'essay' && (
+        <div className="essay-container">
+          <textarea
+            value={userAnswers[current] || ''}
+            onChange={(e) => {
+              const newAnswers = [...userAnswers];
+              newAnswers[current] = e.target.value;
+              setUserAnswers(newAnswers);
+            }}
+            placeholder="Type your essay answer here..."
+            disabled={questionSubmitted[current]}
+            className="essay-textarea"
+            rows="6"
+            style={{
+              width: '100%',
+              padding: '12px',
+              border: '2px solid #ddd',
+              borderRadius: '8px',
+              fontSize: '16px',
+              marginBottom: '1rem',
+              resize: 'vertical',
+              fontFamily: 'inherit'
+            }}
+          />
+          {questionSubmitted[current] && (
+            <div className="essay-feedback">
+              <div style={{ 
+                padding: '10px', 
+                borderRadius: '8px',
+                backgroundColor: '#e2e3e5',
+                color: '#383d41',
+                marginBottom: '1rem'
+              }}>
+                📝 Essay submitted for review
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Drag and Drop Questions */}
+      {q.question_type?.toLowerCase() === 'drag and drop' && (
+        <div className="drag-drop-container">
+          <div style={{ 
+            padding: '20px', 
+            border: '2px dashed #ddd', 
+            borderRadius: '8px',
+            textAlign: 'center',
+            marginBottom: '1rem',
+            backgroundColor: '#f8f9fa'
+          }}>
+            <div style={{ fontSize: '48px', marginBottom: '10px' }}>🎯</div>
+            <h3>Drag and Drop Question</h3>
+            <p>This is a demonstration of drag and drop functionality.</p>
+            <p>In a full implementation, you would drag items between zones.</p>
+            <button
+              onClick={() => {
+                const newAnswers = [...userAnswers];
+                newAnswers[current] = 'Demo interaction completed';
+                setUserAnswers(newAnswers);
+              }}
+              disabled={questionSubmitted[current]}
+              style={{
+                padding: '10px 20px',
+                backgroundColor: '#007bff',
+                color: 'white',
+                border: 'none',
+                borderRadius: '5px',
+                cursor: 'pointer',
+                fontSize: '16px'
+              }}
+            >
+              {userAnswers[current] ? '✅ Completed' : 'Click to Demo'}
+            </button>
+          </div>
+          {questionSubmitted[current] && (
+            <div className="drag-drop-feedback">
+              <div style={{ 
+                padding: '10px', 
+                borderRadius: '8px',
+                backgroundColor: '#d4edda',
+                color: '#155724',
+                marginBottom: '1rem'
+              }}>
+                🎯 Great job exploring drag and drop!
+              </div>
+            </div>
+          )}
         </div>
       )}
 

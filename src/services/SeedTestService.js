@@ -18,35 +18,51 @@ export class SeedTestService {
         },
         {
           id: "seed-q2",
-          question_text: "💡 What are two key benefits of active learning?",
+          question_text: "💡 What's your favorite learning technique?",
           question_type: "short answer",
-          choices: "retention, memory, engagement, understanding, recall, comprehension, participation, interaction",
-          correct_answer: "retention, engagement",
-          explanation: "Active learning improves retention by engaging students directly with the material, leading to better understanding and long-term memory formation."
+          choices: "practice, testing, reading, discussion, visual, hands-on, repetition",
+          correct_answer: "practice",
+          explanation: "Any learning technique you prefer is valid! Different methods work for different people."
         },
         {
           id: "seed-q3",
-          question_text: "🖱️ Click on the elements that make learning effective:",
+          question_text: "🖱️ Match these learning strategies to their benefits:",
           question_type: "hotspot",
-          choices: "Active Elements: practice, testing, feedback, interaction\nPassive Elements: reading, listening, watching, memorizing",
-          correct_answer: "Active Elements: practice, Active Elements: testing, Active Elements: feedback",
-          explanation: "Active learning elements like practice, testing, and feedback are more effective than passive methods for long-term retention."
+          choices: "Active Learning: practice, testing, discussion, hands-on\nPassive Learning: reading, listening, watching, reviewing\nRetention Boost: quizzing, spaced practice, teaching others",
+          correct_answer: "Active Learning: practice\nPassive Learning: reading\nRetention Boost: quizzing",
+          explanation: "Active learning methods like practice are more effective than passive methods like reading, and techniques like quizzing boost retention!"
         },
         {
           id: "seed-q4",
-          question_text: "🔄 Match these learning tools to their purposes:",
+          question_text: "🎯 Try our drag and drop demo!",
           question_type: "drag and drop",
-          choices: "Items: Flashcards, Quizzes, Essays, Projects, Discussions\nZones: Memory Practice, Knowledge Testing, Deep Thinking, Application, Collaboration",
-          correct_answer: "Flashcards -> Memory Practice, Quizzes -> Knowledge Testing, Essays -> Deep Thinking, Projects -> Application, Discussions -> Collaboration",
-          explanation: "Different learning tools serve different purposes: flashcards for memory, quizzes for testing, essays for analysis, projects for application, and discussions for collaboration."
+          choices: "This is a demonstration of drag and drop functionality",
+          correct_answer: "Demo completed",
+          explanation: "Great job trying out the drag and drop feature! This shows how interactive elements can make learning more engaging."
         },
         {
           id: "seed-q5",
-          question_text: "📝 Reflect on your learning goals. What do you hope to achieve with this platform? How do you learn best?",
+          question_text: "📝 What are your learning goals with this platform?",
           question_type: "essay",
-          choices: "Consider your learning style, goals, preferred methods, and what you want to accomplish.",
-          correct_answer: "Personal reflection on learning goals and preferences",
-          explanation: "Self-reflection on learning goals helps you understand your preferences and create more effective study strategies tailored to your needs."
+          choices: "Consider your objectives, preferred learning style, and what you hope to achieve",
+          correct_answer: "Personal learning goals",
+          explanation: "Thank you for sharing your learning goals! Reflecting on your objectives helps create a more personalized learning experience."
+        },
+        {
+          id: "seed-q6",
+          question_text: "🧠 What is the 'Testing Effect' in learning science?",
+          question_type: "multiple choice",
+          choices: "A. Tests make students anxious\nB. Retrieval practice strengthens memory\nC. Multiple choice is the best format\nD. Testing should be avoided",
+          correct_answer: "B",
+          explanation: "The Testing Effect shows that actively retrieving information from memory (like taking this quiz!) strengthens neural pathways and improves long-term retention."
+        },
+        {
+          id: "seed-q5",
+          question_text: "🎨 Select the best study techniques for different learning goals:",
+          question_type: "hotspot",
+          choices: "Memory Building: flashcards, repetition, mnemonics\nUnderstanding: explanation, examples, connections\nApplication: practice problems, projects, real-world use",
+          correct_answer: "Memory Building: flashcards\nUnderstanding: explanation\nApplication: practice problems",
+          explanation: "Different goals require different techniques: flashcards for memory, explanations for understanding, and practice problems for application!"
         },
         {
           id: "seed-q6",
@@ -58,19 +74,11 @@ export class SeedTestService {
         },
         {
           id: "seed-q7",
-          question_text: "⚡ What learning technique involves explaining concepts simply?",
-          question_type: "short answer",
-          choices: "feynman technique, feynman method, teaching method, explain simply, rubber duck debugging, simplification",
-          correct_answer: "feynman technique",
-          explanation: "The Feynman Technique involves explaining concepts in simple terms as if teaching a child, helping identify knowledge gaps and deepen understanding."
-        },
-        {
-          id: "seed-q8",
-          question_text: "🎨 Select the study methods that match different learning preferences:",
+          question_text: "🎨 Select the best study techniques for different learning goals:",
           question_type: "hotspot",
-          choices: "Visual Learners: diagrams, charts, mind maps, videos\nAuditory Learners: lectures, discussions, podcasts, music\nKinesthetic Learners: hands-on, experiments, movement, building",
-          correct_answer: "Visual Learners: diagrams, Auditory Learners: discussions, Kinesthetic Learners: hands-on",
-          explanation: "Different learners have different preferences: visual learners benefit from diagrams and charts, auditory learners from discussions and lectures, and kinesthetic learners from hands-on activities."
+          choices: "Memory Building: flashcards, repetition, mnemonics\nUnderstanding: explanation, examples, connections\nApplication: practice problems, projects, real-world use",
+          correct_answer: "Memory Building: flashcards\nUnderstanding: explanation\nApplication: practice problems",
+          explanation: "Different goals require different techniques: flashcards for memory, explanations for understanding, and practice problems for application!"
         }
       ],
       settings: {
@@ -88,8 +96,8 @@ export class SeedTestService {
       metadata: {
         tags: ["welcome", "tutorial", "showcase", "seed", "demo"],
         difficulty: "Beginner",
-        estimatedTime: "5-8 minutes",
-        questionCount: 8,
+        estimatedTime: "5-7 minutes",
+        questionCount: 7,
         category: "Getting Started",
         isSeedTest: true,
         isWelcomeTest: true,
@@ -112,7 +120,7 @@ export class SeedTestService {
       totalAttempts: 0,
       completedAttempts: 0,
       averageScore: 0,
-      questionCount: 8,
+      questionCount: 7,
       createdAt: new Date().toISOString()
     };
 

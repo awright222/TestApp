@@ -45,19 +45,51 @@
                 },
                 {
                     "id": "welcome-q2",
-                    "question_text": "💡 What's one word that describes your feeling about learning?",
+                    "question_text": "💡 What's your favorite learning technique?",
                     "question_type": "short answer",
-                    "choices": "excited, curious, motivated, interested, enthusiastic, eager",
-                    "correct_answer": "excited",
-                    "explanation": "Any positive word about learning is perfect! Keep that enthusiasm as you explore Formulate."
+                    "choices": "practice, testing, reading, discussion, visual, hands-on, repetition",
+                    "correct_answer": "practice",
+                    "explanation": "Any learning technique you prefer is valid! Different methods work for different people."
                 },
                 {
                     "id": "welcome-q3",
-                    "question_text": "🖱️ Click on the learning methods that work best for you:",
+                    "question_text": "🖱️ Match these learning strategies to their benefits:",
                     "question_type": "hotspot",
-                    "choices": "Active Methods: Practice, Testing, Discussion, Hands-on\nPassive Methods: Reading, Listening, Watching, Reviewing",
-                    "correct_answer": "Active Methods: Practice, Active Methods: Testing",
-                    "explanation": "Active learning methods like practice and testing are proven to be more effective for long-term retention!"
+                    "choices": "Active Learning: practice, testing, discussion, hands-on\nPassive Learning: reading, listening, watching, reviewing\nRetention Boost: quizzing, spaced practice, teaching others",
+                    "correct_answer": "Active Learning: practice\nPassive Learning: reading\nRetention Boost: quizzing",
+                    "explanation": "Active learning methods like practice are more effective than passive methods like reading, and techniques like quizzing boost retention!"
+                },
+                {
+                    "id": "welcome-q4",
+                    "question_text": "🎯 Try our drag and drop demo!",
+                    "question_type": "drag and drop",
+                    "choices": "This is a demonstration of drag and drop functionality",
+                    "correct_answer": "Demo completed",
+                    "explanation": "Great job trying out the drag and drop feature! This shows how interactive elements can make learning more engaging."
+                },
+                {
+                    "id": "welcome-q5",
+                    "question_text": "📝 What are your learning goals with this platform?",
+                    "question_type": "essay",
+                    "choices": "Consider your objectives, preferred learning style, and what you hope to achieve",
+                    "correct_answer": "Personal learning goals",
+                    "explanation": "Thank you for sharing your learning goals! Reflecting on your objectives helps create a more personalized learning experience."
+                },
+                {
+                    "id": "welcome-q6",
+                    "question_text": "🧠 What is the 'Testing Effect' in learning science?",
+                    "question_type": "multiple choice",
+                    "choices": "A. Tests make students anxious\nB. Retrieval practice strengthens memory\nC. Multiple choice is the best format\nD. Testing should be avoided",
+                    "correct_answer": "B",
+                    "explanation": "The Testing Effect shows that actively retrieving information from memory (like taking this quiz!) strengthens neural pathways and improves long-term retention."
+                },
+                {
+                    "id": "welcome-q7",
+                    "question_text": "🎨 Select the best study techniques for different learning goals:",
+                    "question_type": "hotspot",
+                    "choices": "Memory Building: flashcards, repetition, mnemonics\nUnderstanding: explanation, examples, connections\nApplication: practice problems, projects, real-world use",
+                    "correct_answer": "Memory Building: flashcards\nUnderstanding: explanation\nApplication: practice problems",
+                    "explanation": "Different goals require different techniques: flashcards for memory, explanations for understanding, and practice problems for application!"
                 }
             ],
             "settings": {
@@ -78,8 +110,8 @@
             "metadata": {
                 "tags": ["welcome", "tutorial", "seed"],
                 "difficulty": "Beginner",
-                "estimatedTime": "3 minutes",
-                "questionCount": 3,
+                "estimatedTime": "8 minutes",
+                "questionCount": 7,
                 "category": "Getting Started",
                 "isSeedTest": true,
                 "isWelcomeTest": true,
@@ -99,7 +131,7 @@
             "totalAttempts": 0,
             "completedAttempts": 0,
             "averageScore": 0,
-            "questionCount": 3,
+            "questionCount": 7,
             "createdAt": new Date().toISOString()
         };
         
