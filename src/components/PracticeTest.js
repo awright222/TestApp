@@ -1125,7 +1125,6 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
 
   return (
     <div className="practice-test">
-      {/* Clean Header */}
       <div className="practice-test-header">
         <div className="header-top">
           <button onClick={onBackToSelection} className="back-to-tests-btn">
@@ -1156,7 +1155,6 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
         </div>
       </div>
 
-      {/* Retry Mode Banner */}
       {wrongAnswersRetryMode && (
         <div className="retry-mode-active-banner">
           <div className="retry-banner-content">
@@ -1174,7 +1172,6 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
         </div>
       )}
 
-      {/* Integrated Timer */}
       {(timerEnabled || isPracticeMode) && !timerFloating && 
        ((selectedTest?.settings?.showTimer !== false) || isPracticeMode) && (
         <div className="integrated-timer">
@@ -1275,7 +1272,6 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
         </div>
       )}
 
-      {/* Floating Timer */}
       {(timerEnabled || isPracticeMode) && timerFloating && (
         <div 
           className={`floating-timer ${timerMinimized ? 'minimized' : ''} ${timerDragging ? 'dragging' : ''}`}
@@ -1406,7 +1402,6 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
         </div>
       )}
 
-      {/* Ultra-Compact Test Navigation & Controls */}
       <div className="compact-test-bar">
         <div className="test-bar-left">
           <div className="question-nav">
@@ -1586,7 +1581,6 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
         </div>
       </div>
 
-      {/* Notes Section for Marked Questions */}
       {isQuestionMarked(current) && (
         <div className="question-notes-section">
           <label className="notes-label">
@@ -1602,7 +1596,6 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
         </div>
       )}
 
-      {/* Multiple Choice Questions */}
       {q.question_type?.toLowerCase() === 'multiple choice' && (
         <>
           {(() => {
@@ -1685,7 +1678,7 @@ function PracticeTest({ selectedTest, onBackToSelection, searchTerm, onClearSear
         </>
       )}
 
-      {/* Hotspot Questions */}
+
       {q.question_type?.toLowerCase() === 'hotspot' && (
         <div className="hotspot-container">
           {Object.entries(hotspotOptions).map(([label, options]) => {
